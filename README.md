@@ -3,19 +3,10 @@
 
 ## Resumo
 
-Diante dos crescentes desafios de concentração e motivação na sociedade atual,
-especialmente para indivíduos com TDAH (Transtorno de Déficit de Atenção com
-Hiperatividade) que compõe 5% e 8% da população mundial e pessoas com o TEA
-(Transtorno do Espectro Autista), que estimam em até 6,9 milhões de brasileiros,
-reforçam a urgência da criação instrumentos que auxiliem rotina, foco e
-desenvolvimento de hábitos. A busca por ferramentas ou métodos que auxiliem na
-produtividade tornou-se mais frequente, diante desta problemática, surgiu a
-idealização de uma plataforma voltada para essa problemática. Este projeto teve
-como objetivo desenvolver o GamefyME, uma plataforma mobile que inicialmente 
-foi desenvolvida para web que possibilita uma melhoria na produtividade pessoal 
-e a constância na realização de tarefas de uma maneira mais agradável e envolvente.
-Para isso, a metodologia empregada foi a integração da técnica Pomodoro com elementos
-de gamificação, como sistemas de experiência, desafios, conquistas e streaks (dias consecutivos de produtividade).
+A crescente dificuldade de concentração e a desmotivação frente a tarefas cotidianas são desafios enfrentados por grande parte da população. 
+A sociedade atual, imersa em distrações digitais constantes, exige soluções inovadoras que promovam o foco e o engajamento. 
+A gamificação, combinada a técnicas como o Método Pomodoro, surge como alternativa eficaz nesse cenário, ao transformar tarefas comuns em experiências recompensadoras.
+
 
 
 ## Colaboradores
