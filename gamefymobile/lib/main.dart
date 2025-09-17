@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -298,6 +299,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
   final TextEditingController _confirmarSenhaController = TextEditingController();
+  final TextEditingController _dataNascimentoController = TextEditingController();
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -313,136 +315,185 @@ class _RegisterPageState extends State<RegisterPage> {
 
     setState(() => _loading = true);
 
-    final url = Uri.parse("http://172.16.42.25/api/cadastro"); // emulador Android
-    // se for celular real, troque 10.0.2.2 pelo IP da sua máquina
+    final url = Uri.parse("http://172.16.43.108:8000/api/cadastro/");
 
-    final response = await http.post(
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "nmusuario": _nomeController.text,
-        "emailusuario": _emailController.text,
-        "senha": _senhaController.text,
-        "confsenha": _confirmarSenhaController.text,
-        "dtnascimento": "2000-01-01" // Data fixa para teste
-      }),
-    );
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "nmusuario": _nomeController.text,
+          "emailusuario": _emailController.text,
+          "senha": _senhaController.text,
+          "confsenha": _confirmarSenhaController.text,
+          "dtnascimento": _dataNascimentoController.text,
+        }),
+      );
 
-    setState(() => _loading = false);
+      setState(() => _loading = false);
 
-    if (response.statusCode == 201) {
-        // ignore: use_build_context_synchronously
+      if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Usuário cadastrado com sucesso!")),
         );
-        // ignore: use_build_context_synchronously
-        Navigator.pop(context); // volta para tela de login
-      
-    } else {
-          final data = jsonDecode(response.body);
-          // ignore: use_build_context_synchronously
-          ScaffoldMessenger.of(context).showSnackBar(
+        Navigator.pop(context);
+      } else {
+        final data = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data["erro"] ?? "Erro ao cadastrar.")),
         );
+      }
+    } catch (e) {
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Erro de conexão: $e")),
+      );
     }
+  }
+
+  Widget _buildLabel(String text) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 20,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String hint,
+    required TextEditingController controller,
+    bool obscure = false,
+    IconButton? suffix,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        hintText: hint,
+        filled: true,
+        fillColor: Colors.grey[200],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+        suffixIcon: suffix,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.deepPurple,
-      body: Center(
-        child: SingleChildScrollView(
+      backgroundColor: roxoHeader,
+      appBar: AppBar(
+        backgroundColor: roxoHeader,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Container(
           padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(15),
+          ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Logo
-              Image.asset('assets/images/logo.png', height: 120),
-
-              const SizedBox(height: 30),
-
-              // Nome
-              TextField(
+              _buildLabel("Nome de usuário"),
+              const SizedBox(height: 5),
+              _buildTextField(
+                hint: "Ex: FelipeSantili",
                 controller: _nomeController,
-                decoration: InputDecoration(
-                  labelText: "Nome",
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
               ),
               const SizedBox(height: 15),
+              
 
-              // Email
-              TextField(
+              _buildLabel("Email"),
+              const SizedBox(height: 5),
+              _buildTextField(
+                hint: "exemplo@email.com",
                 controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: "Email",
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
+                keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 15),
 
-              // Senha
-              TextField(
+              _buildLabel("Senha"),
+              const SizedBox(height: 5),
+              _buildTextField(
+                hint: "Digite sua senha",
                 controller: _senhaController,
-                obscureText: _obscurePassword,
-                decoration: InputDecoration(
-                  labelText: "Senha",
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  suffixIcon: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                  ),
+                obscure: _obscurePassword,
+                suffix: IconButton(
+                  icon: Icon(
+                      _obscurePassword ? Icons.visibility_off : Icons.visibility),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
                 ),
               ),
               const SizedBox(height: 15),
 
-              // Confirmar Senha
-              TextField(
+              _buildLabel("Confirmar Senha"),
+              const SizedBox(height: 5),
+              _buildTextField(
+                hint: "Repita sua senha",
                 controller: _confirmarSenhaController,
-                obscureText: _obscureConfirmPassword,
-                decoration: InputDecoration(
-                  labelText: "Confirmar Senha",
-                  filled: true,
-                  fillColor: Colors.grey[200],
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  suffixIcon: IconButton(
-                    icon: Icon(_obscureConfirmPassword ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
-                  ),
+                obscure: _obscureConfirmPassword,
+                suffix: IconButton(
+                  icon: Icon(_obscureConfirmPassword
+                      ? Icons.visibility_off
+                      : Icons.visibility),
+                  onPressed: () {
+                    setState(() {
+                      _obscureConfirmPassword = !_obscureConfirmPassword;
+                    });
+                  },
                 ),
+              ),
+              const SizedBox(height: 15),
+
+              _buildLabel("Data de nascimento"),
+              const SizedBox(height: 5),
+              _buildTextField(
+                hint: "dd/mm/aaaa",
+                controller: _dataNascimentoController,
+                keyboardType: TextInputType.datetime,
               ),
               const SizedBox(height: 25),
 
-              // Botão registrar
               SizedBox(
-                width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
                   onPressed: _loading ? null : _registrar,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                   child: _loading
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Registrar", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: const Text(
-                  "Já tem conta? Faça login",
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      : const Text(
+                          "Registrar",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
             ],
