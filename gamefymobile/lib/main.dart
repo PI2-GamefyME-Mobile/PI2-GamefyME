@@ -157,6 +157,14 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: roxoHeader, // roxo de fundo
+      appBar: AppBar(
+        backgroundColor: roxoHeader,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: Center(
         child: Stack(
             alignment: Alignment.topCenter,
