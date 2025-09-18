@@ -39,6 +39,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    
+    
     date_joined = models.DateTimeField(default=timezone.now)
     imagem_perfil = models.CharField(
     max_length=100,
@@ -61,5 +63,10 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.emailusuario
+    
+    @property
+    def id(self):
+        """Compatibilidade com libs (JWT, DRF) que esperam 'id' como chave primária"""
+        return self.idusuario
     
 

@@ -7,7 +7,9 @@ from .models import Usuario, TipoUsuario
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework import serializers
 
 class CadastroAPIView(APIView):
     def post(self, request):
@@ -47,7 +49,7 @@ class CadastroAPIView(APIView):
                 return Response({
                     "message": "Usuário cadastrado com sucesso!",
                     "user": {
-                        "id": usuario.id,
+                        "id": usuario.idusuario,
                         "nome": usuario.nmusuario,
                         "email": usuario.emailusuario,
                     },
@@ -84,15 +86,40 @@ class LoginAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # cria ou pega token
-        token, _ = Token.objects.get_or_create(user=usuario)
+        # 🔑 Gera o par de tokens JWT
+        refresh = RefreshToken.for_user(usuario)
 
-        return Response(
-            {
+        return Response({
+            "message": "Login realizado com sucesso!",
+            "user": {
                 "id": usuario.idusuario,
-                "nmusuario": usuario.nmusuario,
-                "emailusuario": usuario.emailusuario,
-                "token": token.key
+                "nome": usuario.nmusuario,
+                "email": usuario.emailusuario,
             },
-            status=status.HTTP_200_OK
-        )
+            "tokens": {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            }
+        }, status=status.HTTP_200_OK)
+
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = "emailusuario"  # garante login via emailusuario
+
+    def validate(self, attrs):
+        email = attrs.get("emailusuario")
+        password = attrs.get("password")
+
+        user = authenticate(emailusuario=email, password=password)
+
+        if not user:
+            raise serializers.ValidationError("Credenciais inválidas.")
+
+        data = super().validate(attrs)
+        data["id"] = user.idusuario
+        data["nome"] = getattr(user, "nmusuario", "")
+        return data
+
+
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
