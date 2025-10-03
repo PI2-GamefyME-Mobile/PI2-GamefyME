@@ -49,9 +49,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Arquivos de Banco de Dados
-*.sqlite3
-db.sqlite3
 
 # Pasta do Ambiente Virtual
 # (IMPORTANTE: Se sua pasta tiver outro nome, altere aqui)
@@ -79,10 +76,6 @@ wheels/
 *.egg
 MANIFEST
 
-# Arquivos de Mídia e Estáticos (se você não quiser versioná-los)
-media/
-static/
-
 # Arquivos do sistema operacional
 .DS_Store
 Thumbs.db
@@ -90,25 +83,3 @@ Thumbs.db
 # Arquivos de configuração de IDEs
 .vscode/
 .idea/
-
-# --- Configurações para o Flutter ---
-
-# Arquivos gerados pelo Flutter
-.flutter-plugins
-.flutter-plugins-dependencies
-.packages
-.pub-cache/
-.pub/
-/build/
-/ios/Pods/
-/ios/.symlinks/
-/ios/Flutter/App.framework
-/ios/Flutter/engine
-/ios/Flutter/flutter_assets
-/ios/Runner.xcworkspace
-/ios/Runner/GeneratedPluginRegistrant.h
-/ios/Runner/GeneratedPluginRegistrant.m
-/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
-/android/key.properties
-/android/.gradle/
-/android/local.properties
