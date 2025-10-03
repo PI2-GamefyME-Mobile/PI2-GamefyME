@@ -20,12 +20,21 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
   List<DesafioPendente> _desafios = [];
   List<Conquista> _conquistas = [];
   List<Conquista> _conquistasFiltradas = [];
-  String? _filtroTipo;
+  final TextEditingController _filtroController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _carregarDados();
+    _filtroController.addListener(() {
+      _filtrarConquistas(_filtroController.text);
+    });
+  }
+
+  @override
+  void dispose() {
+    _filtroController.dispose();
+    super.dispose();
   }
 
   Future<void> _carregarDados() async {
@@ -55,14 +64,14 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
     }
   }
 
-  void _filtrarConquistas(String? tipo) {
+  void _filtrarConquistas(String query) {
     setState(() {
-      _filtroTipo = tipo;
-      if (_filtroTipo == null) {
+      if (query.isEmpty) {
         _conquistasFiltradas = _conquistas;
       } else {
         _conquistasFiltradas = _conquistas
-            .where((c) => c.nome.toLowerCase().contains(_filtroTipo!.toLowerCase()))
+            .where((c) =>
+                c.nome.toLowerCase().contains(query.toLowerCase()))
             .toList();
       }
     });
@@ -124,7 +133,7 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildFiltroTipo(),
+            _buildFiltro(),
             const SizedBox(height: 16),
             Expanded(
               child: _isLoading
@@ -141,29 +150,24 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
     );
   }
 
-  Widget _buildFiltroTipo() {
-    return Row(
-      children: [
-        Expanded(
-          child: DropdownButtonFormField<String>(
-            initialValue: _filtroTipo,
-            hint: const Text('Filtrar por tipo',
-                style: TextStyle(color: Colors.white)),
-            style: const TextStyle(color: Colors.white),
-            dropdownColor: AppColors.fundoCard,
-            items: ['ATIVIDADE', 'PRODUTIVIDADE', 'RECORRÊNCIA']
-                .map((String value) =>
-                    DropdownMenuItem<String>(value: value, child: Text(value)))
-                .toList(),
-            onChanged: (newValue) => _filtrarConquistas(newValue),
-          ),
+  Widget _buildFiltro() {
+    return TextField(
+      controller: _filtroController,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: 'Pesquisar por nome',
+        labelStyle: const TextStyle(color: Colors.grey),
+        suffixIcon: IconButton(
+          icon: const Icon(Icons.clear, color: Colors.white),
+          onPressed: () => _filtroController.clear(),
         ),
-        if (_filtroTipo != null)
-          IconButton(
-            icon: const Icon(Icons.clear, color: Colors.white),
-            onPressed: () => _filtrarConquistas(null),
-          )
-      ],
+        enabledBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey),
+        ),
+        focusedBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.white),
+        ),
+      ),
     );
   }
 
