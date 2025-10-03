@@ -120,4 +120,30 @@ class AuthService {
        return {'success': false, 'message': 'Erro de conexão.'};
     }
   }
+  
+  Future<bool> refreshAccessToken() async {
+  final refreshToken = await _storage.read(key: 'refresh_token');
+  if (refreshToken == null) return false;
+
+  final url = Uri.parse("$_baseUrl/token/refresh/");
+  try {
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'refresh': refreshToken}),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final String newAccess = data['access'];
+      await _storage.write(key: 'access_token', value: newAccess);
+      return true;
+    } else {
+      return false;
+    }
+  } catch (e) {
+    debugPrint("Erro ao renovar token: $e");
+    return false;
+  }
+}
 }

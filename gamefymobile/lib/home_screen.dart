@@ -249,7 +249,9 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
           children: [
             Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
               SizedBox(
-                  width: 150, height: 220, child: _buildUserInfoCard(_usuario!)),
+                  width: 150,
+                  height: 220,
+                  child: _buildUserInfoCard(_usuario!)),
               const SizedBox(width: 16),
               Expanded(
                   child: SizedBox(
@@ -425,48 +427,96 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
   Widget _buildAtividadesList(List<Atividade> atividades) {
     if (atividades.isEmpty) {
       return const Center(
-          child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 20),
-              child: Text("Nenhuma atividade encontrada.",
-                  style: TextStyle(color: AppColors.cinzaSub))));
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Text("Nenhuma atividade encontrada.",
+              style: TextStyle(color: AppColors.cinzaSub)),
+        ),
+      );
     }
+
     return ListView.builder(
-        itemCount: atividades.length,
-        itemBuilder: (context, index) {
-          final atividade = atividades[index];
-          return Container(
-              margin: const EdgeInsets.only(top: 8),
-              decoration: BoxDecoration(
-                  color: AppColors.roxoMedio,
-                  borderRadius: BorderRadius.circular(10)),
-              child: ListTile(
-                  leading: IconButton(
-                      icon: const Icon(Icons.add_circle,
-                          color: AppColors.verdeLima, size: 28),
-                      onPressed: () async {
-                        final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => RealizarAtividadeScreen(
-                                    atividadeId: atividade.id)));
-                        if (result == true && mounted) _carregarDados();
-                      }),
-                  title: Text(atividade.nome,
-                      style: const TextStyle(color: AppColors.branco)),
-                  trailing: IconButton(
-                      icon: const Icon(Icons.edit, color: AppColors.cinzaSub),
-                      onPressed: () async {
-                        final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => EditarAtividadeScreen(
-                                    atividade: atividade,
-                                    usuario: _usuario,
-                                    notificacoes: _notificacoes,
-                                    desafios: _desafios,
-                                    conquistas: _conquistas)));
-                        if (result == true) _carregarDados();
-                      })));
-        });
+      itemCount: atividades.length,
+      itemBuilder: (context, index) {
+        final atividade = atividades[index];
+
+        return Container(
+          margin: const EdgeInsets.only(top: 8),
+          decoration: BoxDecoration(
+            color: AppColors.roxoMedio,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: ListTile(
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+
+            // botão de editar à esquerda
+            leading: IconButton(
+              icon: const Icon(Icons.edit, color: AppColors.cinzaSub),
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditarAtividadeScreen(
+                      atividade: atividade,
+                      usuario: _usuario,
+                      notificacoes: _notificacoes,
+                      desafios: _desafios,
+                      conquistas: _conquistas,
+                    ),
+                  ),
+                );
+                if (result == true && mounted) _carregarDados();
+              },
+            ),
+
+            // todo o tile abre a atividade
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      RealizarAtividadeScreen(atividadeId: atividade.id),
+                ),
+              );
+              if (result == true && mounted) _carregarDados();
+            },
+
+            // nome + badge de XP (usando atividade.xp diretamente)
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    atividade.nome,
+                    style: const TextStyle(color: AppColors.branco),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.verdeLima,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${atividade.xp}xp',
+                    style: const TextStyle(
+                      color: AppColors.fundoEscuro,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // ícone à direita para indicar clique
+            trailing: const Icon(Icons.arrow_forward_ios,
+                color: AppColors.cinzaSub, size: 18),
+          ),
+        );
+      },
+    );
   }
 }

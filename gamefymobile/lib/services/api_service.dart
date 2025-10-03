@@ -10,15 +10,16 @@ class ApiService {
 
   Future<Map<String, String>> _getHeaders() async {
     final token = await _authService.getToken();
-    return {
+    final headers = {
       'Content-Type': 'application/json',
       if (token != null) 'Authorization': 'Bearer $token',
     };
+    return headers;
   }
 
   Future<Usuario> fetchUsuario() async {
     final url = Uri.parse('$_baseRoot/usuarios/me/');
-    final res = await http.get(url, headers: await _getHeaders());
+    final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
       return Usuario.fromJson(json.decode(utf8.decode(res.bodyBytes)));
     } else {
@@ -28,7 +29,7 @@ class ApiService {
 
   Future<List<Atividade>> fetchAtividades() async {
     final url = Uri.parse('$_baseRoot/atividades/');
-    final res = await http.get(url, headers: await _getHeaders());
+    final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
       final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
       return data.map((e) => Atividade.fromJson(e)).toList();
@@ -39,7 +40,7 @@ class ApiService {
 
   Future<Atividade> fetchAtividade(int atividadeId) async {
     final url = Uri.parse('$_baseRoot/atividades/$atividadeId/');
-    final res = await http.get(url, headers: await _getHeaders());
+    final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
       return Atividade.fromJson(json.decode(utf8.decode(res.bodyBytes)));
     } else {
@@ -73,7 +74,8 @@ class ApiService {
     final url = Uri.parse('$_baseRoot/usuarios/me/');
     final body = jsonEncode({'imagem_perfil': avatarName});
     try {
-      final response = await http.patch(url, headers: await _getHeaders(), body: body);
+      final response =
+          await http.patch(url, headers: await _getHeaders(), body: body);
       return response.statusCode == 200;
     } catch (e) {
       debugPrint('Erro ao atualizar a foto de perfil: $e');
@@ -83,7 +85,7 @@ class ApiService {
 
   Future<List<Conquista>> fetchUsuarioConquistas() async {
     final url = Uri.parse('$_baseRoot/conquistas/');
-    final res = await http.get(url, headers: await _getHeaders());
+    final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
       final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
       return data.map((e) => Conquista.fromJson(e)).toList();
@@ -94,7 +96,7 @@ class ApiService {
 
   Future<List<DesafioPendente>> fetchDesafiosPendentes() async {
     final url = Uri.parse('$_baseRoot/desafios/');
-    final res = await http.get(url, headers: await _getHeaders());
+    final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
       final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
       return data.map((e) => DesafioPendente.fromJson(e)).toList();
@@ -144,21 +146,30 @@ class ApiService {
   }
 
   Future<List<Notificacao>> fetchNotificacoes() async {
-    final url = Uri.parse('$_baseRoot/notificacoes/');
-    final res = await http.get(url, headers: await _getHeaders());
-    if (res.statusCode == 200) {
-      final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
-      return data.map((e) => Notificacao.fromJson(e)).toList();
-    } else {
-      throw Exception('Falha ao carregar notificações');
-    }
+  final url = Uri.parse('$_baseRoot/notificacoes/');
+  final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
+  if (res.statusCode == 200) {
+    final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
+    return data.map((e) => Notificacao.fromJson(e)).toList();
+  } else {
+    throw Exception('Falha ao carregar notificações: ${res.statusCode}');
   }
+}
 
   Future<void> marcarNotificacaoComoLida(int notificacaoId) async {
     final url = Uri.parse(
       '$_baseRoot/notificacoes/$notificacaoId/marcar-como-lida/',
     );
     await http.post(url, headers: await _getHeaders());
+  }
+
+  Future<void> marcarTodasNotificacoesComoLidas() async {
+    final url = Uri.parse('$_baseRoot/notificacoes/marcar-todas-como-lidas/');
+    try {
+      await http.post(url, headers: await _getHeaders());
+    } catch (e) {
+      debugPrint('Erro ao marcar todas notificações como lidas: $e');
+    }
   }
 
   Future<Map<String, dynamic>> updateAtividade({
@@ -187,7 +198,10 @@ class ApiService {
         body: body,
       );
       if (response.statusCode == 200) {
-        return {'success': true, 'message': 'Atividade atualizada com sucesso!'};
+        return {
+          'success': true,
+          'message': 'Atividade atualizada com sucesso!'
+        };
       } else {
         final responseBody = jsonDecode(response.body);
         return {'success': false, 'message': responseBody.toString()};
@@ -196,6 +210,7 @@ class ApiService {
       return {'success': false, 'message': 'Erro de conexão: $e'};
     }
   }
+
   Future<void> requestPasswordReset(String email) async {
     final response = await http.post(
       Uri.parse('$_baseRoot/usuarios/password-reset/'),
@@ -222,6 +237,7 @@ class ApiService {
       throw Exception('Falha ao confirmar a redefinição de senha.');
     }
   }
+
   Future<Map<String, dynamic>> updateUser({
     required String nome,
     required String email,
@@ -251,7 +267,7 @@ class ApiService {
 
   Future<List<Usuario>> fetchLeaderboard() async {
     final url = Uri.parse('$_baseRoot/usuarios/leaderboard/');
-    final res = await http.get(url, headers: await _getHeaders());
+    final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
       final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
       return data.map((e) => Usuario.fromJson(e)).toList();
@@ -259,4 +275,29 @@ class ApiService {
       throw Exception('Falha ao carregar a leaderboard');
     }
   }
+
+  Future<http.Response> _authorizedRequest(
+  Future<http.Response> Function(Map<String, String>) requestFn,
+) async {
+  var headers = await _getHeaders();
+  var response = await requestFn(headers);
+
+  if (response.statusCode == 401) {
+    // tenta renovar token
+    final refreshed = await _authService.refreshAccessToken();
+    if (refreshed) {
+      headers = await _getHeaders();
+      response = await requestFn(headers);
+    }
+
+    // se ainda der 401 → forçar logout
+    if (response.statusCode == 401) {
+      await _authService.logout();
+      // aqui você pode navegar para login:
+      // Navigator.of(context).pushReplacementNamed('/login');
+    }
+  }
+  return response;
+}
+
 }
