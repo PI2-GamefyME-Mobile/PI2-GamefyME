@@ -7,16 +7,17 @@ class AuthService {
   final String _baseUrl = "http://127.0.0.1:8000/api/usuarios";
   final _storage = const FlutterSecureStorage();
 
-  Future<void> _saveToken(String token) async {
-    await _storage.write(key: 'auth_token', value: token);
+  Future<void> _saveTokens(String accessToken, String refreshToken) async {
+    await _storage.write(key: 'access_token', value: accessToken);
+    await _storage.write(key: 'refresh_token', value: refreshToken);
   }
 
   Future<String?> getToken() async {
-    return await _storage.read(key: 'auth_token');
+    return await _storage.read(key: 'access_token');
   }
 
   Future<void> logout() async {
-    await _storage.delete(key: 'auth_token');
+    await _storage.deleteAll();
   }
 
   Future<Map<String, dynamic>> login(String email, String senha) async {
@@ -35,7 +36,8 @@ class AuthService {
       final responseBody = jsonDecode(response.body);
       if (response.statusCode == 200) {
         final String accessToken = responseBody['tokens']['access'];
-        await _saveToken(accessToken);
+        final String refreshToken = responseBody['tokens']['refresh'];
+        await _saveTokens(accessToken, refreshToken);
         return {'success': true, 'message': 'Login bem-sucedido!'};
       } else {
         return {'success': false, 'message': responseBody['detail'] ?? responseBody['erro'] ?? 'Credenciais inválidas.'};
@@ -69,7 +71,8 @@ class AuthService {
       final responseBody = jsonDecode(response.body);
       if (response.statusCode == 201) {
         final String accessToken = responseBody['tokens']['access'];
-        await _saveToken(accessToken);
+        final String refreshToken = responseBody['tokens']['refresh'];
+        await _saveTokens(accessToken, refreshToken);
         return {'success': true, 'message': responseBody['message']};
       } else {
         return {'success': false, 'message': responseBody['erro'] ?? 'Ocorreu um erro no cadastro.'};
@@ -118,4 +121,3 @@ class AuthService {
     }
   }
 }
-
