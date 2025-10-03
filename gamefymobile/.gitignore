@@ -1,0 +1,114 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Arquivos de Bytecode e Cache do Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Arquivos de Banco de Dados
+*.sqlite3
+db.sqlite3
+
+# Pasta do Ambiente Virtual
+# (IMPORTANTE: Se sua pasta tiver outro nome, altere aqui)
+env/
+venv/
+.venv/
+
+# Arquivos de dependências do Python (para que cada dev instale sua versão)
+pip-wheel-metadata/
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Arquivos de Mídia e Estáticos (se você não quiser versioná-los)
+media/
+static/
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos de configuração de IDEs
+.vscode/
+.idea/
+
+# --- Configurações para o Flutter ---
+
+# Arquivos gerados pelo Flutter
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+/ios/Pods/
+/ios/.symlinks/
+/ios/Flutter/App.framework
+/ios/Flutter/engine
+/ios/Flutter/flutter_assets
+/ios/Runner.xcworkspace
+/ios/Runner/GeneratedPluginRegistrant.h
+/ios/Runner/GeneratedPluginRegistrant.m
+/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java
+/android/key.properties
+/android/.gradle/
+/android/local.properties
