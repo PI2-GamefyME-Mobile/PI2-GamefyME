@@ -6,7 +6,11 @@ import '../models/models.dart';
 
 class ApiService {
   final AuthService _authService = AuthService();
-  static const String _baseRoot = 'http://127.0.0.1:8000/api';
+  // Rodar no PC
+  // static const String _baseRoot = 'http://127.0.0.1:8000/api';
+  
+  // Rodar no celular
+  static const String _baseRoot = 'http://192.168.100.114:8000/api';
 
   Future<Map<String, String>> _getHeaders() async {
     final token = await _authService.getToken();

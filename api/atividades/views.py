@@ -48,27 +48,13 @@ class AtividadeViewSet(viewsets.ModelViewSet):
 
         try:
             with transaction.atomic():
-                # Lógica de cálculo de EXP e Nível
-                exp_ganha = atividade.expatividade
-                nova_exp = usuario.expusuario + exp_ganha
-                novo_nivel = usuario.nivelusuario
-                while nova_exp >= 1000:
-                    novo_nivel += 1
-                    nova_exp -= 1000
-                
-                # Atualiza o usuário
-                usuario.expusuario = nova_exp
-                usuario.nivelusuario = novo_nivel
-                usuario.ultima_atividade = timezone.now().date()
-                usuario.save()
-
                 # Atualiza o status da atividade
                 if atividade.recorrencia == 'unica':
                     atividade.situacao = 'realizada'
                 
                 atividade.dtatividaderealizada = timezone.now()
                 atividade.save()
-
+                exp_ganha = atividade.expatividade
                 # Cria o registro de conclusão para disparar o signal
                 AtividadeConcluidas.objects.create(
                     idusuario=usuario,

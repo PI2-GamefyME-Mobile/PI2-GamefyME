@@ -220,11 +220,11 @@ class _CustomAppBarState extends State<CustomAppBar> {
 
         // Botão marcar todas
         items.add(
-          PopupMenuItem(
+          const PopupMenuItem(
             value: 'marcar_todas',
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
+              children: [
                 Text('Marcar todas como lidas',
                     style: TextStyle(color: AppColors.branco)),
                 Icon(Icons.done_all, color: AppColors.verdeLima),
