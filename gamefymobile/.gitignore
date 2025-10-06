@@ -45,9 +45,10 @@ app.*.map.json
 /android/app/release
 
 # Arquivos de Bytecode e Cache do Python
-__pycache__/
 *.py[cod]
-*$py.class
+__pycache__/
+*.so
+*.egg-info/
 
 
 # Pasta do Ambiente Virtual
@@ -82,3 +83,15 @@ Thumbs.db
 # Arquivos de configuração de IDEs
 .vscode/
 .idea/
+
+# Caches específicos do Django
+*.log
+*.pot
+*.mo
+local_settings.py
+
+# Arquivos temporários de migrações
+migrations/*.py[cod]
+migrations/__pycache__/ 
+__pycache__
+migrations

@@ -1,3 +1,5 @@
+# api/usuarios/views.py
+
 import random
 import string
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -16,7 +18,7 @@ from django.core.cache import cache
 
 # URL da API - /api/usuarios/cadastro/
 class CadastroAPIView(APIView):
-    permission_classes = [AllowAny] 
+    permission_classes = [AllowAny]
     def post(self, request):
         nome = request.data.get("nmusuario")
         email = request.data.get("emailusuario")
@@ -67,11 +69,11 @@ class CadastroAPIView(APIView):
         except Exception as e:
             return Response({"erro": f"Erro inesperado: {str(e)}"},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
-# URL da API - /api/usuarios/login/      
+
+# URL da API - /api/usuarios/login/
 class LoginAPIView(APIView):
     permission_classes = [AllowAny]
-    
+
     def post(self, request):
         email = request.data.get("emailusuario")
         password = request.data.get("password")
@@ -102,7 +104,7 @@ class LoginAPIView(APIView):
             },
             status=status.HTTP_200_OK
         )
-        
+
 class UsuarioDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -117,7 +119,7 @@ class UsuarioDetailView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
@@ -151,7 +153,7 @@ class PasswordResetRequestView(APIView):
                 send_mail(subject, message, EMAIL_HOST_USER, [email])
                 return Response({"message": "E-mail com o código de redefinição de senha enviado."}, status=status.HTTP_200_OK)
             except Exception as e:
-                 return Response({"error": f"Falha ao enviar e-mail: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response({"error": f"Falha ao enviar e-mail: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class PasswordResetConfirmView(APIView):
@@ -170,7 +172,7 @@ class PasswordResetConfirmView(APIView):
 
             if stored_code != code:
                 return Response({"error": "Código inválido."}, status=status.HTTP_400_BAD_REQUEST)
-            
+
             try:
                 user = Usuario.objects.get(emailusuario=email)
                 user.password = make_password(new_password)
@@ -178,13 +180,14 @@ class PasswordResetConfirmView(APIView):
                 cache.delete(f'reset_code_{email}')
                 return Response({"message": "Senha redefinida com sucesso."}, status=status.HTTP_200_OK)
             except Usuario.DoesNotExist:
-                 return Response({"error": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+                return Response({"error": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
 class LeaderboardView(generics.ListAPIView):
     serializer_class = LeaderboardSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Usuario.objects.order_by('-nivelusuario', '-expusuario')
+        # ALTERAÇÃO AQUI: Adicionado filtro por tipousuario
+        return Usuario.objects.filter(tipousuario=TipoUsuario.COMUM).order_by('-nivelusuario', '-expusuario')

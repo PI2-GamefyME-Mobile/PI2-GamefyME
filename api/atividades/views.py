@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 from django.db import transaction
+from datetime import timedelta
 
 from .models import Atividade, AtividadeConcluidas
 from .serializers import AtividadeSerializer
@@ -14,17 +15,13 @@ class AtividadeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        # Retorna apenas as atividades que não estão canceladas
         return Atividade.objects.filter(idusuario=user).exclude(situacao='cancelada')
 
     def perform_create(self, serializer):
-        # Lógica adaptada da view criar_atividade do sistema antigo
         validated_data = serializer.validated_data
         dificuldade = validated_data.get('dificuldade')
         tempo_estimado = validated_data.get('tpestimado')
-
         exp = calcular_experiencia(dificuldade, tempo_estimado)
-
         serializer.save(
             idusuario=self.request.user,
             expatividade=exp,
@@ -33,48 +30,35 @@ class AtividadeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def realizar(self, request, pk=None):
-        """
-        Endpoint para marcar uma atividade como realizada, replicando a lógica do sistema antigo.
-        """
         atividade = self.get_object()
         usuario = request.user
-
         if atividade.situacao == 'cancelada' or \
            (atividade.situacao == 'realizada' and atividade.recorrencia == 'unica'):
             return Response(
                 {'erro': 'Esta atividade não pode mais ser realizada.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
         try:
             with transaction.atomic():
-                # Atualiza o status da atividade
                 if atividade.recorrencia == 'unica':
                     atividade.situacao = 'realizada'
-                
                 atividade.dtatividaderealizada = timezone.now()
                 atividade.save()
                 exp_ganha = atividade.expatividade
-                # Cria o registro de conclusão para disparar o signal
                 AtividadeConcluidas.objects.create(
                     idusuario=usuario,
                     idatividade=atividade,
                     dtconclusao=timezone.now()
                 )
-
                 return Response({
                     'status': 'atividade realizada',
                     'exp_ganha': exp_ganha
                 }, status=status.HTTP_200_OK)
-
         except Exception as e:
             return Response({'erro': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['post'])
     def cancelar(self, request, pk=None):
-        """
-        Marca uma atividade como cancelada.
-        """
         try:
             atividade = self.get_object()
             atividade.situacao = 'cancelada'
@@ -84,7 +68,72 @@ class AtividadeViewSet(viewsets.ModelViewSet):
             return Response({'erro': 'Atividade não encontrada'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'erro': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'], url_path='streak-status')
+    def streak_status(self, request):
+        usuario = request.user
+        today = timezone.now().date()
         
+        completed_dates = set(
+            AtividadeConcluidas.objects.filter(idusuario=usuario)
+            .values_list('dtconclusao__date', flat=True)
+            .distinct()
+        )
+
+        # Condição de quebra de streak: se a última atividade foi há 2 dias ou mais
+        last_completion_date = max(completed_dates) if completed_dates else None
+        streak_broken = last_completion_date and (today - last_completion_date).days >= 2
+        
+        # --- LÓGICA DE EXIBIÇÃO DA SEMANA (DOMINGO A SÁBADO) ---
+        # A semana no Django começa na Segunda (0). Para começar no Domingo, ajustamos.
+        # Se hoje for Domingo (weekday=6), subtraimos 0 dias.
+        # Se hoje for Segunda (weekday=0), subtraimos 1 dia.
+        start_of_week = today - timedelta(days=(today.weekday() + 1) % 7)
+        
+        # Gera os dias da semana, de Domingo a Sábado
+        days_of_week = [{'date': start_of_week + timedelta(days=i)} for i in range(7)]
+
+        if streak_broken:
+            for day in days_of_week:
+                day['status'] = 'inativo'
+            return Response(days_of_week)
+
+        # Processa os dias para definir o status, mantendo os congelados
+        for day_data in days_of_week:
+            current_date = day_data['date']
+            
+            # Não processa status para dias futuros
+            if current_date > today:
+                day_data['status'] = 'inativo' 
+                continue
+
+            # 1. Se teve atividade no dia, o status é 'ativo'
+            if current_date in completed_dates:
+                day_data['status'] = 'ativo'
+                continue
+
+            # 2. Se não foi ativo, verifica o dia anterior para decidir se congela
+            # Busca pela data de conclusão mais recente ANTERIOR ao dia atual
+            most_recent_past_completion = None
+            for d in sorted(list(completed_dates), reverse=True):
+                if d < current_date:
+                    most_recent_past_completion = d
+                    break
+
+            if most_recent_past_completion:
+                # Se a última atividade foi exatamente no dia anterior, congela
+                if (current_date - most_recent_past_completion).days == 1:
+                    day_data['status'] = 'congelado'
+                else:
+                    # Se foi antes, o dia é inativo (pois já houve uma quebra)
+                    day_data['status'] = 'inativo'
+            else:
+                # Se nunca houve atividade antes deste dia, é inativo
+                day_data['status'] = 'inativo'
+
+        return Response(days_of_week)
+
+
 # A função de calcular experiência foi mantida, pois é idêntica em ambos os sistemas.
 def calcular_experiencia(dificuldade: str, tempo_estimado: int) -> int:
     """

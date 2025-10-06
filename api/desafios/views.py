@@ -23,21 +23,3 @@ class UsuarioDesafioListView(generics.ListAPIView):
     def get_queryset(self):
         return UsuarioDesafio.objects.filter(idusuario=self.request.user).order_by('-dtpremiacao')
     
-class DesafioGeralListView(generics.ListAPIView):
-    """
-    Endpoint para listar TODOS os desafios ativos, indicando quais já foram 
-    concluídos pelo usuário no período corrente.
-    """
-    serializer_class = DesafioSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        # Filtra para retornar apenas desafios que estão "ativos"
-        # A lógica is_ativo() do seu model será implicitamente usada se você filtrar por data
-        return Desafio.objects.all().order_by('tipo', 'nmdesafio')
-
-    def get_serializer_context(self):
-        # Essencial para passar o 'request' (e o usuário) para o serializer
-        context = super().get_serializer_context()
-        context.update({"request": self.request})
-        return context

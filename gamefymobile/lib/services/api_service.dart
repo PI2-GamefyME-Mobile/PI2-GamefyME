@@ -7,10 +7,10 @@ import '../models/models.dart';
 class ApiService {
   final AuthService _authService = AuthService();
   // Rodar no PC
-  // static const String _baseRoot = 'http://127.0.0.1:8000/api';
-  
+  static const String _baseRoot = 'http://127.0.0.1:8000/api';
+
   // Rodar no celular
-  static const String _baseRoot = 'http://192.168.100.114:8000/api';
+  // static const String _baseRoot = 'http://192.168.100.114:8000/api';
 
   Future<Map<String, String>> _getHeaders() async {
     final token = await _authService.getToken();
@@ -23,7 +23,8 @@ class ApiService {
 
   Future<Usuario> fetchUsuario() async {
     final url = Uri.parse('$_baseRoot/usuarios/me/');
-    final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
+    final res =
+        await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
       return Usuario.fromJson(json.decode(utf8.decode(res.bodyBytes)));
     } else {
@@ -33,7 +34,8 @@ class ApiService {
 
   Future<List<Atividade>> fetchAtividades() async {
     final url = Uri.parse('$_baseRoot/atividades/');
-    final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
+    final res =
+        await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
       final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
       return data.map((e) => Atividade.fromJson(e)).toList();
@@ -44,7 +46,8 @@ class ApiService {
 
   Future<Atividade> fetchAtividade(int atividadeId) async {
     final url = Uri.parse('$_baseRoot/atividades/$atividadeId/');
-    final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
+    final res =
+        await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
       return Atividade.fromJson(json.decode(utf8.decode(res.bodyBytes)));
     } else {
@@ -88,8 +91,9 @@ class ApiService {
   }
 
   Future<List<Conquista>> fetchUsuarioConquistas() async {
-    final url = Uri.parse('$_baseRoot/conquistas/');
-    final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
+    final url = Uri.parse('$_baseRoot/conquistas/usuario/'); 
+    final res =
+        await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
       final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
       return data.map((e) => Conquista.fromJson(e)).toList();
@@ -100,7 +104,8 @@ class ApiService {
 
   Future<List<DesafioPendente>> fetchDesafiosPendentes() async {
     final url = Uri.parse('$_baseRoot/desafios/');
-    final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
+    final res =
+        await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
       final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
       return data.map((e) => DesafioPendente.fromJson(e)).toList();
@@ -150,15 +155,16 @@ class ApiService {
   }
 
   Future<List<Notificacao>> fetchNotificacoes() async {
-  final url = Uri.parse('$_baseRoot/notificacoes/');
-  final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
-  if (res.statusCode == 200) {
-    final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
-    return data.map((e) => Notificacao.fromJson(e)).toList();
-  } else {
-    throw Exception('Falha ao carregar notificações: ${res.statusCode}');
+    final url = Uri.parse('$_baseRoot/notificacoes/');
+    final res =
+        await _authorizedRequest((headers) => http.get(url, headers: headers));
+    if (res.statusCode == 200) {
+      final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
+      return data.map((e) => Notificacao.fromJson(e)).toList();
+    } else {
+      throw Exception('Falha ao carregar notificações: ${res.statusCode}');
+    }
   }
-}
 
   Future<void> marcarNotificacaoComoLida(int notificacaoId) async {
     final url = Uri.parse(
@@ -271,7 +277,8 @@ class ApiService {
 
   Future<List<Usuario>> fetchLeaderboard() async {
     final url = Uri.parse('$_baseRoot/usuarios/leaderboard/');
-    final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
+    final res =
+        await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
       final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
       return data.map((e) => Usuario.fromJson(e)).toList();
@@ -281,27 +288,38 @@ class ApiService {
   }
 
   Future<http.Response> _authorizedRequest(
-  Future<http.Response> Function(Map<String, String>) requestFn,
-) async {
-  var headers = await _getHeaders();
-  var response = await requestFn(headers);
+    Future<http.Response> Function(Map<String, String>) requestFn,
+  ) async {
+    var headers = await _getHeaders();
+    var response = await requestFn(headers);
 
-  if (response.statusCode == 401) {
-    // tenta renovar token
-    final refreshed = await _authService.refreshAccessToken();
-    if (refreshed) {
-      headers = await _getHeaders();
-      response = await requestFn(headers);
-    }
-
-    // se ainda der 401 → forçar logout
     if (response.statusCode == 401) {
-      await _authService.logout();
-      // aqui você pode navegar para login:
-      // Navigator.of(context).pushReplacementNamed('/login');
+      // tenta renovar token
+      final refreshed = await _authService.refreshAccessToken();
+      if (refreshed) {
+        headers = await _getHeaders();
+        response = await requestFn(headers);
+      }
+
+      // se ainda der 401 → forçar logout
+      if (response.statusCode == 401) {
+        await _authService.logout();
+        // aqui você pode navegar para login:
+        // Navigator.of(context).pushReplacementNamed('/login');
+      }
+    }
+    return response;
+  }
+
+  Future<List<dynamic>> fetchStreakStatus() async {
+    final url = Uri.parse('$_baseRoot/atividades/streak-status/');
+    final res =
+        await _authorizedRequest((headers) => http.get(url, headers: headers));
+    if (res.statusCode == 200) {
+      // A API já retorna uma lista, então decodificamos diretamente
+      return json.decode(utf8.decode(res.bodyBytes));
+    } else {
+      throw Exception('Falha ao carregar o status do streak');
     }
   }
-  return response;
-}
-
 }

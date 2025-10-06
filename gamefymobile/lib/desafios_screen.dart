@@ -1,3 +1,5 @@
+// lib/desafios_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:gamefymobile/models/models.dart';
 import 'package:gamefymobile/services/api_service.dart';
@@ -114,20 +116,31 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
   }
 
   Widget _buildFiltroTipo() {
+    // Tipos únicos de desafios para o dropdown
+    final tipos = _desafios.map((d) => d.tipo).toSet().toList();
+
     return Row(
       children: [
         Expanded(
           child: DropdownButtonFormField<String>(
-            initialValue: _tipoSelecionado,
+            value: _tipoSelecionado,
             hint: const Text('Filtrar por tipo',
                 style: TextStyle(color: Colors.white)),
             style: const TextStyle(color: Colors.white),
             dropdownColor: AppColors.fundoCard,
-            items: ['diario', 'semanal', 'mensal']
+            items: tipos
                 .map((String value) =>
                     DropdownMenuItem<String>(value: value, child: Text(value)))
                 .toList(),
             onChanged: (newValue) => _filtrarDesafios(newValue),
+            decoration: const InputDecoration(
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.cinzaSub),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.verdeLima),
+              ),
+            ),
           ),
         ),
         if (_tipoSelecionado != null)
@@ -146,7 +159,7 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
               child: Text(
                 entry.key.toUpperCase(),
                 style: const TextStyle(
@@ -157,12 +170,15 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
             ),
             ...entry.value.map((desafio) {
               return Card(
-                color: AppColors.fundoCard,
+                color: desafio.completado ? AppColors.fundoCard.withOpacity(0.5) : AppColors.fundoCard,
                 child: ListTile(
+                  leading: desafio.completado 
+                    ? const Icon(Icons.check_circle, color: AppColors.verdeLima, size: 30)
+                    : const Icon(Icons.emoji_events_outlined, color: AppColors.amareloClaro, size: 30),
                   title: Text(desafio.nome,
-                      style: const TextStyle(color: Colors.white)),
+                      style: TextStyle(color: desafio.completado ? Colors.grey : Colors.white)),
                   subtitle: Text(desafio.descricao,
-                      style: const TextStyle(color: Colors.grey)),
+                      style: TextStyle(color: desafio.completado ? Colors.grey[600] : Colors.grey)),
                   trailing: Text('+${desafio.xp} XP',
                       style: const TextStyle(
                           color: AppColors.amareloClaro,
@@ -170,6 +186,7 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
                 ),
               );
             }),
+             const SizedBox(height: 16),
           ],
         );
       }).toList(),

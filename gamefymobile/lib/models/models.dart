@@ -97,8 +97,9 @@ class DesafioPendente {
   final int id;
   final String nome;
   final String descricao;
-  final String tipo;
   final int xp;
+  final String tipo;
+  final bool completado;
   final int progresso;
   final int meta;
 
@@ -106,19 +107,21 @@ class DesafioPendente {
     required this.id,
     required this.nome,
     required this.descricao,
-    required this.tipo,
     required this.xp,
+    required this.tipo,
+    required this.completado,
     required this.progresso,
     required this.meta,
   });
 
   factory DesafioPendente.fromJson(Map<String, dynamic> json) {
     return DesafioPendente(
-      id: json['iddesafio'] ?? 0,
-      nome: json['nmdesafio'] ?? 'Desafio sem nome',
-      descricao: json['dsdesafio'] ?? '',
-      tipo: json['tipo'] ?? 'geral',
-      xp: json['expdesafio'] ?? 0,
+      id: json['iddesafio'],
+      nome: json['nmdesafio'],
+      descricao: json['dsdesafio'] ?? 'Sem descrição',
+      xp: json['expdesafio'],
+      tipo: json['tipo_display'],
+      completado: json['completado'] ?? false,
       progresso: json['progresso'] ?? 0,
       meta: json['meta'] ?? 1,
     );

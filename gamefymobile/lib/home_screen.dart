@@ -4,6 +4,7 @@ import 'package:gamefymobile/conquistas_screen.dart';
 import 'package:gamefymobile/desafios_screen.dart';
 import 'package:gamefymobile/historico_screen.dart';
 import 'package:gamefymobile/settings_screen.dart';
+import 'package:intl/intl.dart';
 
 import 'config/app_colors.dart';
 import 'services/api_service.dart';
@@ -112,6 +113,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
   List<Conquista> _conquistas = [];
   List<DesafioPendente> _desafios = [];
   List<Notificacao> _notificacoes = [];
+  List<dynamic> _streakData = [];
   String _searchText = '';
   late TabController _tabController;
 
@@ -138,6 +140,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
         _apiService.fetchUsuarioConquistas(),
         _apiService.fetchDesafiosPendentes(),
         _apiService.fetchNotificacoes(),
+        _apiService.fetchStreakStatus(),
       ]);
       if (!mounted) return;
       setState(() {
@@ -146,6 +149,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
         _conquistas = results[2] as List<Conquista>;
         _desafios = results[3] as List<DesafioPendente>;
         _notificacoes = results[4] as List<Notificacao>;
+        _streakData = results[5] as List<dynamic>;
         _screenState = ScreenState.loaded;
       });
     } catch (e) {
@@ -301,6 +305,10 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
     final double progress = usuario.expTotalNivel > 0
         ? usuario.exp.toDouble() / usuario.expTotalNivel.toDouble()
         : 0;
+    
+    // Formato para exibir o dia da semana
+    final DateFormat dayFormatter = DateFormat('EEE', 'pt_BR');
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -320,16 +328,31 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: usuario.streakData.map((dia) {
+              children: _streakData.map((dia) {
+                final date = DateTime.parse(dia['date']);
+                final String diaSemana = dayFormatter.format(date).toUpperCase();
+                String imagePath;
+
+                switch (dia['status']) {
+                  case 'ativo':
+                    imagePath = 'assets/images/fogo-ativo.png';
+                    break;
+                  case 'congelado':
+                    imagePath = 'assets/images/fogo-congelado.png';
+                    break;
+                  default: // inativo
+                    imagePath = 'assets/images/fogo-inativo.png';
+                }
+                
                 return Expanded(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    Text(dia.diaSemana,
+                    Text(diaSemana,
                         style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: AppColors.branco)),
                     const SizedBox(height: 8),
-                    Image.asset('assets/images/${dia.imagem}',
+                    Image.asset(imagePath,
                         width: 28, height: 28),
                   ]),
                 );

@@ -1,3 +1,5 @@
+// lib/widgets/custom_app_bar.dart
+
 import 'package:flutter/material.dart';
 import 'package:gamefymobile/settings_screen.dart';
 import 'dart:math';
@@ -41,15 +43,12 @@ class _CustomAppBarState extends State<CustomAppBar> {
   @override
   void initState() {
     super.initState();
-    // Faz uma cópia local para podermos mutar o estado sem pedir reload global
     _localNotificacoes = widget.notificacoes.map((n) => n).toList();
   }
 
   @override
   void didUpdateWidget(covariant CustomAppBar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Se o pai enviar novas notificações (ex: login / troca de usuário),
-    // atualizamos nossa cópia local.
     if (oldWidget.notificacoes != widget.notificacoes) {
       _localNotificacoes = widget.notificacoes.map((n) => n).toList();
     }
@@ -101,7 +100,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
       debugPrint('Erro ao marcar notificação como lida: $e');
     }
 
-    // atualiza apenas a cópia local (substitui o objeto pelo mesmo com lida = true)
     final idx = _localNotificacoes.indexWhere((e) => e.id == n.id);
     if (idx != -1) {
       _localNotificacoes[idx] = Notificacao(
@@ -113,7 +111,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
       if (mounted) setState(() {});
     }
 
-    // mostra o detalhe sem forçar reload global
     _showNotificationDetails(context, n);
   }
 
@@ -123,7 +120,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
     } catch (e) {
       debugPrint('Erro ao marcar todas notificações como lidas: $e');
     }
-    // atualiza a cópia local
     _localNotificacoes = _localNotificacoes
         .map((n) => Notificacao(
             id: n.id, mensagem: n.mensagem, tipo: n.tipo, lida: true))
@@ -176,7 +172,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
   }
 
   Widget _buildNotificationButton(BuildContext context, int naoLidas) {
-    // pega primeiro _pageSize notificações para o menu rápido
     final preview = _localNotificacoes.take(_pageSize).toList();
     final hasMore = _localNotificacoes.length > _pageSize;
 
@@ -185,7 +180,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
         if (value == 'marcar_todas') {
           await _markAllAsRead();
         } else if (value == 'ver_mais') {
-          // abre modal com paginação local
           _showAllNotificationsModal(context);
         } else if (value is Notificacao) {
           await _markOneAsReadAndShow(context, value);
@@ -218,7 +212,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
       itemBuilder: (context) {
         final items = <PopupMenuEntry<dynamic>>[];
 
-        // Botão marcar todas
         items.add(
           const PopupMenuItem(
             value: 'marcar_todas',
@@ -275,9 +268,13 @@ class _CustomAppBarState extends State<CustomAppBar> {
 
   Widget _buildChallengesAchievementsButton(BuildContext context) {
     final diarios = widget.desafios
-        .where((d) => d.tipo.trim().toLowerCase() == 'diario')
+        .where((d) => d.tipo.trim().toLowerCase() == 'diário')
         .toList()
       ..sort((a, b) => a.id.compareTo(b.id));
+
+    // A lista de conquistas agora contém apenas as desbloqueadas, graças à mudança no ApiService
+    final conquistasDesbloqueadas = widget.conquistas
+      ..sort((a, b) => a.nome.compareTo(b.nome));
 
     return PopupMenuButton<int>(
         color: AppColors.fundoCard,
@@ -292,6 +289,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // --- SEÇÃO DE DESAFIOS (Inalterada) ---
                             const Text("Desafios diários",
                                 style: TextStyle(
                                     color: AppColors.branco,
@@ -309,17 +307,30 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                     margin: const EdgeInsets.only(bottom: 8),
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                        color: AppColors.cinzaSub,
+                                        color: d.completado
+                                            ? AppColors.roxoProfundo
+                                            : AppColors.roxoMedio,
                                         borderRadius: BorderRadius.circular(6)),
                                     child: Row(children: [
+                                      d.completado
+                                          ? const Icon(Icons.check_circle,
+                                              color: AppColors.verdeLima,
+                                              size: 20)
+                                          : const Icon(
+                                              Icons.emoji_events_outlined,
+                                              color: AppColors.amareloClaro,
+                                              size: 20),
+                                      const SizedBox(width: 8),
                                       Expanded(
                                           child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
                                             Text(d.nome,
-                                                style: const TextStyle(
-                                                    color: AppColors.branco,
+                                                style: TextStyle(
+                                                    color: d.completado
+                                                        ? AppColors.cinzaSub
+                                                        : AppColors.branco,
                                                     fontWeight:
                                                         FontWeight.bold)),
                                             const SizedBox(height: 6),
@@ -337,8 +348,10 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                           ])),
                                       const SizedBox(width: 8),
                                       Text("${d.progresso}/${d.meta}",
-                                          style: const TextStyle(
-                                              color: AppColors.branco)),
+                                          style: TextStyle(
+                                              color: d.completado
+                                                  ? AppColors.cinzaSub
+                                                  : AppColors.branco)),
                                       const SizedBox(width: 8),
                                       Text("${d.xp}xp",
                                           style: const TextStyle(
@@ -346,30 +359,49 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                               fontWeight: FontWeight.bold))
                                     ]));
                               }).toList()),
+
                             const SizedBox(height: 12),
                             const Divider(color: AppColors.roxoProfundo),
                             const SizedBox(height: 8),
-                            const Text("Conquistas",
+
+                            // --- NOVA SEÇÃO DE CONQUISTAS ---
+                            const Text("Conquistas Desbloqueadas",
                                 style: TextStyle(
                                     color: AppColors.branco,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14)),
                             const SizedBox(height: 8),
-                            if (widget.conquistas.isEmpty)
-                              const Text("Nenhuma conquista",
+                            if (conquistasDesbloqueadas.isEmpty)
+                              const Text("Nenhuma conquista desbloqueada",
                                   style: TextStyle(color: AppColors.cinzaSub))
                             else
-                              Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: widget.conquistas.take(20).map((c) {
-                                    return SizedBox(
-                                        width: 40,
-                                        height: 40,
-                                        child: Image.asset(
+                              // Exibição em formato de lista
+                              Column(
+                                children: conquistasDesbloqueadas.map((c) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 4.0),
+                                    child: Row(
+                                      children: [
+                                        Image.asset(
                                             "assets/conquistas/${c.imagem}",
-                                            fit: BoxFit.contain));
-                                  }).toList())
+                                            width: 30,
+                                            height: 30,
+                                            fit: BoxFit.contain),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            c.nome,
+                                            style: const TextStyle(
+                                                color: AppColors.branco),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              )
                           ])))
             ]);
   }
@@ -415,21 +447,19 @@ class _CustomAppBarState extends State<CustomAppBar> {
           final hasMore = _localNotificacoes.length > dialogLimit;
 
           return FractionallySizedBox(
-            heightFactor: 0.6, // ocupa 60% da altura da tela — menor que antes
+            heightFactor: 0.6,
             child: SafeArea(
               child: Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
                 child: Column(
                   children: [
-                    // Barra superior compacta com botão de voltar
                     Row(
                       children: [
                         IconButton(
                           icon: const Icon(Icons.arrow_back_ios,
                               size: 20, color: AppColors.branco),
-                          onPressed: () =>
-                              Navigator.of(context).pop(), // fecha o modal
+                          onPressed: () => Navigator.of(context).pop(),
                         ),
                         const SizedBox(width: 4),
                         const Text(
@@ -446,11 +476,8 @@ class _CustomAppBarState extends State<CustomAppBar> {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 6),
                     const Divider(color: AppColors.roxoProfundo, height: 1),
-
-                    // Lista (usa Expanded para ocupar o espaço restante)
                     const SizedBox(height: 6),
                     Expanded(
                       child: ListView.separated(
@@ -465,7 +492,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                 : AppColors.roxoMedio,
                             onTap: () async {
                               await _markOneAsReadAndShow(context, n);
-                              // atualiza o modal também
                               setStateModal(() {});
                             },
                             leading: Icon(
@@ -491,8 +517,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
                         },
                       ),
                     ),
-
-                    // botão carregar mais (aparece só se houver mais)
                     if (hasMore)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -509,7 +533,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
                           ),
                         ),
                       ),
-
                     const SizedBox(height: 6),
                   ],
                 ),
