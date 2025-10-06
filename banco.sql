@@ -9,7 +9,6 @@ CREATE TABLE usuarios (
     idusuario SERIAL PRIMARY KEY,
     nmusuario VARCHAR(100) NOT NULL,
     emailusuario VARCHAR(100) NOT NULL UNIQUE,
-    dtnascimento DATE NOT NULL,
     flsituacao BOOLEAN DEFAULT true,
     nivelusuario INTEGER DEFAULT 1,
     expusuario SMALLINT DEFAULT 0 CHECK (expusuario >= 0 AND expusuario <= 1000),
