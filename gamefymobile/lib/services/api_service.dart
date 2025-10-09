@@ -91,7 +91,7 @@ class ApiService {
   }
 
   Future<List<Conquista>> fetchUsuarioConquistas() async {
-    final url = Uri.parse('$_baseRoot/conquistas/usuario/'); 
+    final url = Uri.parse('$_baseRoot/conquistas/'); 
     final res =
         await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
