@@ -469,7 +469,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
             color: AppColors.roxoMedio,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: atividade.situacaoColor.withOpacity(0.3),
+              color: atividade.situacaoColor.withValues(alpha: 0.3),
               width: 1,
             ),
           ),
@@ -551,7 +551,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: atividade.dificuldadeColor.withOpacity(0.2),
+                        color: atividade.dificuldadeColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: atividade.dificuldadeColor,
@@ -583,7 +583,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: atividade.recorrenciaColor.withOpacity(0.2),
+                        color: atividade.recorrenciaColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: atividade.recorrenciaColor,
@@ -615,7 +615,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: atividade.situacaoColor.withOpacity(0.2),
+                        color: atividade.situacaoColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: atividade.situacaoColor,

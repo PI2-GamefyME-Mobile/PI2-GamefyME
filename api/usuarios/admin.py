@@ -1,3 +1,5 @@
-from django.contrib import admin
+"""Admin registrations for usuarios app.
 
-# Register your models here.
+Atualmente não há modelos registrados no admin. Este arquivo é mantido para
+futuras configurações de administração.
+"""

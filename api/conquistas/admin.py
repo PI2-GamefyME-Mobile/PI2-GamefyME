@@ -1,3 +1,4 @@
-from django.contrib import admin
+"""Admin registrations for conquistas app.
 
-# Register your models here.
+Nenhum modelo registrado ainda.
+"""

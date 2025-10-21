@@ -1,0 +1,36 @@
+{
+  "path": [
+    "api",
+    "gamefymobile"
+  ],
+  "ignore": [
+    "**/build/**",
+    "**/.dart_tool/**",
+    "**/env/**",
+    "**/ios/**/Pods/**",
+    "**/ios/**/Runner.xcworkspace/**",
+    "**/.git/**",
+    "**/.idea/**",
+    "**/.vscode/**",
+    "**/node_modules/**"
+  ],
+  "reporters": [
+    "console",
+    "html"
+  ],
+  "languages": [
+    "python",
+    "dart",
+    "kotlin",
+    "swift",
+    "java",
+    "xml",
+    "yaml",
+    "json",
+    "javascript",
+    "typescript",
+    "css",
+    "html"
+  ],
+  "minLines": 6
+}

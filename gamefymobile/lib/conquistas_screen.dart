@@ -214,7 +214,7 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
           child: Opacity(
             opacity: conquista.completada ? 1.0 : 0.4,
             child: Card(
-              color: conquista.completada ? AppColors.fundoCard : AppColors.fundoCard.withOpacity(0.6),
+              color: conquista.completada ? AppColors.fundoCard : AppColors.fundoCard.withValues(alpha: 0.6),
               child: ListTile(
                 leading: Stack(
                   children: [
@@ -229,7 +229,7 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
                       Positioned.fill(
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.black.withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: const Icon(
@@ -252,7 +252,7 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
                 subtitle: Text(
                   conquista.descricao,
                   style: TextStyle(
-                    color: conquista.completada ? Colors.grey : Colors.grey.withOpacity(0.7),
+                    color: conquista.completada ? Colors.grey : Colors.grey.withValues(alpha: 0.7),
                     fontSize: 12,
                   ),
                 ),

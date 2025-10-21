@@ -123,7 +123,7 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
       children: [
         Expanded(
           child: DropdownButtonFormField<String>(
-            value: _tipoSelecionado,
+            initialValue: _tipoSelecionado,
             hint: const Text('Filtrar por tipo',
                 style: TextStyle(color: Colors.white)),
             style: const TextStyle(color: Colors.white),
@@ -171,7 +171,7 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
             ),
             ...entry.value.map((desafio) {
               return Card(
-                color: desafio.completado ? AppColors.fundoCard.withOpacity(0.5) : AppColors.fundoCard,
+                color: desafio.completado ? AppColors.fundoCard.withValues(alpha: 0.5) : AppColors.fundoCard,
                 child: ListTile(
                   leading: desafio.completado 
                     ? const Icon(Icons.check_circle, color: AppColors.verdeLima, size: 30)

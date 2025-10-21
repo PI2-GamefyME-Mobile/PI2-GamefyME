@@ -5,12 +5,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'home_screen.dart';
 import 'services/auth_service.dart';
+import 'services/google_auth_service.dart';
+import 'services/notification_service.dart';
+import 'services/timer_service.dart';
 import 'config/app_colors.dart';
 import 'forgot_password_screen.dart';
 import 'utils/common_utils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Inicializar serviços
+  await NotificationService().initialize();
+  await NotificationService().requestPermissions();
+  await TimerService().resumeTimerIfNeeded();
+  
   final authService = AuthService();
   final token = await authService.getToken();
   runApp(MyApp(isLoggedIn: token != null));
@@ -131,6 +140,7 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _authService = AuthService();
+  final _googleAuthService = GoogleAuthService();
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _rememberMe = false; // Estado para o Checkbox
@@ -201,6 +211,29 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message'] ?? 'Erro ao autenticar')));
+    }
+  }
+
+  Future<void> _handleGoogleLogin() async {
+    setState(() => _isLoading = true);
+
+    final result = await _googleAuthService.signInWithGoogle();
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    if (result['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'] ?? 'Login com Google realizado!'))
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen())
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'] ?? 'Erro no login com Google'))
+      );
     }
   }
 
@@ -303,6 +336,44 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 20),
+                    // Divider com "OU"
+                    Row(
+                      children: [
+                        const Expanded(child: Divider(color: Colors.grey)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Text('OU', style: TextStyle(color: Colors.grey[600])),
+                        ),
+                        const Expanded(child: Divider(color: Colors.grey)),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    // Botão de login com Google
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.grey[400]!),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        onPressed: _isLoading ? null : _handleGoogleLogin,
+                        icon: Image.asset(
+                          'assets/images/google_logo.png',
+                          height: 24,
+                          errorBuilder: (context, error, stackTrace) => 
+                            const Icon(Icons.login, color: Colors.black87),
+                        ),
+                        label: const Text(
+                          'Continuar com Google',
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -330,6 +401,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _senhaController = TextEditingController();
   final _confirmarSenhaController = TextEditingController();
   final _authService = AuthService();
+  final _googleAuthService = GoogleAuthService();
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -385,6 +457,30 @@ class _RegisterPageState extends State<RegisterPage> {
       Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const HomeScreen()), (route) => false);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message'] ?? 'Erro ao registrar')));
+    }
+  }
+
+  Future<void> _handleGoogleRegister() async {
+    setState(() => _isLoading = true);
+
+    final result = await _googleAuthService.signInWithGoogle();
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    if (result['success'] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'] ?? 'Registrado com Google!'))
+      );
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        (route) => false
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'] ?? 'Erro no registro com Google'))
+      );
     }
   }
 
@@ -448,6 +544,43 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text("Registrar", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Divider com "OU"
+              Row(
+                children: [
+                  const Expanded(child: Divider(color: Colors.grey)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Text('OU', style: TextStyle(color: Colors.grey[600])),
+                  ),
+                  const Expanded(child: Divider(color: Colors.grey)),
+                ],
+              ),
+              const SizedBox(height: 20),
+              // Botão de registro com Google
+              SizedBox(
+                height: 50,
+                child: OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.grey[400]!),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  onPressed: _isLoading ? null : _handleGoogleRegister,
+                  icon: Image.asset(
+                    'assets/images/google_logo.png',
+                    height: 24,
+                    errorBuilder: (context, error, stackTrace) => 
+                      const Icon(Icons.login, color: Colors.black87),
+                  ),
+                  label: const Text(
+                    'Registrar com Google',
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ),
             ],

@@ -3,22 +3,9 @@
 from rest_framework import serializers
 from django.utils import timezone
 from .models import Desafio, UsuarioDesafio, TipoDesafio
-# Importamos as funções de lógica que nos dirão o progresso atual
-from atividades.signals import (
-    verificar_atividades_concluidas,
-    verificar_recorrentes_concluidas,
-    verificar_min_dificeis,
-    verificar_desafios_concluidos,
-    verificar_atividades_criadas,
-    verificar_min_atividades_media_facil,
-    verificar_todas_muito_faceis,
-    verificar_streak_diario,
-    verificar_percentual_concluido,
-    # Precisamos do helper para saber o progresso numérico
-    get_date_range
-)
+# Importamos apenas o helper necessário para calcular o intervalo de datas
+from atividades.signals import get_date_range
 from atividades.models import AtividadeConcluidas, Atividade
-from desafios.models import UsuarioDesafio
 
 class DesafioSerializer(serializers.ModelSerializer):
     tipo_display = serializers.CharField(source='get_tipo_display', read_only=True)

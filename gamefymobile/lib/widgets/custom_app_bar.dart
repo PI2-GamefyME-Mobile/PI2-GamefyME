@@ -111,6 +111,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
       if (mounted) setState(() {});
     }
 
+    if (!context.mounted) return;
     _showNotificationDetails(context, n);
   }
 
@@ -124,6 +125,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
         .map((n) => Notificacao(
             id: n.id, mensagem: n.mensagem, tipo: n.tipo, lida: true))
         .toList();
+    if (!context.mounted) return;
     if (mounted) {
       setState(() {});
       ScaffoldMessenger.of(context).showSnackBar(

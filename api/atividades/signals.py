@@ -8,10 +8,9 @@ from datetime import timedelta
 from .models import Atividade, AtividadeConcluidas
 from desafios.models import Desafio, UsuarioDesafio
 from conquistas.models import Conquista, UsuarioConquista
-from usuarios.models import Usuario
 from notificacoes.services import criar_notificacao
 
-# --- Helper para XP / level up centralizado ---
+# Helper para XP / level up centralizado
 def adicionar_xp(usuario, xp):
     """
     Adiciona XP ao usuário e realiza level-up se necessário.

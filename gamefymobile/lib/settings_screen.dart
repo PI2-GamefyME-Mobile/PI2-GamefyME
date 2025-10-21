@@ -92,6 +92,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       setState(() => _isLoading = false);
 
+      if (!mounted) return;
       if (result['success']) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

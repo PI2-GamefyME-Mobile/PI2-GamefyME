@@ -84,6 +84,78 @@ class AuthService {
     }
   }
 
+  /// Login com Google - envia o token do Google para o backend
+  Future<Map<String, dynamic>> loginWithGoogle({
+    required String idToken,
+    required String email,
+    required String name,
+    required String googleId,
+  }) async {
+    final url = Uri.parse("$_baseUrl/login/google/");
+    final body = jsonEncode({
+      'id_token': idToken,
+      'email': email,
+      'name': name,
+      'google_id': googleId,
+    });
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
+      final responseBody = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        final String accessToken = responseBody['tokens']['access'];
+        final String refreshToken = responseBody['tokens']['refresh'];
+        await _saveTokens(accessToken, refreshToken);
+        return {'success': true, 'message': 'Login com Google realizado!'};
+      } else {
+        return {'success': false, 'message': responseBody['detail'] ?? responseBody['erro'] ?? 'Erro no login com Google.'};
+      }
+    } catch (e) {
+      debugPrint("Erro na requisição de login com Google: $e");
+      return {'success': false, 'message': 'Erro de conexão. Verifique se a API está rodando.'};
+    }
+  }
+
+  /// Registro com Google - cria uma nova conta usando Google
+  Future<Map<String, dynamic>> registerWithGoogle({
+    required String idToken,
+    required String email,
+    required String name,
+    required String googleId,
+  }) async {
+    final url = Uri.parse("$_baseUrl/cadastro/google/");
+    final body = jsonEncode({
+      'id_token': idToken,
+      'email': email,
+      'name': name,
+      'google_id': googleId,
+    });
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: body,
+      );
+      final responseBody = jsonDecode(response.body);
+      if (response.statusCode == 201) {
+        final String accessToken = responseBody['tokens']['access'];
+        final String refreshToken = responseBody['tokens']['refresh'];
+        await _saveTokens(accessToken, refreshToken);
+        return {'success': true, 'message': responseBody['message'] ?? 'Conta criada com sucesso!'};
+      } else {
+        return {'success': false, 'message': responseBody['erro'] ?? 'Erro ao criar conta com Google.'};
+      }
+    } catch (e) {
+      debugPrint("Erro na requisição de cadastro com Google: $e");
+      return {'success': false, 'message': 'Erro de conexão. Verifique se a API está rodando.'};
+    }
+  }
+
   Future<Map<String, dynamic>> requestPasswordReset(String email) async {
     final url = Uri.parse("$_baseUrl/password-reset/");
     final body = jsonEncode({'email': email});
