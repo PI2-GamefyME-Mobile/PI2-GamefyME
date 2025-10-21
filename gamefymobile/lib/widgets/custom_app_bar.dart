@@ -272,7 +272,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
         .toList()
       ..sort((a, b) => a.id.compareTo(b.id));
 
-    // A lista de conquistas agora contém apenas as desbloqueadas, graças à mudança no ApiService
+    // A lista de conquistas contém apenas as desbloqueadas pelo usuário
     final conquistasDesbloqueadas = widget.conquistas
       ..sort((a, b) => a.nome.compareTo(b.nome));
 

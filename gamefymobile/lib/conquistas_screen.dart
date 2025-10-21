@@ -42,7 +42,7 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
     try {
       final results = await Future.wait([
         _apiService.fetchUsuario(),
-        _apiService.fetchUsuarioConquistas(),
+        _apiService.fetchTodasConquistas(),
         _apiService.fetchNotificacoes(),
         _apiService.fetchDesafiosPendentes(),
       ]);
@@ -151,23 +151,56 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
   }
 
   Widget _buildFiltro() {
-    return TextField(
-      controller: _filtroController,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: 'Pesquisar por nome',
-        labelStyle: const TextStyle(color: Colors.grey),
-        suffixIcon: IconButton(
-          icon: const Icon(Icons.clear, color: Colors.white),
-          onPressed: () => _filtroController.clear(),
+    return Column(
+      children: [
+        TextField(
+          controller: _filtroController,
+          style: const TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            labelText: 'Pesquisar por nome',
+            labelStyle: const TextStyle(color: Colors.grey),
+            suffixIcon: _filtroController.text.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.clear, color: Colors.white),
+                    onPressed: () {
+                      _filtroController.clear();
+                      _filtrarConquistas('');
+                    },
+                  )
+                : null,
+            enabledBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: Colors.grey),
+            ),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: AppColors.verdeLima),
+            ),
+          ),
         ),
-        enabledBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.grey),
-        ),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.white),
-        ),
-      ),
+        if (_filtroController.text.isNotEmpty)
+          const SizedBox(height: 10),
+        if (_filtroController.text.isNotEmpty)
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                _filtroController.clear();
+                _filtrarConquistas('');
+              },
+              icon: const Icon(Icons.clear_all, color: AppColors.fundoEscuro),
+              label: const Text(
+                'Limpar Filtro',
+                style: TextStyle(color: AppColors.fundoEscuro, fontWeight: FontWeight.bold),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.verdeLima,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -179,29 +212,71 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
         return GestureDetector(
           onTap: () => _showConquistaDetails(context, conquista),
           child: Opacity(
-            opacity: conquista.completada ? 1.0 : 0.5,
+            opacity: conquista.completada ? 1.0 : 0.4,
             child: Card(
-              color: AppColors.fundoCard,
+              color: conquista.completada ? AppColors.fundoCard : AppColors.fundoCard.withOpacity(0.6),
               child: ListTile(
-                leading: Image.asset(
-                  'assets/conquistas/${conquista.imagem}',
-                  width: 50,
-                  height: 50,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.error, color: Colors.white),
+                leading: Stack(
+                  children: [
+                    Image.asset(
+                      'assets/conquistas/${conquista.imagem}',
+                      width: 50,
+                      height: 50,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.error, color: Colors.white),
+                    ),
+                    if (!conquista.completada)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Icon(
+                            Icons.lock,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 title: Text(
                   conquista.nome,
-                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  style: TextStyle(
+                    color: conquista.completada ? Colors.white : Colors.grey,
+                    fontSize: 16,
+                    fontWeight: conquista.completada ? FontWeight.bold : FontWeight.normal,
+                  ),
                 ),
                 subtitle: Text(
                   conquista.descricao,
-                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  style: TextStyle(
+                    color: conquista.completada ? Colors.grey : Colors.grey.withOpacity(0.7),
+                    fontSize: 12,
+                  ),
                 ),
-                trailing: Text(
-                  "+${conquista.xp} XP",
-                  style: const TextStyle(
-                      color: AppColors.amareloClaro, fontWeight: FontWeight.bold),
+                trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "+${conquista.xp} XP",
+                      style: TextStyle(
+                        color: conquista.completada ? AppColors.amareloClaro : Colors.grey,
+                        fontWeight: FontWeight.bold,
+                        fontSize: conquista.completada ? 14 : 12,
+                      ),
+                    ),
+                    if (!conquista.completada)
+                      const Text(
+                        "BLOQUEADA",
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),

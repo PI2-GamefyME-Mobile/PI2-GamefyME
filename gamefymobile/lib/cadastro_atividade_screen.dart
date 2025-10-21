@@ -4,6 +4,7 @@ import 'config/app_colors.dart';
 import 'models/models.dart';
 import 'services/api_service.dart';
 import 'widgets/custom_app_bar.dart';
+import 'utils/common_utils.dart';
 
 class CadastroAtividadeScreen extends StatefulWidget {
   const CadastroAtividadeScreen({super.key});
@@ -109,28 +110,32 @@ class _CadastroAtividadeScreenState extends State<CadastroAtividadeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildTextField(
+              CommonUtils.buildTextField(
                 controller: _nomeController,
                 label: 'Nome da atividade',
+                hint: 'Digite o nome da atividade',
                 validator: (value) =>
                     value!.isEmpty ? 'Campo obrigatório' : null,
               ),
               const SizedBox(height: 20),
-              _buildTextField(
+              CommonUtils.buildTextField(
                 controller: _descricaoController,
                 label: 'Descrição',
+                hint: 'Digite a descrição da atividade',
                 maxLines: 3,
               ),
               const SizedBox(height: 20),
-              _buildSectionTitle('Recorrência'),
-              _buildRecorrenciaSelector(),
+              CommonUtils.buildSectionTitle('Recorrência'),
+              CommonUtils.buildRecorrenciaSelector(
+                recorrenciaSelecionada: _recorrenciaSelecionada,
+                onChanged: (value) => setState(() => _recorrenciaSelecionada = value),
+              ),
               const SizedBox(height: 20),
-              _buildTextField(
+              CommonUtils.buildTextField(
                 controller: _tempoEstimadoController,
                 label: 'Tempo estimado',
+                hint: 'Digite o tempo em minutos',
                 keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                suffixText: 'minutos',
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Campo obrigatório';
@@ -143,8 +148,11 @@ class _CadastroAtividadeScreenState extends State<CadastroAtividadeScreen> {
                 },
               ),
               const SizedBox(height: 20),
-              _buildSectionTitle('Dificuldade'),
-              _buildDificuldadeSelector(), // Alteração aqui
+              CommonUtils.buildSectionTitle('Dificuldade'),
+              CommonUtils.buildDificuldadeSelector(
+                dificuldadeSelecionada: _dificuldadeSelecionada,
+                onChanged: (value) => setState(() => _dificuldadeSelecionada = value),
+              ), // Alteração aqui
               const SizedBox(height: 40),
               ElevatedButton(
                 onPressed: _isLoading ? null : _submitForm,
@@ -171,77 +179,7 @@ class _CadastroAtividadeScreenState extends State<CadastroAtividadeScreen> {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(title,
-        style: const TextStyle(
-            color: AppColors.branco,
-            fontSize: 16,
-            fontWeight: FontWeight.bold));
-  }
 
-  Widget _buildTextField(
-      {required TextEditingController controller,
-      required String label,
-      int maxLines = 1,
-      TextInputType? keyboardType,
-      List<TextInputFormatter>? inputFormatters,
-      String? suffixText,
-      String? Function(String?)? validator}) {
-    return TextFormField(
-        controller: controller,
-        maxLines: maxLines,
-        keyboardType: keyboardType,
-        inputFormatters: inputFormatters,
-        validator: validator,
-        style:
-            const TextStyle(color: AppColors.branco, fontFamily: 'Jersey 10'),
-        decoration: InputDecoration(
-            labelText: label,
-            labelStyle: const TextStyle(fontFamily: 'Jersey 10'),
-            suffixText: suffixText,
-            alignLabelWithHint: true));
-  }
 
-  Widget _buildRecorrenciaSelector() {
-    return Row(children: [
-      Expanded(child: _buildRecorrenciaButton('ÚNICA', 'unica')),
-      const SizedBox(width: 10),
-      Expanded(child: _buildRecorrenciaButton('RECORRENTE', 'recorrente'))
-    ]);
-  }
 
-  Widget _buildRecorrenciaButton(String text, String value) {
-    final bool isSelected = _recorrenciaSelecionada == value;
-    return ElevatedButton(
-        onPressed: () => setState(() => _recorrenciaSelecionada = value),
-        style: ElevatedButton.styleFrom(
-            backgroundColor:
-                isSelected ? AppColors.roxoClaro : AppColors.fundoCard,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-        child: Text(text,
-            style: TextStyle(
-                color: isSelected ? AppColors.branco : AppColors.cinzaSub)));
-  }
-
-  // NOVA VERSÃO DO WIDGET DE DIFICULDADE
-  Widget _buildDificuldadeSelector() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: List.generate(5, (index) {
-        bool isSelected = index == _dificuldadeSelecionada;
-        return GestureDetector(
-          onTap: () => setState(() => _dificuldadeSelecionada = index),
-          child: Opacity(
-            opacity: isSelected ? 1.0 : 0.5,
-            child: Image.asset(
-              'assets/images/dificuldade${index + 1}.png',
-              width: 40,
-              height: 40,
-            ),
-          ),
-        );
-      }),
-    );
-  }
 }

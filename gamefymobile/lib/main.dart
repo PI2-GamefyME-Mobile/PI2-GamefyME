@@ -7,6 +7,7 @@ import 'home_screen.dart';
 import 'services/auth_service.dart';
 import 'config/app_colors.dart';
 import 'forgot_password_screen.dart';
+import 'utils/common_utils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -172,16 +173,12 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  bool _validEmail(String email) {
-    final regex = RegExp(r"^[\w\.\-]+@([\w\-]+\.)+[a-zA-Z]{2,}$");
-    return regex.hasMatch(email);
-  }
 
   Future<void> _handleLogin() async {
     final email = _emailController.text.trim();
     final senha = _passwordController.text;
 
-    if (email.isEmpty || !_validEmail(email)) {
+    if (email.isEmpty || !CommonUtils.validEmail(email)) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Informe um email válido.")));
       return;
     }
@@ -236,19 +233,19 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildTextField(
+                    CommonUtils.buildTextField(
                       controller: _emailController,
                       label: "Email",
                       hint: "Digite seu email",
                       keyboardType: TextInputType.emailAddress
                     ),
                     const SizedBox(height: 15),
-                    _buildTextField(
+                    CommonUtils.buildTextField(
                       controller: _passwordController,
                       label: "Senha",
                       hint: "Digite sua senha",
-                      obscure: _obscurePassword,
-                      suffix: IconButton(
+                      obscureText: _obscurePassword,
+                      suffixIcon: IconButton(
                         icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
                         onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
@@ -316,39 +313,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // Widget helper para os campos de texto com o tema claro
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    bool obscure = false,
-    Widget? suffix,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
-        const SizedBox(height: 5),
-        TextField(
-          controller: controller,
-          obscureText: obscure,
-          keyboardType: keyboardType,
-          style: const TextStyle(color: Colors.black), // Texto digitado em preto
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: const TextStyle(color: Colors.grey),
-            fillColor: Colors.grey[200], // Fundo cinza claro
-            suffixIcon: suffix,
-             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 
@@ -380,10 +344,6 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-  bool _validEmail(String email) {
-    final regex = RegExp(r"^[\w\.\-]+@([\w\-]+\.)+[a-zA-Z]{2,}$");
-    return regex.hasMatch(email);
-  }
 
   Future<void> _handleRegister() async {
     final nome = _nomeController.text.trim();
@@ -395,7 +355,7 @@ class _RegisterPageState extends State<RegisterPage> {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Por favor, preencha todos os campos.")));
         return;
     }
-    if (!_validEmail(email)) {
+    if (!CommonUtils.validEmail(email)) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Informe um email válido.")));
       return;
     }

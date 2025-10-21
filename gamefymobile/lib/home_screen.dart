@@ -468,6 +468,10 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
           decoration: BoxDecoration(
             color: AppColors.roxoMedio,
             borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: atividade.situacaoColor.withOpacity(0.3),
+              width: 1,
+            ),
           ),
           child: ListTile(
             contentPadding:
@@ -505,31 +509,129 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
               if (result == true && mounted) _carregarDados();
             },
 
-            // nome + badge de XP (usando atividade.xp diretamente)
-            title: Row(
+            // nome + badges de informações
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    atividade.nome,
-                    style: const TextStyle(color: AppColors.branco),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.verdeLima,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${atividade.xp}xp',
-                    style: const TextStyle(
-                      color: AppColors.fundoEscuro,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        atividade.nome,
+                        style: const TextStyle(
+                          color: AppColors.branco,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColors.verdeLima,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${atividade.xp}xp',
+                        style: const TextStyle(
+                          color: AppColors.fundoEscuro,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                // Badges de informações
+                Row(
+                  children: [
+                    // Badge de dificuldade
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: atividade.dificuldadeColor.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: atividade.dificuldadeColor,
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset(
+                            atividade.dificuldadeImage,
+                            width: 14,
+                            height: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            FilterHelpers.getDificuldadeDisplayName(atividade.dificuldade).toUpperCase(),
+                            style: TextStyle(
+                              color: atividade.dificuldadeColor,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    // Badge de recorrência
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: atividade.recorrenciaColor.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: atividade.recorrenciaColor,
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            atividade.recorrenciaIcon,
+                            size: 12,
+                            color: atividade.recorrenciaColor,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            FilterHelpers.getRecorrenciaDisplayName(atividade.recorrencia).toUpperCase(),
+                            style: TextStyle(
+                              color: atividade.recorrenciaColor,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    // Badge de situação
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: atividade.situacaoColor.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: atividade.situacaoColor,
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        FilterHelpers.getSituacaoDisplayName(atividade.situacao).toUpperCase(),
+                        style: TextStyle(
+                          color: atividade.situacaoColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

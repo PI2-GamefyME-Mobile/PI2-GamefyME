@@ -91,7 +91,7 @@ class ApiService {
   }
 
   Future<List<Conquista>> fetchUsuarioConquistas() async {
-    final url = Uri.parse('$_baseRoot/conquistas/'); 
+    final url = Uri.parse('$_baseRoot/conquistas/usuario/'); 
     final res =
         await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
@@ -99,6 +99,30 @@ class ApiService {
       return data.map((e) => Conquista.fromJson(e)).toList();
     } else {
       throw Exception('Falha ao carregar conquistas do usuário');
+    }
+  }
+
+  Future<List<Conquista>> fetchTodasConquistas() async {
+    final url = Uri.parse('$_baseRoot/conquistas/'); 
+    final res =
+        await _authorizedRequest((headers) => http.get(url, headers: headers));
+    if (res.statusCode == 200) {
+      final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
+      return data.map((e) => Conquista.fromAllConquistasJson(e)).toList();
+    } else {
+      throw Exception('Falha ao carregar todas as conquistas');
+    }
+  }
+
+  Future<List<Conquista>> fetchConquistas() async {
+    final url = Uri.parse('$_baseRoot/conquistas/'); 
+    final res =
+        await _authorizedRequest((headers) => http.get(url, headers: headers));
+    if (res.statusCode == 200) {
+      final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
+      return data.map((e) => Conquista.fromJson(e)).toList();
+    } else {
+      throw Exception('Falha ao carregar conquistas');
     }
   }
 

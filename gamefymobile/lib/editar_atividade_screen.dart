@@ -281,18 +281,37 @@ class _EditarAtividadeScreenState extends State<EditarAtividadeScreen> {
 
   // NOVA VERSÃO DO WIDGET DE DIFICULDADE
   Widget _buildDificuldadeSelector() {
+    final dificuldades = ['muito_facil', 'facil', 'medio', 'dificil', 'muito_dificil'];
+    
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: List.generate(5, (index) {
         bool isSelected = index == _dificuldadeSelecionada;
+        final dificuldade = dificuldades[index];
+        
         return GestureDetector(
           onTap: () => setState(() => _dificuldadeSelecionada = index),
           child: Opacity(
             opacity: isSelected ? 1.0 : 0.5,
-            child: Image.asset(
-              'assets/images/dificuldade${index + 1}.png',
-              width: 40,
-              height: 40,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/dificuldade${index + 1}.png',
+                  width: 40,
+                  height: 40,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  FilterHelpers.getDificuldadeDisplayName(dificuldade),
+                  style: TextStyle(
+                    color: isSelected ? AppColors.branco : AppColors.cinzaSub,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
           ),
         );

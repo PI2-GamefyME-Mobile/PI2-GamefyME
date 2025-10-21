@@ -129,8 +129,9 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
             style: const TextStyle(color: Colors.white),
             dropdownColor: AppColors.fundoCard,
             items: tipos
-                .map((String value) =>
-                    DropdownMenuItem<String>(value: value, child: Text(value)))
+                .map((String value) => DropdownMenuItem<String>(
+                    value: value, 
+                    child: Text(FilterHelpers.getTipoDesafioDisplayName(value))))
                 .toList(),
             onChanged: (newValue) => _filtrarDesafios(newValue),
             decoration: const InputDecoration(

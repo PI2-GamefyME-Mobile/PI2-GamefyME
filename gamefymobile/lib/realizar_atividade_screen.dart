@@ -313,9 +313,24 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> {
             decoration: BoxDecoration(
                 color: AppColors.fundoCard,
                 borderRadius: BorderRadius.circular(10)),
-            child: Image.asset(
-              'assets/images/dificuldade$dificuldadeLevel.png',
-              height: 30,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  'assets/images/dificuldade$dificuldadeLevel.png',
+                  height: 30,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  FilterHelpers.getDificuldadeDisplayName(_atividade?.dificuldade ?? 'facil'),
+                  style: const TextStyle(
+                    color: AppColors.branco,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
           ),
         ),

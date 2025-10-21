@@ -123,16 +123,119 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
                           itemCount: _atividadesFiltradas.length,
                           itemBuilder: (context, index) {
                             final atividade = _atividadesFiltradas[index];
-                            return Card(
-                              color: AppColors.fundoCard,
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              decoration: BoxDecoration(
+                                color: AppColors.fundoCard,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: atividade.situacaoColor.withOpacity(0.3),
+                                  width: 1,
+                                ),
+                              ),
                               child: ListTile(
-                                title: Text(atividade.nome,
-                                    style:
-                                        const TextStyle(color: Colors.white)),
-                                subtitle: Text(
-                                    'Dificuldade: ${atividade.dificuldade}\nSituação: ${atividade.situacao}',
-                                    style:
-                                        const TextStyle(color: Colors.grey)),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                title: Text(
+                                  atividade.nome,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        // Badge de dificuldade
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: atividade.dificuldadeColor.withOpacity(0.2),
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(
+                                              color: atividade.dificuldadeColor,
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Image.asset(
+                                                atividade.dificuldadeImage,
+                                                width: 14,
+                                                height: 14,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                FilterHelpers.getDificuldadeDisplayName(atividade.dificuldade).toUpperCase(),
+                                                style: TextStyle(
+                                                  color: atividade.dificuldadeColor,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        // Badge de recorrência
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: atividade.recorrenciaColor.withOpacity(0.2),
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(
+                                              color: atividade.recorrenciaColor,
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                atividade.recorrenciaIcon,
+                                                size: 12,
+                                                color: atividade.recorrenciaColor,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                FilterHelpers.getRecorrenciaDisplayName(atividade.recorrencia).toUpperCase(),
+                                                style: TextStyle(
+                                                  color: atividade.recorrenciaColor,
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        // Badge de situação
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: atividade.situacaoColor.withOpacity(0.2),
+                                            borderRadius: BorderRadius.circular(8),
+                                            border: Border.all(
+                                              color: atividade.situacaoColor,
+                                              width: 1,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            FilterHelpers.getSituacaoDisplayName(atividade.situacao).toUpperCase(),
+                                            style: TextStyle(
+                                              color: atividade.situacaoColor,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           },
@@ -145,38 +248,49 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
   }
 
   Widget _buildFiltros() {
-    // ... (O código dos filtros permanece o mesmo)
     return Column(
       children: [
+        // Campo de busca por nome
         TextField(
           controller: _nomeController,
           style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Nome da Atividade',
-            labelStyle: TextStyle(color: Colors.white),
-            enabledBorder: OutlineInputBorder(
+            labelStyle: const TextStyle(color: Colors.white),
+            suffixIcon: _nomeController.text.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.clear, color: Colors.white),
+                    onPressed: () {
+                      _nomeController.clear();
+                      _filtrarAtividades();
+                    },
+                  )
+                : null,
+            enabledBorder: const OutlineInputBorder(
               borderSide: BorderSide(color: Colors.white),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.white),
+            focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: AppColors.verdeLima),
             ),
           ),
           onChanged: (value) => _filtrarAtividades(),
         ),
         const SizedBox(height: 10),
+        
+        // Filtros de recorrência e situação
         Row(
           children: [
             Expanded(
               child: DropdownButtonFormField<String>(
-                initialValue: _recorrenciaSelecionada,
+                value: _recorrenciaSelecionada,
                 hint: const Text('Recorrência',
                     style: TextStyle(color: Colors.white)),
                 style: const TextStyle(color: Colors.white),
                 dropdownColor: AppColors.fundoCard,
-                items: ['unica', 'recorrente'].map((String value) {
+                items: FilterHelpers.getRecorrenciaOptions().map((option) {
                   return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
+                    value: option['value'],
+                    child: Text(option['label']!),
                   );
                 }).toList(),
                 onChanged: (newValue) {
@@ -190,16 +304,15 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
             const SizedBox(width: 10),
             Expanded(
               child: DropdownButtonFormField<String>(
-                initialValue: _situacaoSelecionada,
+                value: _situacaoSelecionada,
                 hint: const Text('Situação',
                     style: TextStyle(color: Colors.white)),
                 style: const TextStyle(color: Colors.white),
                 dropdownColor: AppColors.fundoCard,
-                items: ['ativa', 'realizada', 'cancelada']
-                    .map((String value) {
+                items: FilterHelpers.getSituacaoOptions().map((option) {
                   return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
+                    value: option['value'],
+                    child: Text(option['label']!),
                   );
                 }).toList(),
                 onChanged: (newValue) {
@@ -213,22 +326,17 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
           ],
         ),
         const SizedBox(height: 10),
+        
+        // Filtro de dificuldade
         DropdownButtonFormField<String>(
-          initialValue: _dificuldadeSelecionada,
-          hint:
-              const Text('Dificuldade', style: TextStyle(color: Colors.white)),
+          value: _dificuldadeSelecionada,
+          hint: const Text('Dificuldade', style: TextStyle(color: Colors.white)),
           style: const TextStyle(color: Colors.white),
           dropdownColor: AppColors.fundoCard,
-          items: [
-            'muito_facil',
-            'facil',
-            'medio',
-            'dificil',
-            'muito_dificil'
-          ].map((String value) {
+          items: FilterHelpers.getDificuldadeOptions().map((option) {
             return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
+              value: option['value'],
+              child: Text(option['label']!),
             );
           }).toList(),
           onChanged: (newValue) {
@@ -238,7 +346,42 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
             _filtrarAtividades();
           },
         ),
+        const SizedBox(height: 10),
+        
+        // Botão para limpar todos os filtros
+        if (_nomeController.text.isNotEmpty || 
+            _recorrenciaSelecionada != null || 
+            _situacaoSelecionada != null || 
+            _dificuldadeSelecionada != null)
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _limparFiltros,
+              icon: const Icon(Icons.clear_all, color: AppColors.fundoEscuro),
+              label: const Text(
+                'Limpar Filtros',
+                style: TextStyle(color: AppColors.fundoEscuro, fontWeight: FontWeight.bold),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.verdeLima,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
       ],
     );
+  }
+
+  void _limparFiltros() {
+    setState(() {
+      _nomeController.clear();
+      _recorrenciaSelecionada = null;
+      _situacaoSelecionada = null;
+      _dificuldadeSelecionada = null;
+    });
+    _filtrarAtividades();
   }
 }

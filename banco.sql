@@ -36,7 +36,6 @@ CREATE TABLE atividades (
     tpestimado INT NOT NULL,
     dsatividade TEXT,
     expatividade SMALLINT DEFAULT 0,
-    CONSTRAINT unq_usuario_atividade UNIQUE (idusuario)
 );
 
 CREATE TABLE desafios (
