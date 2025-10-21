@@ -1,5 +1,12 @@
 from django.urls import path
-from .views import CadastroAPIView, LoginAPIView, UsuarioDetailView, PasswordResetRequestView, PasswordResetConfirmView, LeaderboardView
+from .views import (
+    CadastroAPIView, 
+    LoginAPIView, 
+    UsuarioDetailView, 
+    PasswordResetRequestView, 
+    PasswordResetConfirmView, 
+    LeaderboardView
+)
 
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 

@@ -26,6 +26,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     nmusuario = models.CharField(max_length=50)
     password = models.CharField(max_length=128, null=False, blank=True)
     emailusuario = models.EmailField(max_length=254, unique=True)
+    # ID da conta Google para vinculação e login social
+    google_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
     flsituacao = models.BooleanField(default=True)
     nivelusuario = models.IntegerField(default=1)
     expusuario = models.SmallIntegerField(default=0)

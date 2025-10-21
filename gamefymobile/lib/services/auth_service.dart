@@ -21,6 +21,30 @@ class AuthService {
     await _storage.deleteAll();
   }
 
+  Future<bool> validateSession() async {
+    try {
+      final access = await _storage.read(key: 'access_token');
+      if (access == null) return false;
+      final url = Uri.parse("$_baseUrl/me/");
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $access',
+        },
+      );
+      if (response.statusCode == 200) {
+        return true;
+      }
+      // se inválido, limpar tokens
+      await logout();
+      return false;
+    } catch (e) {
+      debugPrint("Erro ao validar sessão: $e");
+      return false;
+    }
+  }
+
   Future<Map<String, dynamic>> login(String email, String senha) async {
     final url = Uri.parse("$_baseUrl/login/");
     final body = jsonEncode({
@@ -93,6 +117,7 @@ class AuthService {
   }) async {
     final url = Uri.parse("$_baseUrl/login/google/");
     final body = jsonEncode({
+      // backend aceita id_token/token/access_token
       'id_token': idToken,
       'email': email,
       'name': name,
@@ -112,7 +137,7 @@ class AuthService {
         await _saveTokens(accessToken, refreshToken);
         return {'success': true, 'message': 'Login com Google realizado!'};
       } else {
-        return {'success': false, 'message': responseBody['detail'] ?? responseBody['erro'] ?? 'Erro no login com Google.'};
+        return {'success': false, 'message': responseBody['error'] ?? responseBody['detail'] ?? responseBody['erro'] ?? 'Erro no login com Google.'};
       }
     } catch (e) {
       debugPrint("Erro na requisição de login com Google: $e");
@@ -129,6 +154,7 @@ class AuthService {
   }) async {
     final url = Uri.parse("$_baseUrl/cadastro/google/");
     final body = jsonEncode({
+      // backend aceita id_token/token/access_token
       'id_token': idToken,
       'email': email,
       'name': name,
@@ -148,7 +174,7 @@ class AuthService {
         await _saveTokens(accessToken, refreshToken);
         return {'success': true, 'message': responseBody['message'] ?? 'Conta criada com sucesso!'};
       } else {
-        return {'success': false, 'message': responseBody['erro'] ?? 'Erro ao criar conta com Google.'};
+        return {'success': false, 'message': responseBody['error'] ?? responseBody['erro'] ?? 'Erro ao criar conta com Google.'};
       }
     } catch (e) {
       debugPrint("Erro na requisição de cadastro com Google: $e");

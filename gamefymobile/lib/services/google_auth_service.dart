@@ -8,9 +8,13 @@ class GoogleAuthService {
   GoogleAuthService._internal();
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId: kIsWeb 
+        ? '848375608749-rcc8rfvbfhqg8i21b6ouiisf20t9a2hq.apps.googleusercontent.com'
+        : null,
     scopes: [
       'email',
       'profile',
+      'openid',
     ],
   );
 
@@ -29,11 +33,17 @@ class GoogleAuthService {
   /// Faz login com Google e registra/autentica no backend
   Future<Map<String, dynamic>> signInWithGoogle() async {
     try {
-      // Tenta fazer login silencioso primeiro
-      GoogleSignInAccount? account = await _googleSignIn.signInSilently();
+      // Em Web, limpar sessão antes para evitar conflitos com One Tap/FedCM
+      if (kIsWeb) {
+        try { 
+          await _googleSignIn.signOut();
+          await _googleSignIn.disconnect();
+        } catch (_) {}
+      }
       
-      // Se não conseguir, faz login interativo
-      account ??= await _googleSignIn.signIn();
+      // Vai direto para login interativo (popup OAuth2)
+      // Não usa signInSilently pois ele ativa One Tap que causa issue_credential_failed
+      final GoogleSignInAccount? account = await _googleSignIn.signIn();
 
       if (account == null) {
         return {
@@ -45,21 +55,27 @@ class GoogleAuthService {
       // Obtém os dados do usuário
       final GoogleSignInAuthentication auth = await account.authentication;
       final String? idToken = auth.idToken;
+      final String? accessToken = auth.accessToken;
 
-      if (idToken == null) {
+      debugPrint('Google Sign In - Email: ${account.email}');
+      debugPrint('Google Sign In - Nome: ${account.displayName}');
+      debugPrint('Google Sign In - ID: ${account.id}');
+      debugPrint('Google Sign In - idToken disponível: ${idToken != null}');
+      debugPrint('Google Sign In - accessToken disponível: ${accessToken != null}');
+
+      // Na web, idToken pode não estar disponível, então usamos accessToken como fallback
+      final token = idToken ?? accessToken;
+
+      if (token == null) {
         return {
           'success': false,
           'message': 'Não foi possível obter token do Google',
         };
       }
 
-      debugPrint('Google Sign In - Email: ${account.email}');
-      debugPrint('Google Sign In - Nome: ${account.displayName}');
-      debugPrint('Google Sign In - ID: ${account.id}');
-
       // Tenta fazer login no backend com o token do Google
       final result = await _authService.loginWithGoogle(
-        idToken: idToken,
+        idToken: token,
         email: account.email,
         name: account.displayName ?? account.email,
         googleId: account.id,
@@ -75,7 +91,7 @@ class GoogleAuthService {
         // Se o login falhou, pode ser que o usuário não existe
         // Tenta registrar automaticamente
         final registerResult = await _authService.registerWithGoogle(
-          idToken: idToken,
+          idToken: token,
           email: account.email,
           name: account.displayName ?? account.email,
           googleId: account.id,
@@ -97,6 +113,7 @@ class GoogleAuthService {
       }
     } catch (error) {
       debugPrint('Erro no login com Google: $error');
+      try { await _googleSignIn.disconnect(); } catch (_) {}
       return {
         'success': false,
         'message': 'Erro ao fazer login com Google: $error',

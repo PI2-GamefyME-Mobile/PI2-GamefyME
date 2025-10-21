@@ -22,7 +22,11 @@ void main() async {
   
   final authService = AuthService();
   final token = await authService.getToken();
-  runApp(MyApp(isLoggedIn: token != null));
+  bool valid = false;
+  if (token != null) {
+    valid = await authService.validateSession();
+  }
+  runApp(MyApp(isLoggedIn: valid));
 }
 
 class MyApp extends StatelessWidget {
@@ -86,24 +90,28 @@ class WelcomePage extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6A0DAD), // Cor antiga
-                    padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                Flexible(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF6A0DAD), // Cor antiga
+                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () => Navigator.of(context).push(_createSlideRoute(const LoginPage())),
+                    child: const Text("Login", style: TextStyle(fontSize: 18, color: Colors.white)),
                   ),
-                  onPressed: () => Navigator.of(context).push(_createSlideRoute(const LoginPage())),
-                  child: const Text("Login", style: TextStyle(fontSize: 18, color: Colors.white)),
                 ),
                 const SizedBox(width: 20),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6A0DAD), // Cor antiga
-                    padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 15),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                Flexible(
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF6A0DAD), // Cor antiga
+                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () => Navigator.of(context).push(_createSlideRoute(const RegisterPage())),
+                    child: const Text("Registrar", style: TextStyle(fontSize: 18, color: Colors.white)),
                   ),
-                  onPressed: () => Navigator.of(context).push(_createSlideRoute(const RegisterPage())),
-                  child: const Text("Registrar", style: TextStyle(fontSize: 18, color: Colors.white)),
                 ),
               ],
             )
@@ -299,7 +307,9 @@ class _LoginPageState extends State<LoginPage> {
                           checkColor: Colors.white,
                           activeColor: const Color(0xFF7B1FA2),
                         ),
-                        const Text("Lembrar-me", style: TextStyle(color: Colors.black87)),
+                        Expanded(
+                          child: const Text("Lembrar-me", style: TextStyle(color: Colors.black87)),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 10),
