@@ -3,7 +3,9 @@ import 'package:gamefymobile/models/models.dart';
 import 'package:gamefymobile/services/api_service.dart';
 import 'package:gamefymobile/widgets/custom_app_bar.dart';
 import 'package:gamefymobile/config/app_colors.dart';
+import 'package:gamefymobile/config/theme_provider.dart';
 import 'package:gamefymobile/widgets/user_level_avatar.dart';
+import 'package:provider/provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -113,8 +115,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    
     return Scaffold(
-      backgroundColor: AppColors.fundoEscuro,
+      backgroundColor: themeProvider.fundoApp,
       appBar: CustomAppBar(
         usuario: _usuario,
         notificacoes: _notificacoes,
@@ -129,8 +133,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           : _errorMessage != null
               ? Center(
                   child: Text(_errorMessage!,
-                      style: const TextStyle(color: Colors.white)))
-              : _buildBody(),
+                      style: TextStyle(color: themeProvider.textoTexto)))
+              : _buildBody(themeProvider),
       floatingActionButton: FloatingActionButton(
         onPressed: _toggleEdit,
         backgroundColor: AppColors.verdeLima,
@@ -139,11 +143,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(ThemeProvider themeProvider) {
     if (_usuario == null) {
-      return const Center(
+      return Center(
         child:
-            Text("Nenhum usuário encontrado", style: TextStyle(color: Colors.white)),
+            Text("Nenhum usuário encontrado", style: TextStyle(color: themeProvider.textoTexto)),
       );
     }
     return ListView(
@@ -164,93 +168,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(height: 20),
         _isEditing ? _buildEditForm() : _buildUserInfoDetails(),
         const SizedBox(height: 20),
-        _buildLeaderboard(), // Widget da leaderboard adicionado aqui
+        _buildLeaderboard(themeProvider), // Widget da leaderboard adicionado aqui
       ],
-    );
-  }
-
-  // Widget para construir a Leaderboard
-  Widget _buildLeaderboard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.fundoCard,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Leaderboard",
-            style: TextStyle(
-                color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 10),
-          ListView.builder(
-            shrinkWrap: true, // Importante para aninhar ListView
-            physics: const NeverScrollableScrollPhysics(), // Desabilita scroll aninhado
-            itemCount: _leaderboard.length,
-            itemBuilder: (context, index) {
-              final user = _leaderboard[index];
-              return Card(
-                color: AppColors.fundoCard, // Ou uma cor de sua preferência
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                child: ListTile(
-                  leading: Text(
-                    '#${index + 1}',
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.verdeLima,
-                    ),
-                  ),
-                  title: Row(
-                    children: [
-                      UserLevelAvatar(user: user, radius: 20),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          user.nome,
-                          style: const TextStyle(color: Colors.white),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  trailing: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text('Nível ${user.nivel}',
-                          style:
-                              const TextStyle(color: AppColors.amareloClaro)),
-                      Text('${user.exp} XP',
-                          style: const TextStyle(color: AppColors.cinzaSub)),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
     );
   }
 
 
   Widget _buildUserInfoDetails() {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.fundoCard,
+        color: themeProvider.fundoCard,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Informações do Usuário",
+          Text("Informações do Usuário",
               style: TextStyle(
-                  color: Colors.white,
+                  color: themeProvider.textoTexto,
                   fontSize: 18,
                   fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
@@ -262,27 +200,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildDetailRow(String label, String value) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              style: const TextStyle(color: AppColors.cinzaSub, fontSize: 16)),
+              style: TextStyle(color: themeProvider.textoCinza, fontSize: 16)),
           const SizedBox(width: 10),
           Expanded(
               child: Text(value,
-                  style: const TextStyle(color: Colors.white, fontSize: 16))),
+                  style: TextStyle(color: themeProvider.textoTexto, fontSize: 16))),
         ],
       ),
     );
   }
 
   Widget _buildEditForm() {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.fundoCard,
+        color: themeProvider.fundoCard,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Form(
@@ -290,9 +232,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text("Editar Informações",
+            Text("Editar Informações",
                 style: TextStyle(
-                    color: Colors.white,
+                    color: themeProvider.textoTexto,
                     fontSize: 18,
                     fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
@@ -346,16 +288,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
       required String label,
       TextInputType? keyboardType,
       String? Function(String?)? validator}) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       validator: validator,
-      style: const TextStyle(color: AppColors.branco),
+      style: TextStyle(color: themeProvider.textoTexto),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: AppColors.cinzaSub),
+        labelStyle: TextStyle(color: themeProvider.textoCinza),
         enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: AppColors.cinzaSub),
+          borderSide: BorderSide(color: themeProvider.textoCinza),
           borderRadius: BorderRadius.circular(8),
         ),
         focusedBorder: OutlineInputBorder(
@@ -367,10 +311,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildUserInfoCard(Usuario user) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.fundoCard,
+        color: themeProvider.fundoCard,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -381,8 +327,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Text(
             user.nome,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.branco,
+            style: TextStyle(
+              color: themeProvider.textoTexto,
               fontWeight: FontWeight.bold,
             ),
             maxLines: 2,
@@ -394,24 +340,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildStreakCard(Usuario usuario) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final double progress = usuario.expTotalNivel > 0
         ? usuario.exp.toDouble() / usuario.expTotalNivel.toDouble()
         : 0;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.fundoCard,
+        color: themeProvider.fundoCard,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text("Dias contínuos de atividades",
+          Text("Dias contínuos de atividades",
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.branco)),
+                  color: themeProvider.textoTexto)),
           const SizedBox(height: 12),
           Expanded(
             child: Row(
@@ -420,10 +367,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 return Expanded(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     Text(dia.diaSemana,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.branco)),
+                            color: themeProvider.textoTexto)),
                     const SizedBox(height: 8),
                     Image.asset('assets/images/${dia.imagem}',
                         width: 28, height: 28),
@@ -436,14 +383,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Column(children: [
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Text('${usuario.exp} XP',
-                  style: const TextStyle(
-                      color: AppColors.branco, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      color: themeProvider.textoTexto, fontWeight: FontWeight.bold)),
               Text('Nível ${usuario.nivel}',
-                  style: const TextStyle(
-                      color: AppColors.branco, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      color: themeProvider.textoTexto, fontWeight: FontWeight.bold)),
               Text('${usuario.expTotalNivel} XP',
-                  style: const TextStyle(
-                      color: AppColors.branco, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      color: themeProvider.textoTexto, fontWeight: FontWeight.bold)),
             ]),
             const SizedBox(height: 4),
             LinearProgressIndicator(
@@ -455,6 +402,72 @@ class _SettingsScreenState extends State<SettingsScreen> {
               borderRadius: BorderRadius.circular(5),
             ),
           ]),
+        ],
+      ),
+    );
+  }
+  Widget _buildLeaderboard(ThemeProvider themeProvider) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: themeProvider.leaderboard,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Leaderboard",
+            style: TextStyle(
+                color: themeProvider.textoTexto, fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _leaderboard.length,
+            itemBuilder: (context, index) {
+              final user = _leaderboard[index];
+              return Card(
+                color: themeProvider.leaderboardPerfil,
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                child: ListTile(
+                  leading: Text(
+                    '#${index + 1}',
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.verdeLima,
+                    ),
+                  ),
+                  title: Row(
+                    children: [
+                      UserLevelAvatar(user: user, radius: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          user.nome,
+                          style: TextStyle(color: themeProvider.textoAtividade),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text('Nível ${user.nivel}',
+                          style:
+                              const TextStyle(color: AppColors.amareloClaro)),
+                      Text('${user.exp} XP',
+                          style: TextStyle(color: themeProvider.textoCinza)),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );

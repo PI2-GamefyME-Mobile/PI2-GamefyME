@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'config/app_colors.dart';
+import 'config/theme_provider.dart';
 import 'models/models.dart';
 import 'services/api_service.dart';
 import 'widgets/custom_app_bar.dart';
@@ -92,8 +94,9 @@ class _CadastroAtividadeScreenState extends State<CadastroAtividadeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
-      backgroundColor: AppColors.fundoEscuro,
+      backgroundColor: themeProvider.fundoApp,
       appBar: CustomAppBar(
         usuario: _usuario,
         notificacoes: _notificacoes,
@@ -110,6 +113,7 @@ class _CadastroAtividadeScreenState extends State<CadastroAtividadeScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               CommonUtils.buildTextField(
+                context: context,
                 controller: _nomeController,
                 label: 'Nome da atividade',
                 hint: 'Digite o nome da atividade',
@@ -118,19 +122,22 @@ class _CadastroAtividadeScreenState extends State<CadastroAtividadeScreen> {
               ),
               const SizedBox(height: 20),
               CommonUtils.buildTextField(
+                context: context,
                 controller: _descricaoController,
                 label: 'Descrição',
                 hint: 'Digite a descrição da atividade',
                 maxLines: 3,
               ),
               const SizedBox(height: 20),
-              CommonUtils.buildSectionTitle('Recorrência'),
+              CommonUtils.buildSectionTitle(context, 'Recorrência'),
               CommonUtils.buildRecorrenciaSelector(
+                context: context,
                 recorrenciaSelecionada: _recorrenciaSelecionada,
                 onChanged: (value) => setState(() => _recorrenciaSelecionada = value),
               ),
               const SizedBox(height: 20),
               CommonUtils.buildTextField(
+                context: context,
                 controller: _tempoEstimadoController,
                 label: 'Tempo estimado',
                 hint: 'Digite o tempo em minutos',
@@ -147,8 +154,9 @@ class _CadastroAtividadeScreenState extends State<CadastroAtividadeScreen> {
                 },
               ),
               const SizedBox(height: 20),
-              CommonUtils.buildSectionTitle('Dificuldade'),
+              CommonUtils.buildSectionTitle(context, 'Dificuldade'),
               CommonUtils.buildDificuldadeSelector(
+                context: context,
                 dificuldadeSelecionada: _dificuldadeSelecionada,
                 onChanged: (value) => setState(() => _dificuldadeSelecionada = value),
               ), // Alteração aqui

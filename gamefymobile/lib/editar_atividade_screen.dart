@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import 'config/app_colors.dart';
+import 'config/theme_provider.dart';
 import 'models/models.dart';
 import 'services/api_service.dart';
 import 'widgets/custom_app_bar.dart';
+import 'utils/common_utils.dart';
 
 class EditarAtividadeScreen extends StatefulWidget {
   final Atividade atividade;
@@ -90,23 +93,24 @@ class _EditarAtividadeScreenState extends State<EditarAtividadeScreen> {
   }
 
   Future<void> _removerAtividade() async {
+  final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
   final bool confirm = await showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          backgroundColor: AppColors.fundoCard, // COR PERSONALIZADA
-          title: const Text(
+          backgroundColor: themeProvider.fundoCard,
+          title: Text(
             'Confirmar Remoção',
-            style: TextStyle(color: AppColors.branco),
+            style: TextStyle(color: themeProvider.textoTexto),
           ),
-          content: const Text(
+          content: Text(
             'Tem certeza de que deseja remover esta atividade?',
-            style: TextStyle(color: AppColors.branco),
+            style: TextStyle(color: themeProvider.textoTexto),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancelar',
-                  style: TextStyle(color: AppColors.cinzaSub)),
+              child: Text('Cancelar',
+                  style: TextStyle(color: themeProvider.textoCinza)),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
@@ -136,8 +140,9 @@ class _EditarAtividadeScreenState extends State<EditarAtividadeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
-      backgroundColor: AppColors.fundoEscuro,
+      backgroundColor: themeProvider.fundoApp,
       appBar: CustomAppBar(
         usuario: widget.usuario,
         notificacoes: widget.notificacoes,
@@ -153,36 +158,53 @@ class _EditarAtividadeScreenState extends State<EditarAtividadeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildTextField(
-                  controller: _nomeController,
-                  label: 'Nome da atividade',
-                  validator: (v) => v!.isEmpty ? 'Campo obrigatório' : null),
+              CommonUtils.buildTextField(
+                context: context,
+                controller: _nomeController,
+                label: 'Nome da atividade',
+                hint: 'Digite o nome da atividade',
+                validator: (value) => value!.isEmpty ? 'Campo obrigatório' : null,
+              ),
               const SizedBox(height: 20),
-              _buildTextField(
-                  controller: _descricaoController,
-                  label: 'Descrição',
-                  maxLines: 3),
+              CommonUtils.buildTextField(
+                context: context,
+                controller: _descricaoController,
+                label: 'Descrição',
+                hint: 'Digite a descrição da atividade',
+                maxLines: 3,
+              ),
               const SizedBox(height: 20),
-              _buildSectionTitle('Recorrência'),
-              _buildRecorrenciaSelector(),
+              CommonUtils.buildSectionTitle(context, 'Recorrência'),
+              CommonUtils.buildRecorrenciaSelector(
+                context: context,
+                recorrenciaSelecionada: _recorrenciaSelecionada,
+                onChanged: (value) => setState(() => _recorrenciaSelecionada = value),
+              ),
               const SizedBox(height: 20),
-              _buildTextField(
-                  controller: _tempoEstimadoController,
-                  label: 'Tempo estimado',
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  suffixText: 'minutos',
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return 'Campo obrigatório';
-                    final t = int.tryParse(v);
-                    if (t == null || t <= 0 || t > 240) {
-                      return 'Valor inválido';
-                    }
-                    return null;
-                  }),
+              CommonUtils.buildTextField(
+                context: context,
+                controller: _tempoEstimadoController,
+                label: 'Tempo estimado',
+                hint: 'Digite o tempo em minutos',
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Campo obrigatório';
+                  }
+                  final int? tempo = int.tryParse(value);
+                  if (tempo == null || tempo <= 0 || tempo > 240) {
+                    return 'Máximo de 240 minutos';
+                  }
+                  return null;
+                },
+              ),
               const SizedBox(height: 20),
-              _buildSectionTitle('Dificuldade'),
-              _buildDificuldadeSelector(), // Alteração aqui
+              CommonUtils.buildSectionTitle(context, 'Dificuldade'),
+              CommonUtils.buildDificuldadeSelector(
+                context: context,
+                dificuldadeSelecionada: _dificuldadeSelecionada,
+                onChanged: (value) => setState(() => _dificuldadeSelecionada = value),
+              ),
               const SizedBox(height: 40),
               Row(children: [
                 Expanded(
@@ -223,99 +245,6 @@ class _EditarAtividadeScreenState extends State<EditarAtividadeScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(title,
-        style: const TextStyle(
-            color: AppColors.branco,
-            fontSize: 16,
-            fontWeight: FontWeight.bold));
-  }
-
-  Widget _buildTextField(
-      {required TextEditingController controller,
-      required String label,
-      int maxLines = 1,
-      TextInputType? keyboardType,
-      List<TextInputFormatter>? inputFormatters,
-      String? suffixText,
-      String? Function(String?)? validator}) {
-    return TextFormField(
-        controller: controller,
-        maxLines: maxLines,
-        keyboardType: keyboardType,
-        inputFormatters: inputFormatters,
-        validator: validator,
-        style:
-            const TextStyle(color: AppColors.branco, fontFamily: 'Jersey 10'),
-        decoration: InputDecoration(
-            labelText: label,
-            labelStyle: const TextStyle(fontFamily: 'Jersey 10'),
-            suffixText: suffixText,
-            alignLabelWithHint: true));
-  }
-
-  Widget _buildRecorrenciaSelector() {
-    return Row(children: [
-      Expanded(child: _buildRecorrenciaButton('ÚNICA', 'unica')),
-      const SizedBox(width: 10),
-      Expanded(child: _buildRecorrenciaButton('RECORRENTE', 'recorrente'))
-    ]);
-  }
-
-  Widget _buildRecorrenciaButton(String text, String value) {
-    final bool isSelected = _recorrenciaSelecionada == value;
-    return ElevatedButton(
-        onPressed: () => setState(() => _recorrenciaSelecionada = value),
-        style: ElevatedButton.styleFrom(
-            backgroundColor:
-                isSelected ? AppColors.roxoClaro : AppColors.fundoCard,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-        child: Text(text,
-            style: TextStyle(
-                color: isSelected ? AppColors.branco : AppColors.cinzaSub)));
-  }
-
-  // NOVA VERSÃO DO WIDGET DE DIFICULDADE
-  Widget _buildDificuldadeSelector() {
-    final dificuldades = ['muito_facil', 'facil', 'medio', 'dificil', 'muito_dificil'];
-    
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: List.generate(5, (index) {
-        bool isSelected = index == _dificuldadeSelecionada;
-        final dificuldade = dificuldades[index];
-        
-        return GestureDetector(
-          onTap: () => setState(() => _dificuldadeSelecionada = index),
-          child: Opacity(
-            opacity: isSelected ? 1.0 : 0.5,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset(
-                  'assets/images/dificuldade${index + 1}.png',
-                  width: 40,
-                  height: 40,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  FilterHelpers.getDificuldadeDisplayName(dificuldade),
-                  style: TextStyle(
-                    color: isSelected ? AppColors.branco : AppColors.cinzaSub,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        );
-      }),
     );
   }
 }

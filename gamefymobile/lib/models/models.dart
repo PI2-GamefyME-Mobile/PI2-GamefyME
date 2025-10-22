@@ -10,6 +10,7 @@ class Usuario {
   final int exp;
   final int expTotalNivel;
   final String imagemPerfil;
+  final String tipoUsuario;
   final List<StreakDia> streakData;
 
   Usuario({
@@ -20,8 +21,11 @@ class Usuario {
     required this.exp,
     required this.expTotalNivel,
     required this.imagemPerfil,
+    required this.tipoUsuario,
     required this.streakData,
   });
+
+  bool get isAdmin => tipoUsuario == 'admin';
 
   factory Usuario.fromJson(Map<String, dynamic> json) {
     return Usuario(
@@ -32,6 +36,7 @@ class Usuario {
       exp: json['expusuario'] ?? 0,
       expTotalNivel: json['exp_total_nivel'] ?? 100,
       imagemPerfil: json['imagem_perfil'] ?? 'avatar1.png',
+      tipoUsuario: json['tipousuario'] ?? 'comum',
       streakData: (json['streak_data'] as List<dynamic>? ?? [])
           .map((e) => StreakDia.fromJson(e))
           .toList(),
@@ -132,12 +137,8 @@ class Atividade {
     switch (recorrencia.toLowerCase()) {
       case 'unica':
         return AppColors.recorrenciaUnica;
-      case 'diaria':
-        return AppColors.recorrenciaDiaria;
-      case 'semanal':
-        return AppColors.recorrenciaSemanal;
-      case 'mensal':
-        return AppColors.recorrenciaMensal;
+      case 'recorrente':
+        return AppColors.recorrenciaRecorrente;
       default:
         return AppColors.cinzaSub;
     }
@@ -223,12 +224,6 @@ class FilterHelpers {
     switch (recorrencia.toLowerCase()) {
       case 'unica':
         return 'Única';
-      case 'diaria':
-        return 'Diária';
-      case 'semanal':
-        return 'Semanal';
-      case 'mensal':
-        return 'Mensal';
       case 'recorrente':
         return 'Recorrente';
       default:

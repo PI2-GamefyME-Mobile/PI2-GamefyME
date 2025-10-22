@@ -2,13 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
 import 'home_screen.dart';
+import 'admin_desafios_screen.dart';
+import 'admin_conquistas_screen.dart';
 import 'services/auth_service.dart';
 import 'services/google_auth_service.dart';
 import 'services/notification_service.dart';
 import 'services/timer_service.dart';
 import 'config/app_colors.dart';
+import 'config/theme_provider.dart';
 import 'forgot_password_screen.dart';
 import 'utils/common_utils.dart';
 
@@ -35,35 +39,45 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: "GamefyME",
-      theme: ThemeData(
-        // Tema global escuro para o app (usado na HomeScreen, etc.)
-        scaffoldBackgroundColor: AppColors.fundoEscuro,
-        primaryColor: AppColors.roxoHeader,
-        textTheme: GoogleFonts.jersey10TextTheme(Theme.of(context).textTheme).apply(
-          bodyColor: AppColors.branco,
-          displayColor: AppColors.branco,
-        ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: AppColors.fundoCard, // Estilo de input escuro por padrão
-          labelStyle: const TextStyle(color: AppColors.cinzaSub),
-          hintStyle: const TextStyle(color: AppColors.cinzaSub),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
-          ),
-        ),
+    return ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            title: "GamefyME",
+            theme: ThemeData(
+              scaffoldBackgroundColor: themeProvider.fundoApp,
+              primaryColor: AppColors.roxoHeader,
+              textTheme: GoogleFonts.jersey10TextTheme(Theme.of(context).textTheme).apply(
+                bodyColor: themeProvider.textoTexto,
+                displayColor: themeProvider.textoTexto,
+              ),
+              inputDecorationTheme: InputDecorationTheme(
+                filled: true,
+                fillColor: themeProvider.fundoCard,
+                labelStyle: TextStyle(color: themeProvider.textoCinza),
+                hintStyle: TextStyle(color: themeProvider.textoCinza),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            routes: {
+              '/admin-desafios': (context) => const AdminDesafiosScreen(),
+              '/admin-conquistas': (context) => const AdminConquistasScreen(),
+            },
+            home: isLoggedIn ? const HomeScreen() : const WelcomePage(),
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('pt', 'BR')],
+          );
+        },
       ),
-      home: isLoggedIn ? const HomeScreen() : const WelcomePage(),
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [Locale('pt', 'BR')],
     );
   }
 }
@@ -275,6 +289,7 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     CommonUtils.buildTextField(
+                      context: context,
                       controller: _emailController,
                       label: "Email",
                       hint: "Digite seu email",
@@ -282,6 +297,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 15),
                     CommonUtils.buildTextField(
+                      context: context,
                       controller: _passwordController,
                       label: "Senha",
                       hint: "Digite sua senha",

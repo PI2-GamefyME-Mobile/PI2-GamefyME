@@ -16,7 +16,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
         fields = [
             'idusuario', 'nmusuario', 'emailusuario',
             'nivelusuario', 'expusuario', 'imagem_perfil',
-            'exp_total_nivel', 'streak_data'
+            'tipousuario', 'exp_total_nivel', 'streak_data'
         ]
 
     def get_exp_total_nivel(self, obj):

@@ -28,3 +28,22 @@ class UsuarioConquistaSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsuarioConquista
         fields = ['idusuarioconquista', 'dtconcessao', 'conquista']
+
+class ConquistaCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer para criação e edição de conquistas (apenas admin).
+    """
+    class Meta:
+        model = Conquista
+        fields = ['idconquista', 'nmconquista', 'dsconquista', 'nmimagem', 'expconquista']
+        read_only_fields = ['idconquista']
+
+    def validate_nmimagem(self, value):
+        """
+        Valida se o nome da imagem tem extensão.
+        """
+        if not value.endswith(('.png', '.jpg', '.jpeg')):
+            raise serializers.ValidationError(
+                "O nome da imagem deve ter uma extensão válida (.png, .jpg, .jpeg)."
+            )
+        return value

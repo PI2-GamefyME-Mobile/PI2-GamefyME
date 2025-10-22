@@ -94,3 +94,32 @@ class UsuarioDesafioSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsuarioDesafio
         fields = ['idusuariodesafio', 'dtpremiacao', 'flsituacao', 'desafio']
+
+class DesafioCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer para criação e edição de desafios (apenas admin).
+    """
+    class Meta:
+        model = Desafio
+        fields = [
+            'iddesafio', 'nmdesafio', 'dsdesafio', 'tipo', 
+            'dtinicio', 'dtfim', 'expdesafio', 'tipo_logica', 'parametro'
+        ]
+        read_only_fields = ['iddesafio']
+
+    def validate(self, data):
+        """
+        Validações customizadas.
+        """
+        # Se for desafio único, dtinicio e dtfim são obrigatórios
+        if data.get('tipo') == TipoDesafio.UNICO:
+            if not data.get('dtinicio') or not data.get('dtfim'):
+                raise serializers.ValidationError(
+                    "Desafios únicos precisam de data de início e fim."
+                )
+            if data.get('dtinicio') >= data.get('dtfim'):
+                raise serializers.ValidationError(
+                    "A data de início deve ser anterior à data de fim."
+                )
+        
+        return data

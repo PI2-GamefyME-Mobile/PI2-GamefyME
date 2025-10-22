@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:gamefymobile/models/models.dart';
 import 'package:gamefymobile/services/api_service.dart';
 import 'package:gamefymobile/widgets/custom_app_bar.dart';
+import 'package:provider/provider.dart';
 import 'config/app_colors.dart';
+import 'config/theme_provider.dart';
 
 class DesafiosScreen extends StatefulWidget {
   const DesafiosScreen({super.key});
@@ -85,6 +87,9 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isAdmin = _usuario?.isAdmin ?? false;
+
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       appBar: CustomAppBar(
         usuario: _usuario,
@@ -93,20 +98,42 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
         conquistas: _conquistas,
         onDataReload: _carregarDados,
       ),
-      backgroundColor: AppColors.fundoEscuro,
+      backgroundColor: themeProvider.fundoApp,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildFiltroTipo(),
+            Row(
+              children: [
+                Expanded(child: _buildFiltroTipo()),
+                if (isAdmin) ...[
+                  const SizedBox(width: 8),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/admin-desafios')
+                          .then((_) => _carregarDados());
+                    },
+                    icon: const Icon(Icons.admin_panel_settings, size: 20),
+                    label: const Text('Admin'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.roxoProfundo,
+                      foregroundColor: AppColors.verdeLima,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 12),
+                    ),
+                  ),
+                ],
+              ],
+            ),
             const SizedBox(height: 16),
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _desafiosFiltrados.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Text('Nenhum desafio encontrado.',
-                              style: TextStyle(color: Colors.white)))
+                              style:
+                                  TextStyle(color: themeProvider.textoTexto)))
                       : _buildListaDesafios(),
             ),
           ],
@@ -116,6 +143,7 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
   }
 
   Widget _buildFiltroTipo() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     // Tipos únicos de desafios para o dropdown
     final tipos = _desafios.map((d) => d.tipo).toSet().toList();
 
@@ -124,21 +152,28 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
         Expanded(
           child: DropdownButtonFormField<String>(
             initialValue: _tipoSelecionado,
-            hint: const Text('Filtrar por tipo',
-                style: TextStyle(color: Colors.white)),
-            style: const TextStyle(color: Colors.white),
-            dropdownColor: AppColors.fundoCard,
+            hint: Text('Filtrar por tipo',
+                style: TextStyle(
+                  color: themeProvider.textoTexto,
+                  fontFamily: 'Jersey 10',
+                )),
+            style: TextStyle(
+              color: themeProvider.textoTexto,
+              fontFamily: 'Jersey 10',
+            ),
+            dropdownColor: themeProvider.fundoCard,
             items: tipos
                 .map((String value) => DropdownMenuItem<String>(
-                    value: value, 
-                    child: Text(FilterHelpers.getTipoDesafioDisplayName(value))))
+                    value: value,
+                    child:
+                        Text(FilterHelpers.getTipoDesafioDisplayName(value))))
                 .toList(),
             onChanged: (newValue) => _filtrarDesafios(newValue),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.cinzaSub),
+                borderSide: BorderSide(color: themeProvider.textoCinza),
               ),
-              focusedBorder: UnderlineInputBorder(
+              focusedBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: AppColors.verdeLima),
               ),
             ),
@@ -146,7 +181,7 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
         ),
         if (_tipoSelecionado != null)
           IconButton(
-            icon: const Icon(Icons.clear, color: Colors.white),
+            icon: Icon(Icons.clear, color: themeProvider.textoTexto),
             onPressed: () => _filtrarDesafios(null),
           )
       ],
@@ -154,40 +189,118 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
   }
 
   Widget _buildListaDesafios() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return ListView(
       children: _desafiosAgrupados.entries.map((entry) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
               child: Text(
                 entry.key.toUpperCase(),
                 style: const TextStyle(
-                    color: AppColors.verdeLima,
+                    color: AppColors.roxoClaro,
                     fontSize: 18,
                     fontWeight: FontWeight.bold),
               ),
             ),
             ...entry.value.map((desafio) {
-              return Card(
-                color: desafio.completado ? AppColors.fundoCard.withValues(alpha: 0.5) : AppColors.fundoCard,
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: desafio.completado
+                      ? themeProvider.desafioCompleto.withValues(alpha: 0.8)
+                      : themeProvider.desafioCompleto,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: desafio.completado
+                        ? AppColors.verdeLima.withValues(alpha: 0.3)
+                        : AppColors.amareloClaro.withValues(alpha: 0.3),
+                    width: 1,
+                  ),
+                ),
                 child: ListTile(
-                  leading: desafio.completado 
-                    ? const Icon(Icons.check_circle, color: AppColors.verdeLima, size: 30)
-                    : const Icon(Icons.emoji_events_outlined, color: AppColors.amareloClaro, size: 30),
-                  title: Text(desafio.nome,
-                      style: TextStyle(color: desafio.completado ? Colors.grey : Colors.white)),
-                  subtitle: Text(desafio.descricao,
-                      style: TextStyle(color: desafio.completado ? Colors.grey[600] : Colors.grey)),
-                  trailing: Text('+${desafio.xp} XP',
-                      style: const TextStyle(
-                          color: AppColors.amareloClaro,
-                          fontWeight: FontWeight.bold)),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  leading: desafio.completado
+                      ? const Icon(Icons.check_circle,
+                          color: AppColors.verdeLima, size: 30)
+                      : const Icon(Icons.emoji_events_outlined,
+                          color: AppColors.amareloClaro, size: 30),
+                  title: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              desafio.nome,
+                              style: TextStyle(
+                                color: themeProvider.textoAtividade,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.amareloClaro,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              '+${desafio.xp} XP',
+                              style: TextStyle(
+                                color: themeProvider.isDarkMode
+                                    ? AppColors.fundoEscuro
+                                    : AppColors.fundoEscuro,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        desafio.descricao,
+                        style: TextStyle(
+                          color: themeProvider.textoAtividade,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Badge de tipo de desafio
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.roxoClaro.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: AppColors.roxoClaro,
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          FilterHelpers.getTipoDesafioDisplayName(desafio.tipo)
+                              .toUpperCase(),
+                          style: const TextStyle(
+                            color: AppColors.verdeLima,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             }),
-             const SizedBox(height: 16),
+            const SizedBox(height: 16),
           ],
         );
       }).toList(),

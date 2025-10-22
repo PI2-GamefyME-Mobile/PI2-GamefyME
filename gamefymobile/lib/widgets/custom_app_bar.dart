@@ -2,9 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:gamefymobile/settings_screen.dart';
+import 'package:provider/provider.dart';
 import 'dart:math';
 
 import '../config/app_colors.dart';
+import '../config/theme_provider.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../models/models.dart';
@@ -39,6 +41,8 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
 class _CustomAppBarState extends State<CustomAppBar> {
   late List<Notificacao> _localNotificacoes;
   final int _pageSize = 10;
+  final GlobalKey<PopupMenuButtonState<String>> _userMenuKey =
+      GlobalKey<PopupMenuButtonState<String>>();
 
   @override
   void initState() {
@@ -61,6 +65,15 @@ class _CustomAppBarState extends State<CustomAppBar> {
         MaterialPageRoute(builder: (context) => const WelcomePage()),
         (Route<dynamic> route) => false,
       );
+    } else if (value == 'tema') {
+      final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+      themeProvider.toggleTheme();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(themeProvider.isDarkMode ? 'Tema Escuro Ativado' : 'Tema Claro Ativado'),
+          duration: const Duration(seconds: 1),
+        ),
+      );
     } else if (value == 'config') {
       Navigator.push(
         context,
@@ -74,12 +87,13 @@ class _CustomAppBarState extends State<CustomAppBar> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        final themeProvider = Provider.of<ThemeProvider>(context);
         return AlertDialog(
-          backgroundColor: AppColors.fundoCard,
-          title: const Text('Notificação',
-              style: TextStyle(color: AppColors.branco)),
+          backgroundColor: themeProvider.fundoCard,
+          title: Text('Notificação',
+              style: TextStyle(color: themeProvider.textoTexto)),
           content: Text(notificacao.mensagem,
-              style: const TextStyle(color: AppColors.branco)),
+              style: TextStyle(color: themeProvider.textoTexto)),
           actions: <Widget>[
             TextButton(
               child: const Text('Fechar',
@@ -149,7 +163,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
       toolbarHeight: 60,
       leading: widget.showBackButton
           ? IconButton(
-              icon: const Icon(Icons.arrow_back_ios, color: AppColors.branco),
+              icon: Icon(Icons.arrow_back_ios, color: Provider.of<ThemeProvider>(context).textoTexto),
               onPressed: () => Navigator.of(context).pop(),
             )
           : null,
@@ -174,6 +188,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
   }
 
   Widget _buildNotificationButton(BuildContext context, int naoLidas) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     final preview = _localNotificacoes.take(_pageSize).toList();
     final hasMore = _localNotificacoes.length > _pageSize;
 
@@ -187,7 +202,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
           await _markOneAsReadAndShow(context, value);
         }
       },
-      color: AppColors.fundoCard,
+      color: themeProvider.fundoCard,
       icon: Stack(
         alignment: Alignment.center,
         children: [
@@ -215,13 +230,13 @@ class _CustomAppBarState extends State<CustomAppBar> {
         final items = <PopupMenuEntry<dynamic>>[];
 
         items.add(
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'marcar_todas',
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('Marcar todas como lidas',
-                    style: TextStyle(color: AppColors.branco)),
+                    style: TextStyle(color: themeProvider.textoTexto)),
                 Icon(Icons.done_all, color: AppColors.verdeLima),
               ],
             ),
@@ -231,10 +246,10 @@ class _CustomAppBarState extends State<CustomAppBar> {
         items.add(const PopupMenuDivider());
 
         if (preview.isEmpty) {
-          items.add(const PopupMenuItem(
+          items.add(PopupMenuItem(
               enabled: false,
               child: Text("Nenhuma notificação",
-                  style: TextStyle(color: AppColors.cinzaSub))));
+                  style: TextStyle(color: themeProvider.textoCinza))));
         } else {
           for (final n in preview) {
             items.add(PopupMenuItem<Notificacao>(
@@ -245,11 +260,11 @@ class _CustomAppBarState extends State<CustomAppBar> {
                   n.lida
                       ? Icons.check_circle_outline
                       : Icons.circle_notifications,
-                  color: n.lida ? AppColors.cinzaSub : AppColors.amareloClaro,
+                  color: n.lida ? themeProvider.textoCinza : AppColors.amareloClaro,
                 ),
                 title: Text(n.mensagem,
                     style: TextStyle(
-                        color: n.lida ? AppColors.cinzaSub : AppColors.branco)),
+                        color: n.lida ? themeProvider.textoCinza : themeProvider.textoTexto)),
               ),
             ));
           }
@@ -257,7 +272,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
 
         if (hasMore) {
           items.add(const PopupMenuDivider());
-          items.add(const PopupMenuItem(
+          items.add(PopupMenuItem(
               value: 'ver_mais',
               child: Text('Ver mais...',
                   style: TextStyle(color: AppColors.verdeLima))));
@@ -278,8 +293,9 @@ class _CustomAppBarState extends State<CustomAppBar> {
     final conquistasDesbloqueadas = widget.conquistas
       ..sort((a, b) => a.nome.compareTo(b.nome));
 
-    return PopupMenuButton<int>(
-        color: AppColors.fundoCard,
+  final themeProvider = Provider.of<ThemeProvider>(context);
+  return PopupMenuButton<int>(
+    color: themeProvider.fundoCard,
         icon: const Icon(Icons.emoji_events,
             color: AppColors.verdeLima, size: 30),
         offset: const Offset(0, 50),
@@ -292,15 +308,15 @@ class _CustomAppBarState extends State<CustomAppBar> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // --- SEÇÃO DE DESAFIOS (Inalterada) ---
-                            const Text("Desafios diários",
-                                style: TextStyle(
-                                    color: AppColors.branco,
+              Text("Desafios diários",
+                style: TextStyle(
+                  color: themeProvider.textoTexto,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14)),
                             const SizedBox(height: 8),
                             if (diarios.isEmpty)
-                              const Text("Nenhum desafio diário",
-                                  style: TextStyle(color: AppColors.cinzaSub))
+                Text("Nenhum desafio diário",
+                  style: TextStyle(color: themeProvider.textoCinza))
                             else
                               Column(
                                   children: diarios.map((d) {
@@ -330,9 +346,9 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                               children: [
                                             Text(d.nome,
                                                 style: TextStyle(
-                                                    color: d.completado
-                                                        ? AppColors.cinzaSub
-                                                        : AppColors.branco,
+                          color: d.completado
+                            ? themeProvider.textoCinza
+                            : themeProvider.textoTexto,
                                                     fontWeight:
                                                         FontWeight.bold)),
                                             const SizedBox(height: 6),
@@ -351,9 +367,9 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                       const SizedBox(width: 8),
                                       Text("${d.progresso}/${d.meta}",
                                           style: TextStyle(
-                                              color: d.completado
-                                                  ? AppColors.cinzaSub
-                                                  : AppColors.branco)),
+                        color: d.completado
+                          ? themeProvider.textoCinza
+                          : themeProvider.textoTexto)),
                                       const SizedBox(width: 8),
                                       Text("${d.xp}xp",
                                           style: const TextStyle(
@@ -367,15 +383,15 @@ class _CustomAppBarState extends State<CustomAppBar> {
                             const SizedBox(height: 8),
 
                             // --- NOVA SEÇÃO DE CONQUISTAS ---
-                            const Text("Conquistas Desbloqueadas",
-                                style: TextStyle(
-                                    color: AppColors.branco,
+              Text("Conquistas Desbloqueadas",
+                style: TextStyle(
+                  color: themeProvider.textoTexto,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14)),
                             const SizedBox(height: 8),
                             if (conquistasDesbloqueadas.isEmpty)
-                              const Text("Nenhuma conquista desbloqueada",
-                                  style: TextStyle(color: AppColors.cinzaSub))
+                Text("Nenhuma conquista desbloqueada",
+                  style: TextStyle(color: themeProvider.textoCinza))
                             else
                               // Exibição em formato de lista
                               Column(
@@ -394,8 +410,8 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                         Expanded(
                                           child: Text(
                                             c.nome,
-                                            style: const TextStyle(
-                                                color: AppColors.branco),
+                                            style: TextStyle(
+                                                color: themeProvider.textoTexto),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
@@ -409,40 +425,53 @@ class _CustomAppBarState extends State<CustomAppBar> {
   }
 
   Widget _buildUserMenuButton(BuildContext context, Usuario user) {
-    return PopupMenuButton<String>(
-      onSelected: (value) => _handleMenuSelection(context, value),
-      color: AppColors.fundoDropDown,
-      offset: const Offset(0, 50),
-      elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        _buildPopupMenuItem(text: 'Sair', value: 'sair'),
-      ],
-      child: UserLevelAvatar(user: user, radius: 24),
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => _userMenuKey.currentState?.showButtonMenu(),
+      child: PopupMenuButton<String>(
+        key: _userMenuKey,
+        onSelected: (value) => _handleMenuSelection(context, value),
+        color: themeProvider.fundoDropDown,
+        offset: const Offset(0, 50),
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+          _buildPopupMenuItem(text: 'Mudar Tema', value: 'tema'),
+          _buildPopupMenuItem(text: 'Sair', value: 'sair'),
+        ],
+        child: UserLevelAvatar(user: user, radius: 24),
+      ),
     );
   }
 
   PopupMenuItem<String> _buildPopupMenuItem(
       {required String text, required String value}) {
-    return PopupMenuItem<String>(
+  // Importante: usar listen: false aqui porque este método pode ser chamado fora do ciclo de build
+  // (por exemplo, quando o PopupMenu é aberto via gesto), o que quebra o assert do provider.
+  final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+  return PopupMenuItem<String>(
         value: value,
         child: Container(
             decoration: BoxDecoration(
-                color: AppColors.botaoDropDown,
+        color: themeProvider.botaoDropDown,
                 borderRadius: BorderRadius.circular(5)),
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
             child: Center(
                 child: Text(text,
-                    style: const TextStyle(
-                        fontFamily: 'Jersey 10', color: AppColors.branco)))));
+          style: TextStyle(
+            fontFamily: 'Jersey 10', color: themeProvider.textoTexto)))));
   }
 
   void _showAllNotificationsModal(BuildContext context) {
+    // Importante: usar listen: false fora do ciclo de build para evitar o assert do provider
+    final theme = Provider.of<ThemeProvider>(context, listen: false);
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.fundoCard,
+      backgroundColor: theme.fundoCard,
       isScrollControlled: true,
       builder: (context) {
+        final themeProvider = Provider.of<ThemeProvider>(context);
         int dialogLimit = _pageSize;
         return StatefulBuilder(builder: (context, setStateModal) {
           final items = _localNotificacoes.take(dialogLimit).toList();
@@ -459,22 +488,22 @@ class _CustomAppBarState extends State<CustomAppBar> {
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios,
-                              size: 20, color: AppColors.branco),
+                          icon: Icon(Icons.arrow_back_ios,
+                              size: 20, color: themeProvider.textoTexto),
                           onPressed: () => Navigator.of(context).pop(),
                         ),
                         const SizedBox(width: 4),
-                        const Text(
+                        Text(
                           'Notificações',
                           style: TextStyle(
-                              color: AppColors.branco,
+                              color: themeProvider.textoTexto,
                               fontWeight: FontWeight.bold,
                               fontSize: 16),
                         ),
                         const Spacer(),
                         Text(
                           '${_localNotificacoes.length}',
-                          style: const TextStyle(color: AppColors.cinzaSub),
+                          style: TextStyle(color: themeProvider.textoCinza),
                         ),
                       ],
                     ),
@@ -490,7 +519,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
                           final n = items[i];
                           return ListTile(
                             tileColor: n.lida
-                                ? AppColors.fundoCard
+                                ? themeProvider.fundoCard
                                 : AppColors.roxoMedio,
                             onTap: () async {
                               await _markOneAsReadAndShow(context, n);
@@ -501,15 +530,15 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                   ? Icons.check_circle_outline
                                   : Icons.circle_notifications,
                               color: n.lida
-                                  ? AppColors.cinzaSub
+                                  ? themeProvider.textoCinza
                                   : AppColors.amareloClaro,
                             ),
                             title: Text(
                               n.mensagem,
                               style: TextStyle(
                                   color: n.lida
-                                      ? AppColors.cinzaSub
-                                      : AppColors.branco),
+                                      ? themeProvider.textoCinza
+                                      : themeProvider.textoTexto),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -531,7 +560,14 @@ class _CustomAppBarState extends State<CustomAppBar> {
                               dialogLimit += _pageSize;
                               setStateModal(() {});
                             },
-                            child: const Text('Carregar mais 10'),
+                            child: const Text(
+                              'Carregar mais 10',
+                              style: TextStyle(
+                                color: AppColors.branco,
+                                fontFamily: 'Jersey 10',
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
                       ),

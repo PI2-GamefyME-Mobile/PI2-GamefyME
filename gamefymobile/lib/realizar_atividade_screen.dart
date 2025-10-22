@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:provider/provider.dart';
 import 'config/app_colors.dart';
+import 'config/theme_provider.dart';
 import 'models/models.dart';
 import 'services/api_service.dart';
 import 'services/notification_service.dart';
@@ -273,8 +275,9 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
-      backgroundColor: AppColors.fundoEscuro,
+      backgroundColor: themeProvider.fundoApp,
       appBar: CustomAppBar(
         usuario: _usuario,
         notificacoes: _notificacoes,
@@ -293,16 +296,16 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
         return const Center(
             child: CircularProgressIndicator(color: AppColors.verdeLima));
       case ScreenState.error:
-        return Center(
+    return Center(
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               const Icon(Icons.error_outline, color: Colors.red, size: 60),
               const SizedBox(height: 16),
-              const Text('Erro ao carregar a atividade.',
-                  style: TextStyle(
-                      color: Colors.white, 
-                      fontFamily: 'Jersey 10',
-                      fontSize: 20)),
+        Text('Erro ao carregar a atividade.',
+          style: TextStyle(
+            color: Provider.of<ThemeProvider>(context).textoTexto, 
+            fontFamily: 'Jersey 10',
+            fontSize: 20)),
               const SizedBox(height: 24),
               ElevatedButton.icon(
                   onPressed: _carregarDados,
@@ -311,120 +314,46 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
                       style: TextStyle(fontFamily: 'Jersey 10', fontSize: 18)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.verdeLima,
-                    foregroundColor: AppColors.fundoEscuro,
+          foregroundColor: AppColors.fundoEscuro,
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   )),
             ]));
       case ScreenState.loaded:
-        return SingleChildScrollView(
+        return Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Provider.of<ThemeProvider>(context).fundoApp,
+                Provider.of<ThemeProvider>(context).fundoApp.withValues(alpha: 0.95),
+              ],
+            ),
+          ),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(children: [
-                  _buildActivityStreakSection(context),
-                  const SizedBox(height: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 28),
+                  // Seção do Timer
                   _buildTimerSection(context),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
+                  // Seção de Informações da Tarefa
                   _buildTaskSection(context),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
+                  // Seção de Botões
                   _buildButtonsSection(context),
-                  const SizedBox(height: 20),
-                ])));
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          ),
+        );
     }
   }
-
-  Widget _buildActivityStreakSection(BuildContext context) {
-    final double expProgress = _usuario!.expTotalNivel > 0
-        ? _usuario!.exp.toDouble() / _usuario!.expTotalNivel.toDouble()
-        : 0.0;
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-          color: AppColors.fundoCard, 
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ]),
-      child: Column(children: [
-        const Text('Sequência de Dias',
-            style: TextStyle(
-                fontFamily: 'Jersey 10', 
-                fontSize: 22, 
-                color: AppColors.verdeLima,
-                letterSpacing: 1)),
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-              color: AppColors.roxoProfundo.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(12)),
-          child: Column(children: [
-            Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: _usuario!.streakData
-                    .map((day) => Text(day.diaSemana,
-                        style: const TextStyle(
-                            fontFamily: 'Jersey 10',
-                            color: AppColors.cinzaSub,
-                            fontSize: 14)))
-                    .toList()),
-            const SizedBox(height: 8),
-            Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: _usuario!.streakData
-                    .map((day) => Image.asset("assets/images/${day.imagem}",
-                        width: 32, height: 32))
-                    .toList()),
-          ]),
-        ),
-        const SizedBox(height: 20),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: Column(children: [
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text('${_usuario!.exp} XP',
-                  style: const TextStyle(
-                      color: AppColors.verdeLima, 
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16)),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.roxoProfundo,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text('Nível ${_usuario!.nivel}',
-                    style: const TextStyle(
-                        color: AppColors.branco, 
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16)),
-              ),
-              Text('${_usuario!.expTotalNivel} XP',
-                  style: const TextStyle(
-                      color: AppColors.cinzaSub, 
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16)),
-            ]),
-            const SizedBox(height: 10),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: LinearProgressIndicator(
-                value: expProgress.clamp(0.0, 1.0),
-                backgroundColor: AppColors.roxoProfundo.withOpacity(0.3),
-                valueColor:
-                    const AlwaysStoppedAnimation<Color>(AppColors.verdeLima),
-                minHeight: 12,
-              ),
-            ),
-          ]),
-        ),
-      ]),
-    );
-  }
-
+  
   Widget _buildTimerSection(BuildContext context) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final minutes = twoDigits(_duration.inMinutes.remainder(60));
@@ -432,248 +361,326 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
     final progress = _maxDuration.inSeconds > 0
         ? _duration.inSeconds / _maxDuration.inSeconds
         : 0.0;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-          color: AppColors.fundoCard, 
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ]),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            themeProvider.fundoCard,
+            themeProvider.fundoCard.withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: (_isFinished ? AppColors.roxoClaro : AppColors.verdeLima)
+                .withValues(alpha: 0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+            spreadRadius: 2,
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(children: [
         AnimatedBuilder(
           animation: _pulseAnimation,
           builder: (context, child) {
             return Transform.scale(
               scale: _isFinished ? _pulseAnimation.value : 1.0,
-              child: SizedBox(
-                width: 200,
-                height: 200,
+              child: Container(
+                width: 220,
+                height: 220,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: (_isFinished ? AppColors.roxoClaro : AppColors.verdeLima)
+                          .withValues(alpha: _isTimerRunning ? 0.3 : 0.1),
+                      blurRadius: _isTimerRunning ? 30 : 15,
+                      spreadRadius: _isTimerRunning ? 5 : 0,
+                    ),
+                  ],
+                ),
                 child: Stack(fit: StackFit.expand, children: [
                   CircularProgressIndicator(
-                      value: progress,
-                      strokeWidth: 10,
-                      strokeCap: StrokeCap.round,
-                      backgroundColor: AppColors.roxoProfundo.withOpacity(0.3),
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                          _isFinished ? AppColors.roxoClaro : AppColors.verdeLima)),
+                    value: progress,
+                    strokeWidth: 12,
+                    strokeCap: StrokeCap.round,
+                    backgroundColor: AppColors.roxoProfundo.withValues(alpha: 0.2),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      _isFinished
+                          ? AppColors.roxoClaro
+                          : _isTimerRunning
+                              ? AppColors.verdeLima
+                              : AppColors.verdeLima.withValues(alpha: 0.5),
+                    ),
+                  ),
                   Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('$minutes:$seconds',
-                              style: const TextStyle(
-                                  fontFamily: 'Jersey 10',
-                                  fontSize: 64,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold)),
-                          if (_isFinished)
-                            const Text('Tempo esgotado!',
-                                style: TextStyle(
-                                    fontFamily: 'Jersey 10',
-                                    fontSize: 16,
-                                    color: AppColors.roxoClaro)),
-                        ],
-                      )),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '$minutes:$seconds',
+                          style: TextStyle(
+                            fontFamily: 'Jersey 10',
+                            fontSize: 72,
+                            color: themeProvider.textoTexto,
+                            fontWeight: FontWeight.bold,
+                            height: 1,
+                            shadows: [
+                              Shadow(
+                                color: (_isFinished ? AppColors.roxoClaro : AppColors.verdeLima)
+                                    .withValues(alpha: 0.3),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ]),
               ),
             );
           },
         ),
         const SizedBox(height: 32),
-        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Container(
-            decoration: BoxDecoration(
-              color: AppColors.roxoProfundo.withOpacity(0.3),
-              shape: BoxShape.circle,
+        // Controles do Timer
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Botão Reiniciar
+            _buildTimerControlButton(
+              icon: Icons.replay_rounded,
+              label: 'Reiniciar',
+              onPressed: _resetTimer,
+              color: AppColors.roxoClaro,
+              isSecondary: true,
             ),
-            child: IconButton(
-                icon: const Icon(Icons.replay, color: AppColors.verdeLima, size: 32),
-                onPressed: _resetTimer,
-                tooltip: 'Reiniciar'),
-          ),
-          const SizedBox(width: 40),
-          Container(
-            decoration: BoxDecoration(
-              color: _isTimerRunning 
-                  ? AppColors.roxoClaro.withOpacity(0.2)
-                  : AppColors.verdeLima.withOpacity(0.2),
-              shape: BoxShape.circle,
+            const SizedBox(width: 24),
+            // Botão Play/Pause
+            _buildTimerControlButton(
+              icon: _isTimerRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
+              label: _isTimerRunning ? 'Pausar' : 'Iniciar',
+              onPressed: _toggleTimer,
+              color: _isTimerRunning ? AppColors.amareloClaro : AppColors.verdeLima,
+              isSecondary: false,
+              isPrimary: true,
             ),
-            child: IconButton(
-                icon: Icon(
-                    _isTimerRunning ? Icons.pause : Icons.play_arrow,
-                    color: _isTimerRunning ? AppColors.roxoClaro : AppColors.verdeLima,
-                    size: 40),
-                onPressed: _toggleTimer,
-                tooltip: _isTimerRunning ? 'Pausar' : 'Iniciar'),
-          ),
-        ]),
+          ],
+        ),
       ]),
     );
   }
 
+  Widget _buildTimerControlButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+    required Color color,
+    bool isSecondary = false,
+    bool isPrimary = false,
+  }) {
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: !isSecondary
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      color,
+                      color.withValues(alpha: 0.7),
+                    ],
+                  )
+                : null,
+            color: isSecondary ? color.withValues(alpha: 0.15) : null,
+            boxShadow: [
+              if (!isSecondary)
+                BoxShadow(
+                  color: color.withValues(alpha: 0.4),
+                  blurRadius: 15,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 4),
+                ),
+            ],
+            border: isSecondary
+                ? Border.all(
+                    color: color.withValues(alpha: 0.4),
+                    width: 2,
+                  )
+                : null,
+          ),
+          child: IconButton(
+            icon: Icon(
+              icon,
+              color: isSecondary ? color : AppColors.fundoEscuro,
+              size: isPrimary ? 42 : 32,
+            ),
+            onPressed: onPressed,
+            tooltip: label,
+            iconSize: isPrimary ? 42 : 32,
+            padding: EdgeInsets.all(isPrimary ? 16 : 12),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: TextStyle(
+            fontFamily: 'Jersey 10',
+            fontSize: 12,
+            color: isSecondary ? color : color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildTaskSection(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-          color: AppColors.fundoCard, 
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ]),
-      child: Column(
-        children: [
-          Text(_atividade?.nome ?? '',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontFamily: 'Jersey 10', 
-                  fontSize: 28, 
-                  color: Colors.white,
-                  height: 1.2)),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildInfoChip(
-                icon: Icons.stars_rounded,
-                label: '${_atividade?.xp ?? 0} XP',
-                color: AppColors.amareloClaro,
-              ),
-              const SizedBox(width: 12),
-              _buildInfoChip(
-                icon: Icons.repeat_rounded,
-                label: _atividade?.recorrencia.toUpperCase() ?? 'ÚNICA',
-                color: AppColors.roxoClaro,
-              ),
-            ],
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            themeProvider.fundoCard,
+            themeProvider.fundoCard.withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.roxoProfundo.withValues(alpha: 0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+            spreadRadius: 2,
           ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.roxoProfundo.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset(
-                      'assets/images/dificuldade$dificuldadeLevel.png',
-                      height: 20,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      FilterHelpers.getDificuldadeDisplayName(_atividade?.dificuldade ?? 'facil'),
-                      style: const TextStyle(
-                        color: AppColors.branco,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Título da Atividade
+          Center(
+            child: Column(
+              children: [
+                const SizedBox(height: 16),
+                Text(
+                  _atividade?.nome ?? '',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: 'Jersey 10',
+                    fontSize: 32,
+                    color: themeProvider.textoTexto,
+                    fontWeight: FontWeight.bold,
+                    height: 1.2,
+                    shadows: [
+                      Shadow(
+                        color: AppColors.roxoProfundo.withValues(alpha: 0.2),
+                        blurRadius: 8,
                       ),
-                    ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Badges de Informações
+          Center(
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                _buildInfoChip(
+                  icon: Icons.stars_rounded,
+                  label: '${_atividade?.xp ?? 0} XP',
+                  color: AppColors.amareloClaro,
+                  isPrimary: true,
+                ),
+                _buildInfoChip(
+                  icon: Icons.access_time_rounded,
+                  label: '${_atividade?.tpEstimado ?? 0} min',
+                  color: AppColors.verdeLima,
+                ),
+                _buildInfoChip(
+                  icon: Icons.repeat_rounded,
+                  label: _atividade?.recorrencia.toUpperCase() ?? 'ÚNICA',
+                  color: _atividade?.recorrenciaColor ?? AppColors.recorrenciaUnica,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Badge de Dificuldade
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.roxoProfundo.withValues(alpha: 0.6),
+                    AppColors.roxoProfundo.withValues(alpha: 0.4),
                   ],
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoChip({required IconData icon, required String label, required Color color}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 16),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'Jersey 10',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildButtonsSection(BuildContext context) {
-    return Column(children: [
-      Row(
-        children: [
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.fundoCard,
-                foregroundColor: AppColors.cinzaSub,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: AppColors.cinzaSub.withOpacity(0.3), width: 1),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: AppColors.roxoProfundo.withValues(alpha: 0.3),
+                  width: 1.5,
                 ),
-                elevation: 0,
-              ),
-              child: const Text(
-                'CANCELAR',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontFamily: 'Jersey 10',
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: _concluirAtividade,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.verdeLima,
-                foregroundColor: AppColors.fundoEscuro,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 4,
-                shadowColor: AppColors.verdeLima.withOpacity(0.4),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.roxoProfundo.withValues(alpha: 0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.check_circle_outline, size: 24),
-                  SizedBox(width: 8),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset(
+                    'assets/images/dificuldade$dificuldadeLevel.png',
+                    height: 24,
+                  ),
+                  const SizedBox(width: 10),
                   Text(
-                    'CONCLUIR',
+                    'Dificuldade: ',
                     style: TextStyle(
-                      fontSize: 20,
+                      color: themeProvider.textoAtividade,
+                      fontSize: 14,
+                      fontFamily: 'Jersey 10',
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    FilterHelpers.getDificuldadeDisplayName(_atividade?.dificuldade ?? 'facil'),
+                    style: TextStyle(
+                      color: themeProvider.textoAtividade,
+                      fontSize: 14,
                       fontFamily: 'Jersey 10',
                       fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
                     ),
                   ),
                 ],
@@ -682,6 +689,192 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
           ),
         ],
       ),
-    ]);
+    );
+  }
+
+  Widget _buildInfoChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+    bool isPrimary = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: isPrimary
+            ? LinearGradient(
+                colors: [
+                  color.withValues(alpha: 0.25),
+                  color.withValues(alpha: 0.15),
+                ],
+              )
+            : null,
+        color: !isPrimary ? color.withValues(alpha: 0.15) : null,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: color.withValues(alpha: 0.4),
+          width: isPrimary ? 2 : 1.5,
+        ),
+        boxShadow: isPrimary
+            ? [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ]
+            : null,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: isPrimary ? 20 : 16),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: isPrimary ? 16 : 14,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Jersey 10',
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildButtonsSection(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    return Column(
+      children: [
+        // Botão principal de Concluir
+        Container(
+          width: double.infinity,
+          height: 60,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.verdeLima,
+                AppColors.verdeLima.withValues(alpha: 0.8),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.verdeLima.withValues(alpha: 0.4),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+                spreadRadius: 2,
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: ElevatedButton(
+            onPressed: _concluirAtividade,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent,
+              foregroundColor: AppColors.fundoEscuro,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.check_circle_rounded, size: 28),
+                const SizedBox(width: 12),
+                Text(
+                  'CONCLUIR ATIVIDADE',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontFamily: 'Jersey 10',
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Botão secundário de Cancelar
+        Container(
+          width: double.infinity,
+          height: 56,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: themeProvider.textoCinza.withValues(alpha: 0.3),
+              width: 2,
+            ),
+          ),
+          child: ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: themeProvider.fundoCard.withValues(alpha: 0.5),
+              foregroundColor: themeProvider.textoCinza,
+              shadowColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.close_rounded, size: 24),
+                SizedBox(width: 10),
+                Text(
+                  'CANCELAR',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontFamily: 'Jersey 10',
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Texto informativo
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.info_outline_rounded,
+              size: 16,
+              color: themeProvider.textoCinza.withValues(alpha: 0.6),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              'A atividade será concluída quando o timer terminar',
+              style: TextStyle(
+                fontSize: 12,
+                color: themeProvider.textoCinza.withValues(alpha: 0.7),
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:gamefymobile/models/models.dart';
 import 'package:gamefymobile/services/api_service.dart';
 import 'package:gamefymobile/widgets/custom_app_bar.dart';
 import 'config/app_colors.dart';
+import 'config/theme_provider.dart';
 
 class HistoricoScreen extends StatefulWidget {
   const HistoricoScreen({super.key});
@@ -97,6 +99,7 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       appBar: CustomAppBar(
         usuario: _usuario,
@@ -105,7 +108,7 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
         conquistas: _conquistas,
         onDataReload: _carregarDados,
       ),
-      backgroundColor: AppColors.fundoEscuro,
+      backgroundColor: themeProvider.fundoApp,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -116,9 +119,9 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _atividadesFiltradas.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Text('Nenhuma atividade encontrada.',
-                              style: TextStyle(color: Colors.white)))
+                              style: TextStyle(color: themeProvider.textoTexto)))
                       : ListView.builder(
                           itemCount: _atividadesFiltradas.length,
                           itemBuilder: (context, index) {
@@ -126,7 +129,7 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
                             return Container(
                               margin: const EdgeInsets.only(bottom: 8),
                               decoration: BoxDecoration(
-                                color: AppColors.fundoCard,
+                                color: themeProvider.cardAtividade,
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
                                   color: atividade.situacaoColor.withValues(alpha: 0.3),
@@ -137,8 +140,8 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                 title: Text(
                                   atividade.nome,
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  style: TextStyle(
+                                    color: themeProvider.textoAtividade,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -248,26 +251,27 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
   }
 
   Widget _buildFiltros() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Column(
       children: [
         // Campo de busca por nome
         TextField(
           controller: _nomeController,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: themeProvider.textoTexto),
           decoration: InputDecoration(
             labelText: 'Nome da Atividade',
-            labelStyle: const TextStyle(color: Colors.white),
+            labelStyle: TextStyle(color: themeProvider.textoTexto),
             suffixIcon: _nomeController.text.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(Icons.clear, color: Colors.white),
+                    icon: Icon(Icons.clear, color: themeProvider.textoTexto),
                     onPressed: () {
                       _nomeController.clear();
                       _filtrarAtividades();
                     },
                   )
                 : null,
-            enabledBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.white),
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: themeProvider.textoCinza),
             ),
             focusedBorder: const OutlineInputBorder(
               borderSide: BorderSide(color: AppColors.verdeLima),
@@ -283,10 +287,10 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
             Expanded(
               child: DropdownButtonFormField<String>(
                 initialValue: _recorrenciaSelecionada,
-                hint: const Text('Recorrência',
-                    style: TextStyle(color: Colors.white)),
-                style: const TextStyle(color: Colors.white),
-                dropdownColor: AppColors.fundoCard,
+                hint: Text('Recorrência',
+                    style: TextStyle(color: themeProvider.textoTexto)),
+                style: TextStyle(color: themeProvider.textoTexto),
+                dropdownColor: themeProvider.fundoCard,
                 items: FilterHelpers.getRecorrenciaOptions().map((option) {
                   return DropdownMenuItem<String>(
                     value: option['value'],
@@ -305,10 +309,10 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
             Expanded(
               child: DropdownButtonFormField<String>(
                 initialValue: _situacaoSelecionada,
-                hint: const Text('Situação',
-                    style: TextStyle(color: Colors.white)),
-                style: const TextStyle(color: Colors.white),
-                dropdownColor: AppColors.fundoCard,
+                hint: Text('Situação',
+                    style: TextStyle(color: themeProvider.textoTexto)),
+                style: TextStyle(color: themeProvider.textoTexto),
+                dropdownColor: themeProvider.fundoCard,
                 items: FilterHelpers.getSituacaoOptions().map((option) {
                   return DropdownMenuItem<String>(
                     value: option['value'],
@@ -330,9 +334,9 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
         // Filtro de dificuldade
         DropdownButtonFormField<String>(
           initialValue: _dificuldadeSelecionada,
-          hint: const Text('Dificuldade', style: TextStyle(color: Colors.white)),
-          style: const TextStyle(color: Colors.white),
-          dropdownColor: AppColors.fundoCard,
+          hint: Text('Dificuldade', style: TextStyle(color: themeProvider.textoTexto)),
+          style: TextStyle(color: themeProvider.textoTexto),
+          dropdownColor: themeProvider.fundoCard,
           items: FilterHelpers.getDificuldadeOptions().map((option) {
             return DropdownMenuItem<String>(
               value: option['value'],

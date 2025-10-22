@@ -1,6 +1,8 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../config/app_colors.dart';
+import '../config/theme_provider.dart';
 import '../models/models.dart';
 
 class UserLevelAvatar extends StatelessWidget {
@@ -15,6 +17,7 @@ class UserLevelAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     final progress = user.exp / max(1, user.expTotalNivel);
     return SizedBox(
       width: (radius + 6) * 2,
@@ -36,7 +39,7 @@ class UserLevelAvatar extends StatelessWidget {
           ),
           CircleAvatar(
             radius: radius,
-            backgroundColor: AppColors.fundoCard,
+            backgroundColor: themeProvider.fundoCard,
             child: CircleAvatar(
               radius: radius - 4,
               backgroundImage: AssetImage(
@@ -53,7 +56,7 @@ class UserLevelAvatar extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.roxoProfundo,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.fundoEscuro, width: 2),
+                border: Border.all(color: themeProvider.fundoApp, width: 2),
               ),
               child: Text(
                 user.nivel.toString(),

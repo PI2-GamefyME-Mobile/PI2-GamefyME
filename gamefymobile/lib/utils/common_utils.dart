@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../config/app_colors.dart';
+import '../config/theme_provider.dart';
 import '../models/models.dart';
 
 class CommonUtils {
@@ -11,6 +13,7 @@ class CommonUtils {
 
   // Widget de campo de texto reutilizável
   static Widget buildTextField({
+    required BuildContext context,
     required String label,
     required String hint,
     required TextEditingController controller,
@@ -21,13 +24,14 @@ class CommonUtils {
     void Function(String)? onChanged,
     int? maxLines = 1,
   }) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: AppColors.branco,
+          style: TextStyle(
+            color: themeProvider.textoTexto,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -40,13 +44,13 @@ class CommonUtils {
           maxLines: maxLines,
           validator: validator,
           onChanged: onChanged,
-          style: const TextStyle(color: AppColors.branco),
+          style: TextStyle(color: themeProvider.textoTexto),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: const TextStyle(color: AppColors.cinzaSub),
+            hintStyle: TextStyle(color: themeProvider.textoCinza),
             suffixIcon: suffixIcon,
             filled: true,
-            fillColor: AppColors.fundoCard,
+            fillColor: themeProvider.fundoCard,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide.none,
@@ -71,9 +75,11 @@ class CommonUtils {
 
   // Widget de seletor de dificuldade reutilizável
   static Widget buildDificuldadeSelector({
+    required BuildContext context,
     required int dificuldadeSelecionada,
     required Function(int) onChanged,
   }) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     final dificuldades = ['muito_facil', 'facil', 'medio', 'dificil', 'muito_dificil'];
     
     return Row(
@@ -98,7 +104,7 @@ class CommonUtils {
                 Text(
                   FilterHelpers.getDificuldadeDisplayName(dificuldade),
                   style: TextStyle(
-                    color: isSelected ? AppColors.branco : AppColors.cinzaSub,
+                    color: isSelected ? themeProvider.textoTexto : themeProvider.textoCinza,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -114,6 +120,7 @@ class CommonUtils {
 
   // Widget de seletor de recorrência reutilizável
   static Widget buildRecorrenciaSelector({
+    required BuildContext context,
     required String recorrenciaSelecionada,
     required Function(String) onChanged,
   }) {
@@ -121,6 +128,7 @@ class CommonUtils {
       children: [
         Expanded(
           child: _buildRecorrenciaButton(
+            context,
             'ÚNICA', 
             'unica', 
             recorrenciaSelecionada, 
@@ -130,6 +138,7 @@ class CommonUtils {
         const SizedBox(width: 10),
         Expanded(
           child: _buildRecorrenciaButton(
+            context,
             'RECORRENTE', 
             'recorrente', 
             recorrenciaSelecionada, 
@@ -141,33 +150,36 @@ class CommonUtils {
   }
 
   static Widget _buildRecorrenciaButton(
+    BuildContext context,
     String text, 
     String value, 
     String recorrenciaSelecionada, 
     Function(String) onChanged
   ) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     final bool isSelected = recorrenciaSelecionada == value;
     return ElevatedButton(
       onPressed: () => onChanged(value),
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? AppColors.roxoClaro : AppColors.fundoCard,
+        backgroundColor: isSelected ? AppColors.roxoClaro : themeProvider.fundoCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
       child: Text(
         text,
         style: TextStyle(
-          color: isSelected ? AppColors.branco : AppColors.cinzaSub,
+          color: isSelected ? themeProvider.textoTexto : themeProvider.textoCinza,
         ),
       ),
     );
   }
 
   // Widget de título de seção reutilizável
-  static Widget buildSectionTitle(String title) {
+  static Widget buildSectionTitle(BuildContext context, String title) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Text(
       title,
-      style: const TextStyle(
-        color: AppColors.branco,
+      style: TextStyle(
+        color: themeProvider.textoTexto,
         fontSize: 16,
         fontWeight: FontWeight.bold,
       ),

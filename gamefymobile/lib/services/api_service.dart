@@ -346,4 +346,112 @@ class ApiService {
       throw Exception('Falha ao carregar o status do streak');
     }
   }
+
+  // ===== MÉTODOS DE ADMINISTRAÇÃO - DESAFIOS =====
+  
+  Future<List<dynamic>> fetchDesafiosAdmin() async {
+    final url = Uri.parse('$_baseRoot/desafios/admin/');
+    final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
+    if (res.statusCode == 200) {
+      return json.decode(utf8.decode(res.bodyBytes));
+    } else {
+      throw Exception('Falha ao carregar desafios (admin)');
+    }
+  }
+
+  Future<void> criarDesafio(Map<String, dynamic> dados) async {
+    final url = Uri.parse('$_baseRoot/desafios/admin/');
+    final res = await _authorizedRequest(
+      (headers) => http.post(url, headers: headers, body: json.encode(dados)),
+    );
+    if (res.statusCode != 201) {
+      final error = json.decode(utf8.decode(res.bodyBytes));
+      throw Exception('Erro ao criar desafio: ${error.toString()}');
+    }
+  }
+
+  Future<void> atualizarDesafio(int id, Map<String, dynamic> dados) async {
+    final url = Uri.parse('$_baseRoot/desafios/admin/$id/');
+    final res = await _authorizedRequest(
+      (headers) => http.put(url, headers: headers, body: json.encode(dados)),
+    );
+    if (res.statusCode != 200) {
+      final error = json.decode(utf8.decode(res.bodyBytes));
+      throw Exception('Erro ao atualizar desafio: ${error.toString()}');
+    }
+  }
+
+  Future<void> excluirDesafio(int id) async {
+    final url = Uri.parse('$_baseRoot/desafios/admin/$id/');
+    final res = await _authorizedRequest(
+      (headers) => http.delete(url, headers: headers),
+    );
+    if (res.statusCode != 204) {
+      throw Exception('Erro ao excluir desafio');
+    }
+  }
+
+  // ===== MÉTODOS DE ADMINISTRAÇÃO - CONQUISTAS =====
+  
+  Future<List<dynamic>> fetchConquistasAdmin() async {
+    final url = Uri.parse('$_baseRoot/conquistas/admin/');
+    final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
+    if (res.statusCode == 200) {
+      return json.decode(utf8.decode(res.bodyBytes));
+    } else {
+      throw Exception('Falha ao carregar conquistas (admin)');
+    }
+  }
+
+  Future<void> criarConquista(Map<String, dynamic> dados) async {
+    final url = Uri.parse('$_baseRoot/conquistas/admin/');
+    final res = await _authorizedRequest(
+      (headers) => http.post(url, headers: headers, body: json.encode(dados)),
+    );
+    if (res.statusCode != 201) {
+      final error = json.decode(utf8.decode(res.bodyBytes));
+      throw Exception('Erro ao criar conquista: ${error.toString()}');
+    }
+  }
+
+  Future<void> atualizarConquista(int id, Map<String, dynamic> dados) async {
+    final url = Uri.parse('$_baseRoot/conquistas/admin/$id/');
+    final res = await _authorizedRequest(
+      (headers) => http.put(url, headers: headers, body: json.encode(dados)),
+    );
+    if (res.statusCode != 200) {
+      final error = json.decode(utf8.decode(res.bodyBytes));
+      throw Exception('Erro ao atualizar conquista: ${error.toString()}');
+    }
+  }
+
+  Future<void> excluirConquista(int id) async {
+    final url = Uri.parse('$_baseRoot/conquistas/admin/$id/');
+    final res = await _authorizedRequest(
+      (headers) => http.delete(url, headers: headers),
+    );
+    if (res.statusCode != 204) {
+      throw Exception('Erro ao excluir conquista');
+    }
+  }
+
+  Future<String> uploadImagemConquista(String filePath) async {
+    final url = Uri.parse('$_baseRoot/conquistas/admin/upload-image/');
+    final token = await _authService.getToken();
+    
+    var request = http.MultipartRequest('POST', url);
+    request.headers['Authorization'] = 'Bearer $token';
+    request.files.add(await http.MultipartFile.fromPath('image', filePath));
+    
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+    
+    if (response.statusCode == 201) {
+      final data = json.decode(utf8.decode(response.bodyBytes));
+      return data['filename'];
+    } else {
+      final error = json.decode(utf8.decode(response.bodyBytes));
+      throw Exception(error['error'] ?? 'Erro ao fazer upload da imagem');
+    }
+  }
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:gamefymobile/models/models.dart';
 import 'package:gamefymobile/services/api_service.dart';
 import 'package:gamefymobile/widgets/custom_app_bar.dart';
 import 'config/app_colors.dart';
+import 'config/theme_provider.dart';
 
 class ConquistasScreen extends StatefulWidget {
   const ConquistasScreen({super.key});
@@ -120,6 +122,9 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isAdmin = _usuario?.isAdmin ?? false;
+
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
       appBar: CustomAppBar(
         usuario: _usuario,
@@ -128,20 +133,40 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
         conquistas: _conquistas,
         onDataReload: _carregarDados,
       ),
-      backgroundColor: AppColors.fundoEscuro,
+      backgroundColor: themeProvider.fundoApp,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            if (isAdmin)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/admin-conquistas')
+                          .then((_) => _carregarDados());
+                    },
+                    icon: const Icon(Icons.admin_panel_settings),
+                    label: const Text('Gerenciar Conquistas'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.roxoProfundo,
+                      foregroundColor: AppColors.verdeLima,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                  ),
+                ),
+              ),
             _buildFiltro(),
             const SizedBox(height: 16),
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : _conquistasFiltradas.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Text('Nenhuma conquista encontrada.',
-                              style: TextStyle(color: Colors.white)))
+                              style: TextStyle(color: themeProvider.textoTexto)))
                       : _buildListaConquistas(),
             ),
           ],
@@ -151,25 +176,26 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
   }
 
   Widget _buildFiltro() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Column(
       children: [
         TextField(
           controller: _filtroController,
-          style: const TextStyle(color: Colors.white),
+          style: TextStyle(color: themeProvider.textoTexto),
           decoration: InputDecoration(
             labelText: 'Pesquisar por nome',
-            labelStyle: const TextStyle(color: Colors.grey),
+            labelStyle: TextStyle(color: themeProvider.textoCinza),
             suffixIcon: _filtroController.text.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(Icons.clear, color: Colors.white),
+                    icon: Icon(Icons.clear, color: themeProvider.textoTexto),
                     onPressed: () {
                       _filtroController.clear();
                       _filtrarConquistas('');
                     },
                   )
                 : null,
-            enabledBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.grey),
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: themeProvider.textoCinza),
             ),
             focusedBorder: const OutlineInputBorder(
               borderSide: BorderSide(color: AppColors.verdeLima),
@@ -205,6 +231,7 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
   }
 
   Widget _buildListaConquistas() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return ListView.builder(
       itemCount: _conquistasFiltradas.length,
       itemBuilder: (context, index) {
@@ -214,7 +241,7 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
           child: Opacity(
             opacity: conquista.completada ? 1.0 : 0.4,
             child: Card(
-              color: conquista.completada ? AppColors.fundoCard : AppColors.fundoCard.withValues(alpha: 0.6),
+              color: conquista.completada ? themeProvider.cardAtividade : themeProvider.cardAtividade.withValues(alpha: 0.6),
               child: ListTile(
                 leading: Stack(
                   children: [
@@ -223,7 +250,7 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
                       width: 50,
                       height: 50,
                       errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.error, color: Colors.white),
+                          Icon(Icons.error, color: themeProvider.textoAtividade),
                     ),
                     if (!conquista.completada)
                       Positioned.fill(
@@ -232,9 +259,9 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
                             color: Colors.black.withValues(alpha: 0.5),
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.lock,
-                            color: Colors.white,
+                            color: themeProvider.textoAtividade,
                             size: 20,
                           ),
                         ),
@@ -244,7 +271,7 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
                 title: Text(
                   conquista.nome,
                   style: TextStyle(
-                    color: conquista.completada ? Colors.white : Colors.grey,
+                    color: conquista.completada ? themeProvider.textoAtividade : themeProvider.textoCinza,
                     fontSize: 16,
                     fontWeight: conquista.completada ? FontWeight.bold : FontWeight.normal,
                   ),
@@ -252,7 +279,7 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
                 subtitle: Text(
                   conquista.descricao,
                   style: TextStyle(
-                    color: conquista.completada ? Colors.grey : Colors.grey.withValues(alpha: 0.7),
+                    color: themeProvider.textoAtividade,
                     fontSize: 12,
                   ),
                 ),
@@ -268,10 +295,10 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
                       ),
                     ),
                     if (!conquista.completada)
-                      const Text(
+                      Text(
                         "BLOQUEADA",
                         style: TextStyle(
-                          color: Colors.red,
+                          color: themeProvider.textoCinza,
                           fontSize: 8,
                           fontWeight: FontWeight.bold,
                         ),

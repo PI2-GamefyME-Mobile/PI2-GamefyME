@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:gamefymobile/cadastro_atividade_screen.dart';
 import 'package:gamefymobile/conquistas_screen.dart';
 import 'package:gamefymobile/desafios_screen.dart';
@@ -8,6 +9,7 @@ import 'package:intl/intl.dart';
 
 import 'config/app_colors.dart';
 import 'services/api_service.dart';
+import 'config/theme_provider.dart';
 import 'models/models.dart';
 import 'realizar_atividade_screen.dart';
 import 'editar_atividade_screen.dart';
@@ -64,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
             curve: Curves.ease,
           );
         },
-        backgroundColor: AppColors.roxoHeader,
+  backgroundColor: AppColors.roxoHeader,
         selectedItemColor: AppColors.verdeLima,
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
@@ -162,7 +164,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
   Future<void> _showAvatarModal() async {
     final newAvatar = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: AppColors.fundoCard,
+      backgroundColor: Provider.of<ThemeProvider>(context, listen: false).fundoCard,
       builder: (context) {
         return Padding(
           padding: const EdgeInsets.all(20),
@@ -191,8 +193,9 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Scaffold(
-      backgroundColor: AppColors.fundoEscuro,
+      backgroundColor: themeProvider.fundoApp,
       appBar: CustomAppBar(
         usuario: _usuario,
         notificacoes: _notificacoes,
@@ -204,7 +207,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
         child: RefreshIndicator(
           onRefresh: _carregarDados,
           color: AppColors.verdeLima,
-          backgroundColor: AppColors.fundoCard,
+          backgroundColor: themeProvider.fundoCard,
           child: _buildBody(),
         ),
       ),
@@ -220,7 +223,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
             _carregarDados();
           }
         },
-        child: const Icon(Icons.add, color: AppColors.fundoEscuro, size: 30),
+        child: Icon(Icons.add, color: themeProvider.isDarkMode ? AppColors.fundoEscuro : AppColors.branco, size: 30),
       ),
     );
   }
@@ -228,14 +231,14 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
   Widget _buildBody() {
     switch (_screenState) {
       case ScreenState.loading:
-        return const Center(
-            child: CircularProgressIndicator(color: AppColors.verdeLima));
+    return const Center(
+      child: CircularProgressIndicator(color: AppColors.verdeLima));
       case ScreenState.error:
         return Center(
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          const Text('Erro ao carregar dados.',
-              style: TextStyle(color: AppColors.branco)),
+      Text('Erro ao carregar dados.',
+        style: TextStyle(color: Provider.of<ThemeProvider>(context).textoTexto)),
           const SizedBox(height: 10),
           ElevatedButton(
               onPressed: _carregarDados,
@@ -272,10 +275,11 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
   }
 
   Widget _buildUserInfoCard(Usuario user) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.fundoCard,
+        color: themeProvider.fundoCard,
         borderRadius: BorderRadius.circular(10),
       ),
       child: GestureDetector(
@@ -288,8 +292,8 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
             Text(
               user.nome,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.branco,
+              style: TextStyle(
+                color: themeProvider.textoTexto,
                 fontWeight: FontWeight.bold,
               ),
               maxLines: 2,
@@ -309,21 +313,22 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
     // Formato para exibir o dia da semana
     final DateFormat dayFormatter = DateFormat('EEE', 'pt_BR');
 
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.fundoCard,
+        color: themeProvider.fundoCard,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const Text("Dias contínuos de atividades",
+          Text("Dias contínuos de atividades",
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.branco)),
+                  color: themeProvider.textoTexto)),
           const SizedBox(height: 12),
           Expanded(
             child: Row(
@@ -347,10 +352,10 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                 return Expanded(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     Text(diaSemana,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.branco)),
+                            color: themeProvider.textoTexto)),
                     const SizedBox(height: 8),
                     Image.asset(imagePath,
                         width: 28, height: 28),
@@ -363,14 +368,14 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
           Column(children: [
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Text('${usuario.exp} XP',
-                  style: const TextStyle(
-                      color: AppColors.branco, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      color: themeProvider.textoTexto, fontWeight: FontWeight.bold)),
               Text('Nível ${usuario.nivel}',
-                  style: const TextStyle(
-                      color: AppColors.branco, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      color: themeProvider.textoTexto, fontWeight: FontWeight.bold)),
               Text('${usuario.expTotalNivel} XP',
-                  style: const TextStyle(
-                      color: AppColors.branco, fontWeight: FontWeight.bold)),
+                  style: TextStyle(
+                      color: themeProvider.textoTexto, fontWeight: FontWeight.bold)),
             ]),
             const SizedBox(height: 4),
             LinearProgressIndicator(
@@ -400,10 +405,11 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
             a.situacao == 'ativa' &&
             a.nome.toLowerCase().contains(_searchText.toLowerCase()))
         .toList();
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.fundoCard,
+        color: themeProvider.fundoCard,
         borderRadius: BorderRadius.circular(5),
       ),
       child: Column(
@@ -411,12 +417,12 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
         children: [
           TextField(
             onChanged: (value) => setState(() => _searchText = value),
-            style: const TextStyle(
-                color: AppColors.branco, fontFamily: 'Jersey 10'),
+            style: TextStyle(
+                color: themeProvider.textoTexto, fontFamily: 'Jersey 10'),
             decoration: InputDecoration(
               hintText: "Nome da atividade",
-              hintStyle: const TextStyle(color: AppColors.cinzaSub),
-              prefixIcon: const Icon(Icons.search, color: AppColors.cinzaSub),
+              hintStyle: TextStyle(color: themeProvider.textoCinza),
+              prefixIcon: Icon(Icons.search, color: themeProvider.textoCinza),
               filled: true,
               fillColor: const Color(0xFFD9D9D9),
               border: OutlineInputBorder(
@@ -430,7 +436,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
             controller: _tabController,
             tabs: const [Tab(text: 'Recorrentes'), Tab(text: 'Únicas')],
             labelColor: AppColors.verdeLima,
-            unselectedLabelColor: AppColors.cinzaSub,
+            unselectedLabelColor: themeProvider.textoCinza,
             indicatorColor: AppColors.verdeLima,
           ),
           Expanded(
@@ -448,12 +454,13 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
   }
 
   Widget _buildAtividadesList(List<Atividade> atividades) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     if (atividades.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 20),
+          padding: const EdgeInsets.symmetric(vertical: 20),
           child: Text("Nenhuma atividade encontrada.",
-              style: TextStyle(color: AppColors.cinzaSub)),
+              style: TextStyle(color: themeProvider.textoCinza)),
         ),
       );
     }
@@ -466,7 +473,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
         return Container(
           margin: const EdgeInsets.only(top: 8),
           decoration: BoxDecoration(
-            color: AppColors.roxoMedio,
+            color: themeProvider.cardAtividade,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: atividade.situacaoColor.withValues(alpha: 0.3),
@@ -479,7 +486,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
 
             // botão de editar à esquerda
             leading: IconButton(
-              icon: const Icon(Icons.edit, color: AppColors.cinzaSub),
+              icon: Icon(Icons.edit, color: themeProvider.textoCinza),
               onPressed: () async {
                 final result = await Navigator.push(
                   context,
@@ -518,8 +525,8 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                     Expanded(
                       child: Text(
                         atividade.nome,
-                        style: const TextStyle(
-                          color: AppColors.branco,
+                        style: TextStyle(
+                          color: themeProvider.textoAtividade,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -534,8 +541,10 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                       ),
                       child: Text(
                         '${atividade.xp}xp',
-                        style: const TextStyle(
-                          color: AppColors.fundoEscuro,
+                        style: TextStyle(
+                          color: themeProvider.isDarkMode
+                              ? AppColors.fundoEscuro
+                              : AppColors.fundoEscuro,
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
                         ),
@@ -637,8 +646,8 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
             ),
 
             // ícone à direita para indicar clique
-            trailing: const Icon(Icons.arrow_forward_ios,
-                color: AppColors.cinzaSub, size: 18),
+      trailing: Icon(Icons.arrow_forward_ios,
+        color: themeProvider.textoCinza, size: 18),
           ),
         );
       },

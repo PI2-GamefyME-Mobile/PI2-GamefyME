@@ -1,10 +1,3 @@
-CREATE TYPE tipo_usuario_enum AS ENUM ('comum', 'administrador');
-CREATE TYPE dificuldade_enum AS ENUM ('muito_facil', 'facil', 'medio', 'dificil', 'muito_dificil');
-CREATE TYPE situacao_atividade_enum AS ENUM ('ativa',  'realizada',  'cancelada');
-CREATE TYPE recorrencia_enum AS ENUM ('unica', 'recorrente');
-CREATE TYPE tipo_desafio_enum AS ENUM ('diario', 'semanal', 'mensal');
-CREATE TYPE tipo_notificacao_enum AS ENUM ('info', 'sucesso', 'aviso', 'erro');
-
 CREATE TABLE usuarios (
     idusuario SERIAL PRIMARY KEY,
     nmusuario VARCHAR(100) NOT NULL,
@@ -12,7 +5,7 @@ CREATE TABLE usuarios (
     flsituacao BOOLEAN DEFAULT true,
     nivelusuario INTEGER DEFAULT 1,
     expusuario SMALLINT DEFAULT 0 CHECK (expusuario >= 0 AND expusuario <= 1000),
-    tipousuario tipo_usuario_enum NOT NULL,
+    tipousuario VARCHAR(20) NOT NULL DEFAULT 'comum',
     imagem_perfil VARCHAR(100) DEFAULT 'avatar1.png',
     ultima_atividade TIMESTAMPTZ,
     date_joined TIMESTAMPTZ NOT NULL,
@@ -28,14 +21,14 @@ CREATE TABLE atividades (
     idatividade SERIAL PRIMARY KEY,
     idusuario INT NOT NULL REFERENCES usuarios(idusuario),
     nmatividade VARCHAR(100) NOT NULL,
-    dificuldade dificuldade_enum NOT NULL,
-    situacao situacao_atividade_enum NOT NULL,
-    recorrencia recorrencia_enum NOT NULL,
+    dificuldade VARCHAR(20) NOT NULL,
+    situacao VARCHAR(20) NOT NULL,
+    recorrencia VARCHAR(20) NOT NULL,
     dtatividade TIMESTAMP WITH TIME ZONE NOT NULL,
     dtatividaderealizada TIMESTAMP WITH TIME ZONE ,
     tpestimado INT NOT NULL,
     dsatividade TEXT,
-    expatividade SMALLINT DEFAULT 0,
+    expatividade SMALLINT DEFAULT 0
 );
 
 CREATE TABLE desafios (
@@ -44,7 +37,7 @@ CREATE TABLE desafios (
     dsdesafio TEXT,
     dtinicio TIMESTAMP WITH TIME ZONE ,
     dtfim TIMESTAMP WITH TIME ZONE,
-    tipo tipo_desafio_enum NOT NULL,
+    tipo VARCHAR(20) NOT NULL,
     expdesafio SMALLINT DEFAULT 0,
     tipo_logica VARCHAR(50),
     parametro INTEGER
