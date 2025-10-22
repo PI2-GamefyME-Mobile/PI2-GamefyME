@@ -113,6 +113,115 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
+  Future<void> _confirmarInativacao() async {
+    final confirmar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Inativar Conta'),
+        content: const Text(
+          'Tem certeza que deseja inativar sua conta?\n\n'
+          'Sua conta será desativada e você não poderá fazer login até reativá-la. '
+          'Você poderá reativar sua conta a qualquer momento através do seu e-mail cadastrado.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Inativar', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmar == true) {
+      setState(() => _isLoading = true);
+      final result = await _apiService.inativarConta();
+      setState(() => _isLoading = false);
+
+      if (!mounted) return;
+      
+      if (result['success']) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Conta inativada com sucesso. Você será desconectado.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        // Aguarda um momento para exibir a mensagem, depois faz logout
+        await Future.delayed(const Duration(seconds: 2));
+        if (!mounted) return;
+        // Navega para a tela de login
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro: ${result['message']}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildDangerZone(ThemeProvider themeProvider) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.1),
+        border: Border.all(color: Colors.red.withOpacity(0.3)),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.warning, color: Colors.red),
+              const SizedBox(width: 8),
+              Text(
+                "Zona de Perigo",
+                style: TextStyle(
+                  color: themeProvider.textoTexto,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            "Inativar sua conta irá desconectá-lo do sistema. "
+            "Você poderá reativar sua conta a qualquer momento através do seu e-mail cadastrado.",
+            style: TextStyle(color: themeProvider.textoCinza, fontSize: 14),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _confirmarInativacao,
+              icon: const Icon(Icons.block, color: Colors.red),
+              label: const Text(
+                'Inativar Minha Conta',
+                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.red),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -167,6 +276,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         const SizedBox(height: 20),
         _isEditing ? _buildEditForm() : _buildUserInfoDetails(),
+        if (_isEditing) ...[
+          const SizedBox(height: 20),
+          _buildDangerZone(themeProvider),
+        ],
         const SizedBox(height: 20),
         _buildLeaderboard(themeProvider), // Widget da leaderboard adicionado aqui
       ],

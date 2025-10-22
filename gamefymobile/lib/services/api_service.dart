@@ -32,8 +32,16 @@ class ApiService {
     }
   }
 
-  Future<List<Atividade>> fetchAtividades() async {
-    final url = Uri.parse('$_baseRoot/atividades/');
+  Future<List<Atividade>> fetchAtividades({
+    DateTime? startDate,
+    DateTime? endDate,
+    bool byConclusao = false,
+  }) async {
+    final query = <String, String>{};
+    if (startDate != null) query['start_date'] = startDate.toIso8601String().substring(0, 10);
+    if (endDate != null) query['end_date'] = endDate.toIso8601String().substring(0, 10);
+    if (byConclusao) query['by'] = 'conclusao';
+    final url = Uri.parse('$_baseRoot/atividades/').replace(queryParameters: query.isEmpty ? null : query);
     final res =
         await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
@@ -432,6 +440,23 @@ class ApiService {
     );
     if (res.statusCode != 204) {
       throw Exception('Erro ao excluir conquista');
+    }
+  }
+
+  // ===== GERENCIAMENTO DE CONTA =====
+  
+  Future<Map<String, dynamic>> inativarConta() async {
+    final url = Uri.parse('$_baseRoot/usuarios/inativar/');
+    try {
+      final response = await http.post(url, headers: await _getHeaders());
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': 'Conta inativada com sucesso.'};
+      } else {
+        final responseBody = jsonDecode(response.body);
+        return {'success': false, 'message': responseBody['erro'] ?? 'Erro ao inativar conta.'};
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão: $e'};
     }
   }
 

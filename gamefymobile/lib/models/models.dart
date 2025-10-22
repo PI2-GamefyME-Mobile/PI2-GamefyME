@@ -71,6 +71,7 @@ class Atividade {
   final int xp;
   final int nivelUsuario;
   final String dtAtividade;
+  final String? dtAtividadeRealizada;
 
   Atividade({
     required this.id,
@@ -83,6 +84,7 @@ class Atividade {
     required this.xp,
     required this.nivelUsuario,
     required this.dtAtividade,
+    this.dtAtividadeRealizada,
   });
 
   factory Atividade.fromJson(Map<String, dynamic> json) {
@@ -97,6 +99,7 @@ class Atividade {
       xp: json['expatividade'] ?? 0,
       nivelUsuario: json['nivelusuario'] ?? 1,
       dtAtividade: json['dtatividade'] ?? '',
+      dtAtividadeRealizada: json['dtatividaderealizada'],
     );
   }
 

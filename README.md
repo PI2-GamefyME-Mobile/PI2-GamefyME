@@ -33,3 +33,17 @@ O projeto consiste em um aplicativo móvel desenvolvido com **Flutter** e um bac
     -   [lucasmavila@gmail.com](mailto:lucasmavila@gmail.com)
 -   **Luis Felipe de Souza Santili**
     -   [felipesantili@gmail.com](mailto:felipesantili@gmail.com)
+
+---
+
+## Lembretes Automáticos por E-mail (RF06)
+
+Foi adicionada uma tarefa de gerenciamento para enviar lembretes diários aos usuários que ainda não concluíram atividades no dia, além de registrar uma Notificação no histórico.
+
+Como executar manualmente:
+
+```
+python api/manage.py enviar_lembretes
+```
+
+Como agendar (Windows): utilize o Agendador de Tarefas para executar o comando diariamente no ambiente configurado. Em Linux, use cron; em produção pode-se empregar Celery Beat.

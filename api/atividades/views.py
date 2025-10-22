@@ -15,7 +15,29 @@ class AtividadeViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Atividade.objects.filter(idusuario=user).exclude(situacao='cancelada')
+        qs = Atividade.objects.filter(idusuario=user).exclude(situacao='cancelada')
+
+        # Filtros por data (yyyy-mm-dd) opcionais
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        by = self.request.query_params.get('by', 'criacao')  # 'criacao' ou 'conclusao'
+
+        try:
+            if start_date:
+                if by == 'conclusao':
+                    qs = qs.filter(dtatividaderealizada__date__gte=start_date)
+                else:
+                    qs = qs.filter(dtatividade__date__gte=start_date)
+            if end_date:
+                if by == 'conclusao':
+                    qs = qs.filter(dtatividaderealizada__date__lte=end_date)
+                else:
+                    qs = qs.filter(dtatividade__date__lte=end_date)
+        except Exception:
+            # Em caso de datas inválidas, retorna sem filtro adicional
+            pass
+
+        return qs
 
     def perform_create(self, serializer):
         validated_data = serializer.validated_data

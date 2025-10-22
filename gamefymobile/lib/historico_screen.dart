@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gamefymobile/models/models.dart';
 import 'package:gamefymobile/services/api_service.dart';
+import 'report/pdf_report.dart';
 import 'package:gamefymobile/widgets/custom_app_bar.dart';
 import 'config/app_colors.dart';
 import 'config/theme_provider.dart';
@@ -26,6 +27,8 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
   // Dados específicos da tela
   List<Atividade> _atividades = [];
   List<Atividade> _atividadesFiltradas = [];
+  DateTime? _dataInicio;
+  DateTime? _dataFim;
 
   final TextEditingController _nomeController = TextEditingController();
   String? _recorrenciaSelecionada;
@@ -43,7 +46,10 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
     try {
       final results = await Future.wait([
         _apiService.fetchUsuario(),
-        _apiService.fetchAtividades(),
+        _apiService.fetchAtividades(
+          startDate: _dataInicio,
+          endDate: _dataFim,
+        ),
         _apiService.fetchNotificacoes(),
         _apiService.fetchDesafiosPendentes(),
         _apiService.fetchUsuarioConquistas(),
@@ -254,6 +260,107 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
     final themeProvider = Provider.of<ThemeProvider>(context);
     return Column(
       children: [
+        // Seleção de intervalo de datas
+        Row(children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime(2100),
+                  initialDate: _dataInicio ?? DateTime.now(),
+                );
+                if (picked != null) {
+                  setState(() => _dataInicio = picked);
+                  await _carregarDados();
+                  _filtrarAtividades();
+                }
+              },
+              icon: const Icon(Icons.date_range),
+              label: Text(
+                _dataInicio == null
+                    ? 'Início'
+                    : '${_dataInicio!.day.toString().padLeft(2, '0')}/${_dataInicio!.month.toString().padLeft(2, '0')}/${_dataInicio!.year}',
+                style: TextStyle(color: themeProvider.textoTexto),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime(2100),
+                  initialDate: _dataFim ?? DateTime.now(),
+                );
+                if (picked != null) {
+                  setState(() => _dataFim = picked);
+                  await _carregarDados();
+                  _filtrarAtividades();
+                }
+              },
+              icon: const Icon(Icons.event),
+              label: Text(
+                _dataFim == null
+                    ? 'Fim'
+                    : '${_dataFim!.day.toString().padLeft(2, '0')}/${_dataFim!.month.toString().padLeft(2, '0')}/${_dataFim!.year}',
+                style: TextStyle(color: themeProvider.textoTexto),
+              ),
+            ),
+          ),
+        ]),
+        const SizedBox(height: 10),
+        // Botão de geração de PDF do período selecionado
+        Align(
+          alignment: Alignment.centerRight,
+          child: ElevatedButton.icon(
+            onPressed: (_dataInicio == null || _dataFim == null)
+                ? null
+                : () async {
+                    final periodo = DateTimeRange(start: _dataInicio!, end: _dataFim!);
+                    final atividadesResumo = _atividadesFiltradas
+                        .where((a) => a.situacao.toLowerCase() == 'realizada' || a.situacao.toLowerCase() == 'cancelada')
+                        .map((a) {
+                          DateTime data;
+                          if ((a.dtAtividadeRealizada ?? '').isNotEmpty) {
+                            data = DateTime.tryParse(a.dtAtividadeRealizada!) ?? DateTime.now();
+                          } else {
+                            data = DateTime.tryParse(a.dtAtividade) ?? DateTime.now();
+                          }
+                          return AtividadeResumo(
+                            nome: a.nome,
+                            situacao: a.situacao,
+                            dificuldade: FilterHelpers.getDificuldadeDisplayName(a.dificuldade),
+                            experiencia: a.xp,
+                            data: data,
+                            descricao: a.descricao.isEmpty ? null : a.descricao,
+                          );
+                        })
+                        .toList();
+
+                    await shareActivitiesPdf(
+                      atividades: atividadesResumo,
+                      periodo: periodo,
+                      primaryColor: AppColors.verdeLima,
+                      onPrimaryColor: AppColors.fundoEscuro,
+                    );
+                  },
+            icon: const Icon(Icons.picture_as_pdf, color: AppColors.fundoEscuro),
+            label: const Text(
+              'Gerar PDF',
+              style: TextStyle(color: AppColors.fundoEscuro, fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.verdeLima,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
         // Campo de busca por nome
         TextField(
           controller: _nomeController,

@@ -153,6 +153,26 @@ def _verificar_e_premiar_conquistas(usuario):
         elif nome_conquista == "CONSISTÊNCIA INABALÁVEL":
             atingiu_criterio = calcular_streak_conclusao(usuario) >= 15
 
+        # --- Conquistas baseadas em Pomodoro (atividades longas >= 60 min) ---
+        elif nome_conquista == "POMODORO INICIANTE":
+            pomodoro_count = AtividadeConcluidas.objects.filter(
+                idusuario=usuario,
+                idatividade__tpestimado__gte=60
+            ).count()
+            atingiu_criterio = pomodoro_count >= 1
+        elif nome_conquista == "POMODORO DEDICADO":
+            pomodoro_count = AtividadeConcluidas.objects.filter(
+                idusuario=usuario,
+                idatividade__tpestimado__gte=60
+            ).count()
+            atingiu_criterio = pomodoro_count >= 5
+        elif nome_conquista == "POMODORO MESTRE":
+            pomodoro_count = AtividadeConcluidas.objects.filter(
+                idusuario=usuario,
+                idatividade__tpestimado__gte=60
+            ).count()
+            atingiu_criterio = pomodoro_count >= 20
+
         if atingiu_criterio:
             UsuarioConquista.objects.create(idusuario=usuario, idconquista=conquista)
             criar_notificacao(

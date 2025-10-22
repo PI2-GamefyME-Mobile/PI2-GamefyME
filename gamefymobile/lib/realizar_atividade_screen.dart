@@ -38,8 +38,12 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
   Timer? _timer;
   Duration _duration = Duration.zero;
   Duration _maxDuration = Duration.zero;
+  Duration _totalRemaining = Duration.zero;
+  Duration _totalOriginal = Duration.zero;
   bool get _isTimerRunning => _timer?.isActive ?? false;
   bool _isFinished = false;
+  bool _isPomodoro = false;
+  bool _inFocusPhase = true; // true=foco 25, false=pausa 5
 
   StreamSubscription? _timerSubscription;
   StreamSubscription? _completionSubscription;
@@ -154,7 +158,17 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
         _desafios = results[3] as List<DesafioPendente>;
         _conquistas = results[4] as List<Conquista>;
         _maxDuration = Duration(minutes: _atividade!.tpEstimado);
-        _duration = _maxDuration;
+        _totalOriginal = _maxDuration;
+        _totalRemaining = _maxDuration;
+        _isPomodoro = _atividade!.tpEstimado > 60;
+        if (_isPomodoro) {
+          // Começa na fase de foco de 25 min (ou o restante, se menor)
+          final focus = Duration(minutes: 25);
+          _duration = _totalRemaining < focus ? _totalRemaining : focus;
+          _inFocusPhase = true;
+        } else {
+          _duration = _maxDuration;
+        }
         _screenState = ScreenState.loaded;
       });
     } catch (e) {
@@ -175,16 +189,28 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
     );
 
     _notificationService.showTimerStartedNotification(
-      activityName: _atividade!.nome,
+      activityName: _isPomodoro
+          ? '${_atividade!.nome} • ${_inFocusPhase ? 'Foco' : 'Pausa'}'
+          : _atividade!.nome,
       minutes: _duration.inMinutes,
     );
 
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (_duration.inSeconds > 0) {
-        setState(() => _duration = _duration - const Duration(seconds: 1));
+        setState(() {
+          _duration = _duration - const Duration(seconds: 1);
+          if (_isPomodoro && _inFocusPhase) {
+            // Apenas o tempo de foco conta para o restante total
+            _totalRemaining -= const Duration(seconds: 1);
+          }
+        });
       } else {
         _stopTimer(finished: true);
-        _concluirAtividadeAutomaticamente();
+        if (_isPomodoro) {
+          _onPhaseComplete();
+        } else {
+          _concluirAtividadeAutomaticamente();
+        }
       }
     });
   }
@@ -205,7 +231,14 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
     _stopTimer();
     _timerService.resetTimer();
     setState(() {
-      _duration = _maxDuration;
+      _totalRemaining = _totalOriginal;
+      if (_isPomodoro) {
+        final focus = const Duration(minutes: 25);
+        _duration = _totalRemaining < focus ? _totalRemaining : focus;
+  _inFocusPhase = true;
+      } else {
+        _duration = _maxDuration;
+      }
       _isFinished = false;
     });
   }
@@ -242,6 +275,39 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
           content: Text('Não foi possível completar a atividade automaticamente.',
               style: TextStyle(fontFamily: 'Jersey 10', fontSize: 16)),
           backgroundColor: Colors.red));
+    }
+  }
+
+  void _onPhaseComplete() async {
+    // Sinalização visual e sonora já feita em _onTimerComplete
+    if (!_isPomodoro) return;
+
+    // Se acabou a fase de foco, inicia pausa se ainda há tempo total para cumprir
+    if (_inFocusPhase) {
+      _inFocusPhase = false;
+      final breakDur = const Duration(minutes: 5);
+      // Se já cumpriu o tempo total de foco, conclui atividade
+      if (_totalRemaining <= Duration.zero) {
+        await _concluirAtividadeAutomaticamente();
+        return;
+      }
+      setState(() {
+        _duration = breakDur;
+      });
+      _startTimer();
+    } else {
+      // Fim da pausa, volta ao foco
+  _inFocusPhase = true;
+      final focus = const Duration(minutes: 25);
+      if (_totalRemaining <= Duration.zero) {
+        await _concluirAtividadeAutomaticamente();
+        return;
+      }
+      final nextFocus = _totalRemaining < focus ? _totalRemaining : focus;
+      setState(() {
+        _duration = nextFocus;
+      });
+      _startTimer();
     }
   }
 
@@ -358,9 +424,10 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final minutes = twoDigits(_duration.inMinutes.remainder(60));
     final seconds = twoDigits(_duration.inSeconds.remainder(60));
-    final progress = _maxDuration.inSeconds > 0
-        ? _duration.inSeconds / _maxDuration.inSeconds
-        : 0.0;
+  // Progresso geral baseado no restante total
+  final totalRemaining = _isPomodoro ? _totalRemaining.inSeconds : _duration.inSeconds;
+  final totalOriginal = _isPomodoro ? _totalOriginal.inSeconds : _maxDuration.inSeconds;
+  final progress = totalOriginal > 0 ? (totalRemaining / totalOriginal) : 0.0;
     final themeProvider = Provider.of<ThemeProvider>(context);
     
     return Container(

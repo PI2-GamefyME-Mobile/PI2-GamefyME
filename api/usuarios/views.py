@@ -92,6 +92,13 @@ class LoginAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Bloqueia login caso conta esteja inativa (exclusão lógica)
+        if not getattr(usuario, 'flsituacao', True):
+            return Response(
+                {"erro": "Conta inativa. Solicite reativação pelo seu e-mail cadastrado."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         refresh = RefreshToken.for_user(usuario)
 
         return Response(
@@ -104,6 +111,82 @@ class LoginAPIView(APIView):
             },
             status=status.HTTP_200_OK
         )
+
+class InativarContaView(APIView):
+    """Inativa logicamente a conta do usuário autenticado (soft delete)."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        try:
+            user.flsituacao = False
+            user.is_active = False
+            user.save(update_fields=["flsituacao", "is_active"])
+            return Response({"message": "Conta inativada com sucesso."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"erro": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class ReativacaoSolicitarView(APIView):
+    """Envia um código por e-mail para reativar a conta (AllowAny)."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({"error": "E-mail é obrigatório."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            usuario = Usuario.objects.get(emailusuario=email)
+        except Usuario.DoesNotExist:
+            return Response({"error": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Gera e armazena código temporário (10 minutos)
+        code = ''.join(random.choices(string.digits, k=6))
+        cache.set(f'reactivate_code_{email}', code, timeout=600)
+
+        subject = "Reativação de Conta - GamefyME"
+        message = f"""
+        Olá {usuario.nmusuario},
+
+        Recebemos uma solicitação para reativar sua conta no GamefyME. 
+        Utilize o código abaixo para confirmar a reativação:
+
+        Código: {code}
+
+        Este código expira em 10 minutos.
+
+        Se você não solicitou, ignore este e-mail.
+        """
+        try:
+            send_mail(subject, message, EMAIL_HOST_USER, [email])
+            return Response({"message": "E-mail de reativação enviado."}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": f"Falha ao enviar e-mail: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class ReativacaoConfirmarView(APIView):
+    """Confirma o código e reativa a conta (AllowAny)."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        email = request.data.get('email')
+        code = request.data.get('token')
+        if not email or not code:
+            return Response({"error": "E-mail e código são obrigatórios."}, status=status.HTTP_400_BAD_REQUEST)
+
+        stored = cache.get(f'reactivate_code_{email}')
+        if stored is None:
+            return Response({"error": "Código expirado ou inválido."}, status=status.HTTP_400_BAD_REQUEST)
+        if stored != code:
+            return Response({"error": "Código inválido."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            usuario = Usuario.objects.get(emailusuario=email)
+            usuario.flsituacao = True
+            usuario.is_active = True
+            usuario.save(update_fields=["flsituacao", "is_active"])
+            cache.delete(f'reactivate_code_{email}')
+            return Response({"message": "Conta reativada com sucesso."}, status=status.HTTP_200_OK)
+        except Usuario.DoesNotExist:
+            return Response({"error": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
 class UsuarioDetailView(APIView):
     permission_classes = [IsAuthenticated]
