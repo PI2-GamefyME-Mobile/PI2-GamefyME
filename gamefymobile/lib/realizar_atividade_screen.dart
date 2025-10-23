@@ -148,7 +148,7 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
         _apiService.fetchUsuario(),
         _apiService.fetchNotificacoes(),
         _apiService.fetchDesafiosPendentes(),
-        _apiService.fetchUsuarioConquistas(),
+        _apiService.fetchConquistas(),
       ]);
       if (!mounted) return;
       setState(() {

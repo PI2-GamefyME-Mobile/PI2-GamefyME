@@ -5,6 +5,7 @@ import 'package:gamefymobile/widgets/custom_app_bar.dart';
 import 'package:gamefymobile/config/app_colors.dart';
 import 'package:gamefymobile/config/theme_provider.dart';
 import 'package:gamefymobile/widgets/user_level_avatar.dart';
+import 'package:gamefymobile/estatisticas_screen.dart';
 import 'package:provider/provider.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -54,7 +55,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _apiService.fetchUsuario(),
         _apiService.fetchNotificacoes(),
         _apiService.fetchDesafiosPendentes(),
-        _apiService.fetchUsuarioConquistas(),
+        _apiService.fetchConquistas(),
         _apiService.fetchLeaderboard(),
       ]);
       if (!mounted) return;
@@ -234,7 +235,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         desafios: _desafios,
         conquistas: _conquistas,
         onDataReload: _carregarDados,
-        showBackButton: true,
       ),
       body: _isLoading
           ? const Center(
@@ -282,6 +282,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
         const SizedBox(height: 20),
         _buildLeaderboard(themeProvider), // Widget da leaderboard adicionado aqui
+        const SizedBox(height: 20),
+        _buildEstatisticasButton(themeProvider), // Botão para estatísticas
       ],
     );
   }
@@ -580,6 +582,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               );
             },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEstatisticasButton(ThemeProvider themeProvider) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: themeProvider.fundoCard,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "📊 Progressão Visual",
+                style: TextStyle(
+                  color: themeProvider.textoTexto,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Icon(Icons.analytics, color: AppColors.roxoHeader, size: 24),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const EstatisticasScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.bar_chart, color: Colors.white),
+              label: const Text(
+                'Ver Minhas Estatísticas',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.roxoHeader,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Veja gráficos detalhados, heat map e seu progresso',
+            style: TextStyle(
+              color: themeProvider.textoCinza,
+              fontSize: 12,
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

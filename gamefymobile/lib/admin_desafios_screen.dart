@@ -34,7 +34,7 @@ class _AdminDesafiosScreenState extends State<AdminDesafiosScreen> {
         _apiService.fetchUsuario(),
         _apiService.fetchNotificacoes(),
         _apiService.fetchDesafiosPendentes(),
-        _apiService.fetchUsuarioConquistas(),
+        _apiService.fetchConquistas(),
         _apiService.fetchDesafiosAdmin(),
       ]);
       if (!mounted) return;
@@ -284,7 +284,7 @@ class _FormularioDesafioScreenState extends State<FormularioDesafioScreen> {
         _apiService.fetchUsuario(),
         _apiService.fetchNotificacoes(),
         _apiService.fetchDesafiosPendentes(),
-        _apiService.fetchUsuarioConquistas(),
+        _apiService.fetchConquistas(),
       ]);
       if (!mounted) return;
       setState(() {

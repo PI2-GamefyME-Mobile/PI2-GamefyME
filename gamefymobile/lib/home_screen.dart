@@ -139,7 +139,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
       final results = await Future.wait([
         _apiService.fetchUsuario(),
         _apiService.fetchAtividades(),
-        _apiService.fetchUsuarioConquistas(),
+        _apiService.fetchConquistas(),
         _apiService.fetchDesafiosPendentes(),
         _apiService.fetchNotificacoes(),
         _apiService.fetchStreakStatus(),

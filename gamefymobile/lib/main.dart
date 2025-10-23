@@ -457,8 +457,10 @@ class _RegisterPageState extends State<RegisterPage> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Informe um email válido.")));
       return;
     }
-    if (senha.length < 4) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("A senha deve ter pelo menos 4 caracteres.")));
+    // RN 06: Validação completa de senha
+    final senhaValidacao = CommonUtils.validatePassword(senha);
+    if (senhaValidacao != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(senhaValidacao)));
       return;
     }
     if (senha != confSenha) {

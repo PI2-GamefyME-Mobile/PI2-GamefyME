@@ -206,12 +206,21 @@ class CommonUtils {
   }
 
   // Validação de senha
+  // RN 06: Mínimo 6 caracteres, 1 maiúscula e 1 caractere especial
   static String? validatePassword(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Senha é obrigatória';
     }
     if (value.length < 6) {
       return 'Senha deve ter pelo menos 6 caracteres';
+    }
+    // Verifica se tem pelo menos uma letra maiúscula
+    if (!RegExp(r'[A-Z]').hasMatch(value)) {
+      return 'Senha deve conter pelo menos uma letra maiúscula';
+    }
+    // Verifica se tem pelo menos um caractere especial
+    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>\-_=+\[\]\\;/]').hasMatch(value)) {
+      return 'Senha deve conter pelo menos um caractere especial';
     }
     return null;
   }

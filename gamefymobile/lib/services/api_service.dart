@@ -3,14 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 import '../models/models.dart';
+import '../config/api_config.dart';
 
 class ApiService {
   final AuthService _authService = AuthService();
-  // Rodar no PC
-  static const String _baseRoot = 'http://127.0.0.1:8000/api';
-
-  // Rodar no celular
-  // static const String _baseRoot = 'http://192.168.100.114:8000/api';
+  static String get _baseRoot => ApiConfig.apiBaseUrl;
 
   Future<Map<String, String>> _getHeaders() async {
     final token = await _authService.getToken();
@@ -49,6 +46,26 @@ class ApiService {
       return data.map((e) => Atividade.fromJson(e)).toList();
     } else {
       throw Exception('Falha ao carregar atividades');
+    }
+  }
+
+  Future<List<Atividade>> fetchHistoricoAtividades({
+    DateTime? startDate,
+    DateTime? endDate,
+    bool byConclusao = false,
+  }) async {
+    final query = <String, String>{};
+    if (startDate != null) query['start_date'] = startDate.toIso8601String().substring(0, 10);
+    if (endDate != null) query['end_date'] = endDate.toIso8601String().substring(0, 10);
+    if (byConclusao) query['by'] = 'conclusao';
+    final url = Uri.parse('$_baseRoot/atividades/historico/').replace(queryParameters: query.isEmpty ? null : query);
+    final res =
+        await _authorizedRequest((headers) => http.get(url, headers: headers));
+    if (res.statusCode == 200) {
+      final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
+      return data.map((e) => Atividade.fromJson(e)).toList();
+    } else {
+      throw Exception('Falha ao carregar histórico de atividades');
     }
   }
 
@@ -98,37 +115,17 @@ class ApiService {
     }
   }
 
-  Future<List<Conquista>> fetchUsuarioConquistas() async {
-    final url = Uri.parse('$_baseRoot/conquistas/usuario/'); 
+  Future<List<Conquista>> fetchConquistas({bool todasConquistas = false}) async {
+    final url = Uri.parse('$_baseRoot/conquistas/${todasConquistas ? '' : 'usuario/'}'); 
     final res =
         await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
       final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
-      return data.map((e) => Conquista.fromJson(e)).toList();
-    } else {
-      throw Exception('Falha ao carregar conquistas do usuário');
-    }
-  }
-
-  Future<List<Conquista>> fetchTodasConquistas() async {
-    final url = Uri.parse('$_baseRoot/conquistas/'); 
-    final res =
-        await _authorizedRequest((headers) => http.get(url, headers: headers));
-    if (res.statusCode == 200) {
-      final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
-      return data.map((e) => Conquista.fromAllConquistasJson(e)).toList();
-    } else {
-      throw Exception('Falha ao carregar todas as conquistas');
-    }
-  }
-
-  Future<List<Conquista>> fetchConquistas() async {
-    final url = Uri.parse('$_baseRoot/conquistas/'); 
-    final res =
-        await _authorizedRequest((headers) => http.get(url, headers: headers));
-    if (res.statusCode == 200) {
-      final List<dynamic> data = json.decode(utf8.decode(res.bodyBytes));
-      return data.map((e) => Conquista.fromJson(e)).toList();
+      if (todasConquistas) {
+        return data.map((e) => Conquista.fromAllConquistasJson(e)).toList();
+      } else {
+        return data.map((e) => Conquista.fromJson(e)).toList();
+      }
     } else {
       throw Exception('Falha ao carregar conquistas');
     }
@@ -316,6 +313,18 @@ class ApiService {
       return data.map((e) => Usuario.fromJson(e)).toList();
     } else {
       throw Exception('Falha ao carregar a leaderboard');
+    }
+  }
+
+  Future<Estatisticas> fetchEstatisticas() async {
+    final url = Uri.parse('$_baseRoot/usuarios/estatisticas/');
+    final res =
+        await _authorizedRequest((headers) => http.get(url, headers: headers));
+    if (res.statusCode == 200) {
+      final data = json.decode(utf8.decode(res.bodyBytes));
+      return Estatisticas.fromJson(data);
+    } else {
+      throw Exception('Falha ao carregar estatísticas');
     }
   }
 

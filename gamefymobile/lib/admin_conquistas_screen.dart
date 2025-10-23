@@ -36,7 +36,7 @@ class _AdminConquistasScreenState extends State<AdminConquistasScreen> {
         _apiService.fetchUsuario(),
         _apiService.fetchNotificacoes(),
         _apiService.fetchDesafiosPendentes(),
-        _apiService.fetchUsuarioConquistas(),
+        _apiService.fetchConquistas(),
         _apiService.fetchConquistasAdmin(),
       ]);
       if (!mounted) return;
@@ -279,7 +279,7 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
         _apiService.fetchUsuario(),
         _apiService.fetchNotificacoes(),
         _apiService.fetchDesafiosPendentes(),
-        _apiService.fetchUsuarioConquistas(),
+        _apiService.fetchConquistas(),
       ]);
       if (!mounted) return;
       setState(() {

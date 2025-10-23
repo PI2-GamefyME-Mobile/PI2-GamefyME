@@ -92,7 +92,7 @@ class _EditarAtividadeScreenState extends State<EditarAtividadeScreen> {
     }
   }
 
-  Future<void> _removerAtividade() async {
+  Future<void> _cancelarAtividade() async {
   final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
   final bool confirm = await showDialog(
         context: context,
@@ -103,7 +103,7 @@ class _EditarAtividadeScreenState extends State<EditarAtividadeScreen> {
             style: TextStyle(color: themeProvider.textoTexto),
           ),
           content: Text(
-            'Tem certeza de que deseja remover esta atividade?',
+            'Tem certeza de que deseja cancelar esta atividade?',
             style: TextStyle(color: themeProvider.textoTexto),
           ),
           actions: [
@@ -114,7 +114,7 @@ class _EditarAtividadeScreenState extends State<EditarAtividadeScreen> {
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Remover',
+              child: const Text('Cancelar',
                   style: TextStyle(color: Colors.red)),
             ),
           ],
@@ -131,7 +131,7 @@ class _EditarAtividadeScreenState extends State<EditarAtividadeScreen> {
       Navigator.pop(context, true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Erro ao remover a atividade.'),
+          content: Text('Erro ao cancelar a atividade.'),
           backgroundColor: Colors.red));
     }
   }
@@ -209,7 +209,7 @@ class _EditarAtividadeScreenState extends State<EditarAtividadeScreen> {
               Row(children: [
                 Expanded(
                     child: ElevatedButton(
-                        onPressed: _isLoading ? null : _removerAtividade,
+                        onPressed: _isLoading ? null : _cancelarAtividade,
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
                             padding: const EdgeInsets.symmetric(vertical: 16),
@@ -218,7 +218,7 @@ class _EditarAtividadeScreenState extends State<EditarAtividadeScreen> {
                         child: _isLoading
                             ? const CircularProgressIndicator(
                                 color: AppColors.fundoEscuro)
-                            : const Text('REMOVER',
+                            : const Text('CANCELAR',
                                 style: TextStyle(
                                     fontFamily: 'Jersey 10',
                                     color: AppColors.branco,

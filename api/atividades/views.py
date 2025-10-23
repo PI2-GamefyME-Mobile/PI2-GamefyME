@@ -91,6 +91,40 @@ class AtividadeViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({'erro': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=False, methods=['get'], url_path='historico')
+    def historico(self, request):
+        """
+        Retorna todas as atividades do usuário, incluindo as canceladas,
+        para exibição no histórico.
+        """
+        user = request.user
+        qs = Atividade.objects.filter(idusuario=user)
+
+        # Filtros por data (yyyy-mm-dd) opcionais
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        by = self.request.query_params.get('by', 'criacao')  # 'criacao' ou 'conclusao'
+
+        try:
+            if start_date:
+                if by == 'conclusao':
+                    qs = qs.filter(dtatividaderealizada__date__gte=start_date)
+                else:
+                    qs = qs.filter(dtatividade__date__gte=start_date)
+            if end_date:
+                if by == 'conclusao':
+                    qs = qs.filter(dtatividaderealizada__date__lte=end_date)
+                else:
+                    qs = qs.filter(dtatividade__date__lte=end_date)
+        except Exception:
+            pass
+
+        # Ordena por data de realização (se existir) ou por data da atividade
+        qs = qs.order_by('-dtatividaderealizada', '-dtatividade')
+        
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
+
     @action(detail=False, methods=['get'], url_path='streak-status')
     def streak_status(self, request):
         usuario = request.user

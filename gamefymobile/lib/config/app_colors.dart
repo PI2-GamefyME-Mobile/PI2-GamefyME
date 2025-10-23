@@ -48,4 +48,8 @@ class AppColors {
   // Cores para atividades - Recorrência
   static const Color recorrenciaUnica = Color(0xFF607D8B);  // Cinza azulado para única
   static const Color recorrenciaRecorrente = Color(0xFF2196F3);  // Azul para recorrente
+  
+  // Cores adicionais
+  static const Color amareloOuro = Color(0xFFFFD700);
+  static const Color verdeSuccess = Color(0xFF4CAF50);
 }

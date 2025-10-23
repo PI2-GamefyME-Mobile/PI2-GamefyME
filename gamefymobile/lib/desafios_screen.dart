@@ -41,7 +41,7 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
         _apiService.fetchUsuario(),
         _apiService.fetchDesafiosPendentes(),
         _apiService.fetchNotificacoes(),
-        _apiService.fetchUsuarioConquistas(),
+        _apiService.fetchConquistas(),
       ]);
       if (!mounted) return;
       setState(() {

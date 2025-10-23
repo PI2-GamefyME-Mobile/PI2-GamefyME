@@ -44,7 +44,7 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
     try {
       final results = await Future.wait([
         _apiService.fetchUsuario(),
-        _apiService.fetchTodasConquistas(),
+        _apiService.fetchConquistas(todasConquistas: true),
         _apiService.fetchNotificacoes(),
         _apiService.fetchDesafiosPendentes(),
       ]);

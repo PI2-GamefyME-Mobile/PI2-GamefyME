@@ -70,3 +70,19 @@ class LeaderboardSerializer(serializers.ModelSerializer):
             idusuario=obj,
             dtconclusao__date__gte=inicio_semana
         ).count()
+
+# Serializer para administração de usuários (RN 07)
+class AdminUsuarioSerializer(serializers.ModelSerializer):
+    total_atividades = serializers.SerializerMethodField()
+    total_conquistas = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Usuario
+        fields = ['idusuario', 'nmusuario', 'emailusuario', 'tipousuario', 'flsituacao', 'is_active', 'nivelusuario', 'expusuario', 'date_joined', 'ultima_atividade', 'total_atividades', 'total_conquistas']
+    
+    def get_total_atividades(self, obj):
+        return AtividadeConcluidas.objects.filter(idusuario=obj).count()
+    
+    def get_total_conquistas(self, obj):
+        from conquistas.models import UsuarioConquista
+        return UsuarioConquista.objects.filter(idusuario=obj).count()

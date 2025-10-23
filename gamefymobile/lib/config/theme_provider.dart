@@ -14,7 +14,7 @@ class ThemeProvider extends ChangeNotifier {
   Color get textoCinza => _isDarkMode ? AppColors.cinzaSubEscuro : AppColors.cinzaSubClaro;
   Color get fundoDropDown => _isDarkMode ? AppColors.fundoDropDownEscuro : AppColors.fundoDropDownClaro;
   Color get botaoDropDown => _isDarkMode ? AppColors.botaoDropDownEscuro : AppColors.botaoDropDownClaro;
-  Color get cardAtividade => _isDarkMode ? AppColors.roxoHeader : AppColors.fundoEscuro;
+  Color get cardAtividade => _isDarkMode ? AppColors.roxoHeader : AppColors.fundoCardEscuro;
   Color get leaderboard => _isDarkMode ? AppColors.fundoCardEscuro : const Color.fromARGB(255, 199, 199, 199);
   Color get leaderboardPerfil => _isDarkMode ? AppColors.roxoHeader : AppColors.fundoEscuro;
   Color get textoAtividade => _isDarkMode ? AppColors.branco : AppColors.branco;

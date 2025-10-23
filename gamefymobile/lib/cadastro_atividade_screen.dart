@@ -51,7 +51,7 @@ class _CadastroAtividadeScreenState extends State<CadastroAtividadeScreen> {
         _apiService.fetchUsuario(),
         _apiService.fetchNotificacoes(),
         _apiService.fetchDesafiosPendentes(),
-        _apiService.fetchUsuarioConquistas(),
+        _apiService.fetchConquistas(),
       ]);
       if (!mounted) return;
       setState(() {
