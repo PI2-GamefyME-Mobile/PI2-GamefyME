@@ -40,6 +40,7 @@ class GoogleAuthService {
   /// Faz login com Google e registra/autentica no backend
   Future<Map<String, dynamic>> signInWithGoogle() async {
     try {
+      debugPrint('🔍 [GOOGLE] Iniciando Google Sign In...');
       await _ensureInitialized();
       
       // Em Web, limpar sessão antes para evitar conflitos com One Tap/FedCM
@@ -51,16 +52,18 @@ class GoogleAuthService {
       
       // Faz login usando authenticate (novo método na v7.x)
       // Se o usuário cancelar, uma exceção GoogleSignInException é lançada
+      debugPrint('🔐 [GOOGLE] Chamando authenticate...');
       final user = await _googleSignIn.authenticate();
 
-      debugPrint('Google Sign In - Email: ${user.email}');
-      debugPrint('Google Sign In - Nome: ${user.displayName}');
-      debugPrint('Google Sign In - ID: ${user.id}');
+      debugPrint('✅ [GOOGLE] Google Sign In - Email: ${user.email}');
+      debugPrint('✅ [GOOGLE] Google Sign In - Nome: ${user.displayName}');
+      debugPrint('✅ [GOOGLE] Google Sign In - ID: ${user.id}');
 
       // Na versão 7.x, usamos o ID do usuário como identificador único
       // O backend deve validar com o Google usando este ID
       final token = user.id;
 
+      debugPrint('🔄 [GOOGLE] Tentando login no backend...');
       // Tenta fazer login no backend com o token do Google
       final loginResult = await _authService.loginWithGoogle(
         idToken: token,
@@ -70,12 +73,14 @@ class GoogleAuthService {
       );
 
       if (loginResult['success'] == true) {
+        debugPrint('🎉 [GOOGLE] Login bem-sucedido!');
         return {
           'success': true,
           'message': 'Login com Google realizado com sucesso',
           'user': user,
         };
       } else {
+        debugPrint('⚠️ [GOOGLE] Login falhou, tentando cadastro...');
         // Se o login falhou, pode ser que o usuário não existe
         // Tenta registrar automaticamente
         final registerResult = await _authService.registerWithGoogle(
@@ -86,6 +91,7 @@ class GoogleAuthService {
         );
 
         if (registerResult['success'] == true) {
+          debugPrint('🎉 [GOOGLE] Cadastro bem-sucedido!');
           return {
             'success': true,
             'message': 'Conta criada e login realizado com sucesso',
@@ -93,6 +99,7 @@ class GoogleAuthService {
             'isNewUser': true,
           };
         } else {
+          debugPrint('❌ [GOOGLE] Cadastro falhou: ${registerResult['message']}');
           return {
             'success': false,
             'message': registerResult['message'] ?? 'Erro ao autenticar com Google',
@@ -100,7 +107,7 @@ class GoogleAuthService {
         }
       }
     } on GoogleSignInException catch (e) {
-      debugPrint('Erro GoogleSignIn: ${e.code} - ${e.description}');
+      debugPrint('❌ [GOOGLE] Erro GoogleSignIn: ${e.code} - ${e.description}');
       if (e.code == GoogleSignInExceptionCode.canceled) {
         return {
           'success': false,
@@ -112,7 +119,7 @@ class GoogleAuthService {
         'message': e.description ?? 'Erro ao fazer login com Google',
       };
     } catch (error) {
-      debugPrint('Erro no login com Google: $error');
+      debugPrint('❌ [GOOGLE] Erro no login com Google: $error');
       try { await _googleSignIn.disconnect(); } catch (_) {}
       return {
         'success': false,

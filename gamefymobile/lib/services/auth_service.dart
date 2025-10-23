@@ -125,22 +125,37 @@ class AuthService {
     });
 
     try {
+      debugPrint('🌐 [AUTH] Enviando para: $url');
+      debugPrint('📦 [AUTH] Body: $body');
+      
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: body,
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('⏱️ [AUTH] TIMEOUT: Servidor não respondeu em 10 segundos');
+          throw Exception('Timeout ao conectar ao servidor');
+        },
       );
+      
+      debugPrint('📡 [AUTH] Status: ${response.statusCode}');
+      debugPrint('📨 [AUTH] Response: ${response.body}');
+      
       final responseBody = jsonDecode(response.body);
       if (response.statusCode == 200) {
         final String accessToken = responseBody['tokens']['access'];
         final String refreshToken = responseBody['tokens']['refresh'];
         await _saveTokens(accessToken, refreshToken);
+        debugPrint('✅ [AUTH] Login com Google realizado!');
         return {'success': true, 'message': 'Login com Google realizado!'};
       } else {
+        debugPrint('❌ [AUTH] Falha no login: ${response.statusCode}');
         return {'success': false, 'message': responseBody['error'] ?? responseBody['detail'] ?? responseBody['erro'] ?? 'Erro no login com Google.'};
       }
     } catch (e) {
-      debugPrint("Erro na requisição de login com Google: $e");
+      debugPrint("❌ [AUTH] Erro na requisição de login com Google: $e");
       return {'success': false, 'message': 'Erro de conexão. Verifique se a API está rodando.'};
     }
   }
@@ -162,22 +177,37 @@ class AuthService {
     });
 
     try {
+      debugPrint('🌐 [AUTH] Tentando cadastro. Enviando para: $url');
+      debugPrint('📦 [AUTH] Body: $body');
+      
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: body,
+      ).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          debugPrint('⏱️ [AUTH] TIMEOUT: Servidor não respondeu em 10 segundos');
+          throw Exception('Timeout ao conectar ao servidor');
+        },
       );
+      
+      debugPrint('📡 [AUTH] Status: ${response.statusCode}');
+      debugPrint('📨 [AUTH] Response: ${response.body}');
+      
       final responseBody = jsonDecode(response.body);
       if (response.statusCode == 201) {
         final String accessToken = responseBody['tokens']['access'];
         final String refreshToken = responseBody['tokens']['refresh'];
         await _saveTokens(accessToken, refreshToken);
+        debugPrint('✅ [AUTH] Cadastro com Google realizado!');
         return {'success': true, 'message': responseBody['message'] ?? 'Conta criada com sucesso!'};
       } else {
+        debugPrint('❌ [AUTH] Falha no cadastro: ${response.statusCode}');
         return {'success': false, 'message': responseBody['error'] ?? responseBody['erro'] ?? 'Erro ao criar conta com Google.'};
       }
     } catch (e) {
-      debugPrint("Erro na requisição de cadastro com Google: $e");
+      debugPrint("❌ [AUTH] Erro na requisição de cadastro com Google: $e");
       return {'success': false, 'message': 'Erro de conexão. Verifique se a API está rodando.'};
     }
   }
