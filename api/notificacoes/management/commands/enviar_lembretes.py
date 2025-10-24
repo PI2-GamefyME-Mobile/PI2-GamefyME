@@ -6,6 +6,7 @@ from usuarios.models import Usuario
 from atividades.models import AtividadeConcluidas
 from notificacoes.services import criar_notificacao
 
+# TODO: Agendar este comando para rodar diariamente via cron ou serviço similar
 class Command(BaseCommand):
     help = "Envia lembretes por e-mail para usuários que ainda não concluíram atividades hoje e registra notificação."
 
@@ -20,14 +21,12 @@ class Command(BaseCommand):
             if concluiu_hoje:
                 continue
 
-            # Cria notificação no histórico
             criar_notificacao(
                 usuario,
-                '⏰ Lembrete: registre suas atividades de hoje para manter sua constância!',
+                'Lembrete: registre suas atividades de hoje para manter sua constância!',
                 'aviso'
             )
 
-            # Dispara e-mail (se configurado)
             try:
                 subject = 'Lembrete GamefyME: Registre seus hábitos hoje'
                 message = (
@@ -39,7 +38,6 @@ class Command(BaseCommand):
                 send_mail(subject, message, getattr(settings, 'EMAIL_HOST_USER', None), [usuario.emailusuario])
                 enviados += 1
             except Exception:
-                # Em ambientes sem SMTP configurado, apenas ignore o erro e siga.
                 pass
 
         self.stdout.write(self.style.SUCCESS(f'Lembretes processados. E-mails enviados: {enviados}'))

@@ -20,7 +20,6 @@ class UsuarioSerializer(serializers.ModelSerializer):
         ]
 
     def get_exp_total_nivel(self, obj):
-        # Exemplo fixo (pode ser alterado para c√°lculo real futuramente)
         return 1000
 
     def get_streak_data(self, obj):
@@ -36,7 +35,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    token = serializers.CharField(max_length=6) # 'token' agora √© o c√≥digo
+    token = serializers.CharField(max_length=6)
     new_password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
 
@@ -71,7 +70,6 @@ class LeaderboardSerializer(serializers.ModelSerializer):
             dtconclusao__date__gte=inicio_semana
         ).count()
 
-# Serializer para administraÁ„o de usu·rios (RN 07)
 class AdminUsuarioSerializer(serializers.ModelSerializer):
     total_atividades = serializers.SerializerMethodField()
     total_conquistas = serializers.SerializerMethodField()

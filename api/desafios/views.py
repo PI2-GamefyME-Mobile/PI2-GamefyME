@@ -19,7 +19,6 @@ class DesafioListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # Filtra para retornar apenas os desafios que estão ativos no momento
         return [desafio for desafio in Desafio.objects.all() if desafio.is_ativo()]
 
 class UsuarioDesafioListView(generics.ListAPIView):
@@ -32,7 +31,6 @@ class UsuarioDesafioListView(generics.ListAPIView):
     def get_queryset(self):
         return UsuarioDesafio.objects.filter(idusuario=self.request.user).order_by('-dtpremiacao')
 
-# Views de Administração
 class DesafioAdminListCreateView(generics.ListCreateAPIView):
     """
     Endpoint para administradores listarem todos os desafios e criarem novos.

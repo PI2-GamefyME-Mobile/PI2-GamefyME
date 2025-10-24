@@ -7,7 +7,6 @@ class ThemeProvider extends ChangeNotifier {
 
   bool get isDarkMode => _isDarkMode;
 
-  // Getters para cores dinâmicas
   Color get fundoApp => _isDarkMode ? AppColors.fundoEscuro : AppColors.fundoClaro;
   Color get fundoCard => _isDarkMode ? AppColors.fundoCardEscuro : const Color.fromARGB(255, 199, 199, 199);
   Color get textoTexto => _isDarkMode ? AppColors.textoEscuro : AppColors.textoClaro;
@@ -44,7 +43,6 @@ class ThemeProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Método helper para obter ThemeData
   ThemeData get themeData {
     return ThemeData(
       brightness: _isDarkMode ? Brightness.dark : Brightness.light,

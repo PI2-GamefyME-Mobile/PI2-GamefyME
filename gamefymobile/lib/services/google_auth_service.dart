@@ -12,7 +12,6 @@ class GoogleAuthService {
   
   bool _initialized = false;
 
-  /// Inicializa o GoogleSignIn (obrigatório na versão 7.x)
   Future<void> _ensureInitialized() async {
     if (_initialized) return;
     
@@ -25,7 +24,6 @@ class GoogleAuthService {
     _initialized = true;
   }
 
-  /// Verifica se o usuário já está logado com Google
   Future<bool> isSignedIn() async {
     try {
       await _ensureInitialized();
@@ -37,34 +35,35 @@ class GoogleAuthService {
     }
   }
 
-  /// Faz login com Google e registra/autentica no backend
   Future<Map<String, dynamic>> signInWithGoogle() async {
     try {
-      debugPrint('🔍 [GOOGLE] Iniciando Google Sign In...');
+      debugPrint('[GOOGLE] Iniciando Google Sign In...');
       await _ensureInitialized();
       
-      // Em Web, limpar sessão antes para evitar conflitos com One Tap/FedCM
+      GoogleSignInAccount user;
       if (kIsWeb) {
-        try { 
-          await _googleSignIn.disconnect();
-        } catch (_) {}
+        try { await _googleSignIn.disconnect(); } catch (_) {}
+        debugPrint('[GOOGLE][WEB] Tentando attemptLightweightAuthentication()...');
+        final maybeUser = await _googleSignIn.attemptLightweightAuthentication();
+        if (maybeUser == null) {
+          return {
+            'success': false,
+            'message': 'No Web, use o botão Google nativo (GIS). Implementação pendente na UI.',
+          };
+        }
+        user = maybeUser;
+      } else {
+        debugPrint('[GOOGLE] Chamando authenticate...');
+        user = await _googleSignIn.authenticate();
       }
-      
-      // Faz login usando authenticate (novo método na v7.x)
-      // Se o usuário cancelar, uma exceção GoogleSignInException é lançada
-      debugPrint('🔐 [GOOGLE] Chamando authenticate...');
-      final user = await _googleSignIn.authenticate();
 
-      debugPrint('✅ [GOOGLE] Google Sign In - Email: ${user.email}');
-      debugPrint('✅ [GOOGLE] Google Sign In - Nome: ${user.displayName}');
-      debugPrint('✅ [GOOGLE] Google Sign In - ID: ${user.id}');
+      debugPrint('[GOOGLE] Google Sign In - Email: ${user.email}');
+      debugPrint('[GOOGLE] Google Sign In - Nome: ${user.displayName}');
+      debugPrint('[GOOGLE] Google Sign In - ID: ${user.id}');
 
-      // Na versão 7.x, usamos o ID do usuário como identificador único
-      // O backend deve validar com o Google usando este ID
       final token = user.id;
 
-      debugPrint('🔄 [GOOGLE] Tentando login no backend...');
-      // Tenta fazer login no backend com o token do Google
+      debugPrint('[GOOGLE] Tentando login no backend...');
       final loginResult = await _authService.loginWithGoogle(
         idToken: token,
         email: user.email,
@@ -73,16 +72,14 @@ class GoogleAuthService {
       );
 
       if (loginResult['success'] == true) {
-        debugPrint('🎉 [GOOGLE] Login bem-sucedido!');
+        debugPrint('[GOOGLE] Login bem-sucedido!');
         return {
           'success': true,
           'message': 'Login com Google realizado com sucesso',
           'user': user,
         };
       } else {
-        debugPrint('⚠️ [GOOGLE] Login falhou, tentando cadastro...');
-        // Se o login falhou, pode ser que o usuário não existe
-        // Tenta registrar automaticamente
+        debugPrint('[GOOGLE] Login falhou, tentando cadastro...');
         final registerResult = await _authService.registerWithGoogle(
           idToken: token,
           email: user.email,
@@ -91,7 +88,7 @@ class GoogleAuthService {
         );
 
         if (registerResult['success'] == true) {
-          debugPrint('🎉 [GOOGLE] Cadastro bem-sucedido!');
+          debugPrint('[GOOGLE] Cadastro bem-sucedido!');
           return {
             'success': true,
             'message': 'Conta criada e login realizado com sucesso',
@@ -99,7 +96,7 @@ class GoogleAuthService {
             'isNewUser': true,
           };
         } else {
-          debugPrint('❌ [GOOGLE] Cadastro falhou: ${registerResult['message']}');
+          debugPrint('[GOOGLE] Cadastro falhou: ${registerResult['message']}');
           return {
             'success': false,
             'message': registerResult['message'] ?? 'Erro ao autenticar com Google',
@@ -107,7 +104,7 @@ class GoogleAuthService {
         }
       }
     } on GoogleSignInException catch (e) {
-      debugPrint('❌ [GOOGLE] Erro GoogleSignIn: ${e.code} - ${e.description}');
+      debugPrint('[GOOGLE] Erro GoogleSignIn: ${e.code} - ${e.description}');
       if (e.code == GoogleSignInExceptionCode.canceled) {
         return {
           'success': false,
@@ -119,7 +116,7 @@ class GoogleAuthService {
         'message': e.description ?? 'Erro ao fazer login com Google',
       };
     } catch (error) {
-      debugPrint('❌ [GOOGLE] Erro no login com Google: $error');
+      debugPrint('[GOOGLE] Erro no login com Google: $error');
       try { await _googleSignIn.disconnect(); } catch (_) {}
       return {
         'success': false,
@@ -128,7 +125,6 @@ class GoogleAuthService {
     }
   }
 
-  /// Faz logout do Google
   Future<void> signOut() async {
     try {
       await _ensureInitialized();
@@ -140,7 +136,6 @@ class GoogleAuthService {
     }
   }
 
-  /// Desconecta completamente a conta Google do app
   Future<void> disconnect() async {
     try {
       await _ensureInitialized();
@@ -152,7 +147,6 @@ class GoogleAuthService {
     }
   }
 
-  /// Obtém a conta atual do Google (se houver)
   Future<GoogleSignInAccount?> get currentUser async {
     try {
       await _ensureInitialized();

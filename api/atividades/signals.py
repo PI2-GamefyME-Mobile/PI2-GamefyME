@@ -3,8 +3,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 from datetime import timedelta
-
-# Imports dos seus apps
 from .models import Atividade, AtividadeConcluidas
 from desafios.models import Desafio, UsuarioDesafio
 from conquistas.models import Conquista, UsuarioConquista

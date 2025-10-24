@@ -12,6 +12,7 @@ from .views import (
     ReativacaoConfirmarView,
     google_login,
     google_register,
+    
     # Views de Administração (RN 07, RN 09)
     ListarUsuariosAdminView,
     PromoverUsuarioAdminView,

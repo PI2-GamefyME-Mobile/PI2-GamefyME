@@ -46,8 +46,8 @@ class AppColors {
   static const Color situacaoCancelada = Color(0xFFF44336);
   
   // Cores para atividades - Recorrência
-  static const Color recorrenciaUnica = Color(0xFF607D8B);  // Cinza azulado para única
-  static const Color recorrenciaRecorrente = Color(0xFF2196F3);  // Azul para recorrente
+  static const Color recorrenciaUnica = Color(0xFF607D8B);
+  static const Color recorrenciaRecorrente = Color(0xFF2196F3);
   
   // Cores adicionais
   static const Color amareloOuro = Color(0xFFFFD700);

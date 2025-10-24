@@ -1,16 +1,12 @@
-# api/desafios/serializers.py
-
 from rest_framework import serializers
 from django.utils import timezone
 from .models import Desafio, UsuarioDesafio, TipoDesafio
-# Importamos apenas o helper necessário para calcular o intervalo de datas
 from atividades.signals import get_date_range
 from atividades.models import AtividadeConcluidas, Atividade
 
 class DesafioSerializer(serializers.ModelSerializer):
     tipo_display = serializers.CharField(source='get_tipo_display', read_only=True)
     completado = serializers.SerializerMethodField()
-    # Novos campos para a barra de progresso
     progresso = serializers.SerializerMethodField()
     meta = serializers.SerializerMethodField()
 
@@ -28,16 +24,14 @@ class DesafioSerializer(serializers.ModelSerializer):
 
         user = request.user
         
-        # Filtra pelas conclusões do desafio para o usuário
         conclusoes = UsuarioDesafio.objects.filter(idusuario=user, iddesafio=obj)
         if not conclusoes.exists():
             return False
 
-        # Pega a conclusão mais recente
         ultima_conclusao = conclusoes.latest('dtpremiacao')
 
         if obj.tipo == TipoDesafio.UNICO:
-            return True # Se existe qualquer registro, já foi.
+            return True
 
         if not ultima_conclusao.dtpremiacao:
             return False
@@ -49,7 +43,6 @@ class DesafioSerializer(serializers.ModelSerializer):
         if obj.tipo == TipoDesafio.DIARIO:
             return last_completed_date == today
         elif obj.tipo == TipoDesafio.SEMANAL:
-            # A semana começa no Domingo (weekday 6) para o usuário, mas no Django é Segunda (0)
             start_of_week = today - timezone.timedelta(days=(today.weekday() + 1) % 7)
             return last_completed_date >= start_of_week
         elif obj.tipo == TipoDesafio.MENSAL:
@@ -70,7 +63,6 @@ class DesafioSerializer(serializers.ModelSerializer):
         if inicio is None:
             return 0
 
-        # Mapeia o tipo de lógica para uma função que retorna a contagem atual
         logicas_de_progresso = {
             'atividades_concluidas': lambda u, d: AtividadeConcluidas.objects.filter(idusuario=u, dtconclusao__date__range=[inicio, fim]).count(),
             'recorrentes_concluidas': lambda u, d: AtividadeConcluidas.objects.filter(idusuario=u, idatividade__recorrencia='recorrente', dtconclusao__date__range=[inicio, fim]).count(),
@@ -82,7 +74,6 @@ class DesafioSerializer(serializers.ModelSerializer):
         funcao_progresso = logicas_de_progresso.get(obj.tipo_logica)
         
         if funcao_progresso:
-            # Retorna o progresso, mas não deixa passar da meta
             return min(funcao_progresso(user, obj), obj.parametro)
         
         return 0
@@ -111,7 +102,6 @@ class DesafioCreateSerializer(serializers.ModelSerializer):
         """
         Validações customizadas.
         """
-        # Se for desafio único, dtinicio e dtfim são obrigatórios
         if data.get('tipo') == TipoDesafio.UNICO:
             if not data.get('dtinicio') or not data.get('dtfim'):
                 raise serializers.ValidationError(

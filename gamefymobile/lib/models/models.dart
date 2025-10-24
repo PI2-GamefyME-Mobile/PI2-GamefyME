@@ -273,7 +273,6 @@ class FilterHelpers {
     ];
   }
 
-  // Lista de opções de recorrência com valores e nomes
   static List<Map<String, String>> getRecorrenciaOptions() {
     return [
       {'value': 'unica', 'label': 'Única'},

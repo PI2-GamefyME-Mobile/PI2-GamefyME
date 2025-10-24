@@ -44,7 +44,6 @@ class NotificationService {
     if (kIsWeb) return;
 
     try {
-      // Android 13+ precisa de permissão explícita
       final androidPlugin = _notifications.resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin>();
       
@@ -52,7 +51,6 @@ class NotificationService {
         await androidPlugin.requestNotificationsPermission();
       }
 
-      // iOS precisa de permissão explícita
       final iosPlugin = _notifications.resolvePlatformSpecificImplementation<
           IOSFlutterLocalNotificationsPlugin>();
       
