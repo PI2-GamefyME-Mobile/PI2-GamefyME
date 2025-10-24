@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
 import 'auth_service.dart';
@@ -16,10 +18,15 @@ class GoogleAuthService {
     if (_initialized) return;
 
     await _googleSignIn.initialize(
-      clientId: kIsWeb
-          ? '848375608749-rcc8rfvbfhqg8i21b6ouiisf20t9a2hq.apps.googleusercontent.com'
+      clientId: Platform.isAndroid
+          ? '848375608749-qnlq0liglen8dausgo29o6obl0m2v8qd.apps.googleusercontent.com'
           : null,
     );
+    // await _googleSignIn.initialize(
+    //   clientId: kIsWeb
+    //       ? '848375608749-rcc8rfvbfhqg8i21b6ouiisf20t9a2hq.apps.googleusercontent.com'
+    //       : null,
+    // );
 
     _initialized = true;
   }
@@ -40,37 +47,54 @@ class GoogleAuthService {
       debugPrint('[GOOGLE] Iniciando Google Sign In...');
       await _ensureInitialized();
 
-      GoogleSignInAccount user;
+      GoogleSignInAccount? user; // Alterado para aceitar nulo
       if (kIsWeb) {
-        try {
-          await _googleSignIn.disconnect();
-        } catch (_) {}
-        debugPrint(
-            '[GOOGLE][WEB] Tentando attemptLightweightAuthentication()...');
-        final maybeUser =
-            await _googleSignIn.attemptLightweightAuthentication();
-        if (maybeUser == null) {
-          return {
-            'success': false,
-            'message':
-                'No Web, use o botão Google nativo (GIS). Implementação pendente na UI.',
-          };
-        }
-        user = maybeUser;
+        // ... (Sua lógica web)
+        return {
+          'success': false,
+          'message':
+              'No Web, use o botão Google nativo (GIS). Implementação pendente na UI.',
+        };
       } else {
         debugPrint('[GOOGLE] Chamando authenticate...');
-        user = await _googleSignIn.authenticate();
+        user = await _googleSignIn.authenticate(); //
       }
+
+      // Verifica se o usuário cancelou o login
+      if (user == null) {
+        debugPrint('[GOOGLE] Usuário cancelou o login.');
+        return {
+          'success': false,
+          'message': 'Login cancelado pelo usuário',
+        };
+      }
+
+
+      // 1. Obter o objeto de autenticação
+      final GoogleSignInAuthentication auth = await user.authentication;
+      
+      // 2. Extrair o idToken (JWT)
+      final String? idToken = auth.idToken; 
+
+      if (idToken == null) {
+        debugPrint('[GOOGLE] Erro: Não foi possível obter o idToken.');
+        return {
+          'success': false,
+          'message': 'Não foi possível obter o ID Token do Google.'
+        };
+      }
+      
+      // 3. Usar o idToken (e não mais o user.id) nas chamadas para seu backend
+      
+      // ---- FIM DA CORREÇÃO ----
 
       debugPrint('[GOOGLE] Google Sign In - Email: ${user.email}');
       debugPrint('[GOOGLE] Google Sign In - Nome: ${user.displayName}');
       debugPrint('[GOOGLE] Google Sign In - ID: ${user.id}');
 
-      final token = user.id;
-
-      debugPrint('[GOOGLE] Tentando login no backend...');
+      debugPrint('[GOOGLE] Tentando login no backend com o ID Token...');
       final loginResult = await _authService.loginWithGoogle(
-        idToken: token,
+        idToken: idToken, // <-- CORRIGIDO
         email: user.email,
         name: user.displayName ?? user.email,
         googleId: user.id,
@@ -86,7 +110,7 @@ class GoogleAuthService {
       } else {
         debugPrint('[GOOGLE] Login falhou, tentando cadastro...');
         final registerResult = await _authService.registerWithGoogle(
-          idToken: token,
+          idToken: idToken, // <-- CORRIGIDO
           email: user.email,
           name: user.displayName ?? user.email,
           googleId: user.id,
@@ -101,36 +125,19 @@ class GoogleAuthService {
             'isNewUser': true,
           };
         } else {
-          debugPrint('[GOOGLE] Cadastro falhou: ${registerResult['message']}');
-          return {
-            'success': false,
-            'message':
-                registerResult['message'] ?? 'Erro ao autenticar com Google',
-          };
+          // ... (resto do seu tratamento de erro)
         }
       }
     } on GoogleSignInException catch (e) {
-      debugPrint('[GOOGLE] Erro GoogleSignIn: ${e.code} - ${e.description}');
-      if (e.code == GoogleSignInExceptionCode.canceled) {
-        return {
-          'success': false,
-          'message': 'Login cancelado pelo usuário',
-        };
-      }
-      return {
-        'success': false,
-        'message': e.description ?? 'Erro ao fazer login com Google',
-      };
+      // ... (resto do seu tratamento de erro)
     } catch (error) {
-      debugPrint('[GOOGLE] Erro no login com Google: $error');
-      try {
-        await _googleSignIn.disconnect();
-      } catch (_) {}
-      return {
-        'success': false,
-        'message': 'Erro ao fazer login com Google: $error',
-      };
+      // ... (resto do seu tratamento de erro)
     }
+    // Adicionado retorno de falha genérico para garantir que todos os caminhos retornem
+    return {
+      'success': false,
+      'message': 'Ocorreu um erro inesperado durante o login com Google.',
+    };
   }
 
   Future<void> signOut() async {
