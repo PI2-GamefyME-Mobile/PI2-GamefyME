@@ -108,13 +108,16 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
               children: [
                 Expanded(child: _buildFiltroTipo()),
                 if (isAdmin) ...[
-                  ResponsiveUtils.adaptiveHorizontalSpace(context, small: 6, medium: 8, large: 8),
+                  ResponsiveUtils.adaptiveHorizontalSpace(context,
+                      small: 6, medium: 8, large: 8),
                   ElevatedButton.icon(
                     onPressed: () {
                       Navigator.pushNamed(context, '/admin-desafios')
                           .then((_) => _carregarDados());
                     },
-                    icon: Icon(Icons.admin_panel_settings, size: ResponsiveUtils.adaptiveIconSize(context, small: 18, medium: 20, large: 20)),
+                    icon: Icon(Icons.admin_panel_settings,
+                        size: ResponsiveUtils.adaptiveIconSize(context,
+                            small: 18, medium: 20, large: 20)),
                     label: const Text('Admin'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.roxoProfundo,

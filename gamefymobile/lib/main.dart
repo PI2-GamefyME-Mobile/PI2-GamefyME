@@ -19,12 +19,12 @@ import 'utils/responsive_utils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Inicializar serviços
   await NotificationService().initialize();
   await NotificationService().requestPermissions();
   await TimerService().resumeTimerIfNeeded();
-  
+
   final authService = AuthService();
   final token = await authService.getToken();
   bool valid = false;
@@ -50,7 +50,9 @@ class MyApp extends StatelessWidget {
             theme: ThemeData(
               scaffoldBackgroundColor: themeProvider.fundoApp,
               primaryColor: AppColors.roxoHeader,
-              textTheme: GoogleFonts.jersey10TextTheme(Theme.of(context).textTheme).apply(
+              textTheme:
+                  GoogleFonts.jersey10TextTheme(Theme.of(context).textTheme)
+                      .apply(
                 bodyColor: themeProvider.textoTexto,
                 displayColor: themeProvider.textoTexto,
               ),
@@ -102,17 +104,14 @@ class WelcomePage extends StatelessWidget {
                 Text(
                   "GamefyME",
                   style: TextStyle(
-                    fontSize: isSmall ? 48 : 60, 
-                    fontWeight: FontWeight.bold, 
-                    color: Colors.white
-                  ),
+                      fontSize: isSmall ? 48 : 60,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
                 SizedBox(height: isSmall ? 20 : 30),
-                Image.asset(
-                  "assets/images/logo.png", 
-                  width: isSmall ? 140 : 190, 
-                  errorBuilder: (c, e, s) => const SizedBox()
-                ),
+                Image.asset("assets/images/logo.png",
+                    width: isSmall ? 140 : 190,
+                    errorBuilder: (c, e, s) => const SizedBox()),
                 SizedBox(height: isSmall ? 30 : 50),
                 Padding(
                   padding: ResponsiveUtils.adaptiveHorizontalPadding(context),
@@ -124,16 +123,17 @@ class WelcomePage extends StatelessWidget {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF6A0DAD),
                             padding: EdgeInsets.symmetric(
-                              horizontal: isSmall ? 20 : 30, 
-                              vertical: isSmall ? 12 : 15
-                            ),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                horizontal: isSmall ? 20 : 30,
+                                vertical: isSmall ? 12 : 15),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
                           ),
-                          onPressed: () => Navigator.of(context).push(_createSlideRoute(const LoginPage())),
-                          child: Text(
-                            "Login", 
-                            style: TextStyle(fontSize: isSmall ? 16 : 18, color: Colors.white)
-                          ),
+                          onPressed: () => Navigator.of(context)
+                              .push(_createSlideRoute(const LoginPage())),
+                          child: Text("Login",
+                              style: TextStyle(
+                                  fontSize: isSmall ? 16 : 18,
+                                  color: Colors.white)),
                         ),
                       ),
                       SizedBox(width: isSmall ? 12 : 20),
@@ -142,16 +142,17 @@ class WelcomePage extends StatelessWidget {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF6A0DAD),
                             padding: EdgeInsets.symmetric(
-                              horizontal: isSmall ? 20 : 30, 
-                              vertical: isSmall ? 12 : 15
-                            ),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                horizontal: isSmall ? 20 : 30,
+                                vertical: isSmall ? 12 : 15),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
                           ),
-                          onPressed: () => Navigator.of(context).push(_createSlideRoute(const RegisterPage())),
-                          child: Text(
-                            "Registrar", 
-                            style: TextStyle(fontSize: isSmall ? 16 : 18, color: Colors.white)
-                          ),
+                          onPressed: () => Navigator.of(context)
+                              .push(_createSlideRoute(const RegisterPage())),
+                          child: Text("Registrar",
+                              style: TextStyle(
+                                  fontSize: isSmall ? 16 : 18,
+                                  color: Colors.white)),
                         ),
                       ),
                     ],
@@ -235,17 +236,18 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-
   Future<void> _handleLogin() async {
     final email = _emailController.text.trim();
     final senha = _passwordController.text;
 
     if (email.isEmpty || !CommonUtils.validEmail(email)) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Informe um email válido.")));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Informe um email válido.")));
       return;
     }
     if (senha.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Preencha a senha.")));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Preencha a senha.")));
       return;
     }
 
@@ -260,9 +262,11 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = false);
 
     if (result['success'] == true) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => const HomeScreen()));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message'] ?? 'Erro ao autenticar')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message'] ?? 'Erro ao autenticar')));
     }
   }
 
@@ -275,17 +279,13 @@ class _LoginPageState extends State<LoginPage> {
     setState(() => _isLoading = false);
 
     if (result['success'] == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'] ?? 'Login com Google realizado!'))
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(result['message'] ?? 'Login com Google realizado!')));
       Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen())
-      );
+          context, MaterialPageRoute(builder: (context) => const HomeScreen()));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'] ?? 'Erro no login com Google'))
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(result['message'] ?? 'Erro no login com Google')));
     }
   }
 
@@ -309,28 +309,27 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset(
-                  'assets/images/logo.png', 
-                  height: isSmall ? 100 : 150, 
-                  errorBuilder: (c, e, s) => const SizedBox()
-                ),
+                Image.asset('assets/images/logo.png',
+                    height: isSmall ? 100 : 150,
+                    errorBuilder: (c, e, s) => const SizedBox()),
                 SizedBox(height: isSmall ? 12 : 20),
                 Container(
-                  padding: ResponsiveUtils.adaptivePadding(context, small: 12, medium: 16, large: 20),
+                  padding: ResponsiveUtils.adaptivePadding(context,
+                      small: 12, medium: 16, large: 20),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: ResponsiveUtils.adaptiveBorderRadius(context, small: 12, medium: 15, large: 15),
+                    borderRadius: ResponsiveUtils.adaptiveBorderRadius(context,
+                        small: 12, medium: 15, large: 15),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       CommonUtils.buildTextField(
-                        context: context,
-                        controller: _emailController,
-                        label: "Email",
-                        hint: "Digite seu email",
-                        keyboardType: TextInputType.emailAddress
-                      ),
+                          context: context,
+                          controller: _emailController,
+                          label: "Email",
+                          hint: "Digite seu email",
+                          keyboardType: TextInputType.emailAddress),
                       SizedBox(height: isSmall ? 10 : 15),
                       CommonUtils.buildTextField(
                         context: context,
@@ -339,8 +338,11 @@ class _LoginPageState extends State<LoginPage> {
                         hint: "Digite sua senha",
                         obscureText: _obscurePassword,
                         suffixIcon: IconButton(
-                          icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          icon: Icon(_obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility),
+                          onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword),
                         ),
                       ),
                       SizedBox(height: isSmall ? 6 : 10),
@@ -359,7 +361,8 @@ class _LoginPageState extends State<LoginPage> {
                             activeColor: const Color(0xFF7B1FA2),
                           ),
                           const Expanded(
-                            child: Text("Lembrar-me", style: TextStyle(color: Colors.black87)),
+                            child: Text("Lembrar-me",
+                                style: TextStyle(color: Colors.black87)),
                           ),
                         ],
                       ),
@@ -370,19 +373,23 @@ class _LoginPageState extends State<LoginPage> {
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
                           ),
                           onPressed: _isLoading ? null : _handleLogin,
                           child: _isLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
-                              : Text(
-                                  "Login", 
+                              ? const CircularProgressIndicator(
+                                  color: Colors.white)
+                              : Text("Login",
                                   style: TextStyle(
-                                    fontWeight: FontWeight.bold, 
-                                    color: Colors.white,
-                                    fontSize: ResponsiveUtils.adaptiveFontSize(context, small: 14, medium: 15, large: 16)
-                                  )
-                                ),
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      fontSize:
+                                          ResponsiveUtils.adaptiveFontSize(
+                                              context,
+                                              small: 14,
+                                              medium: 15,
+                                              large: 16))),
                         ),
                       ),
                       SizedBox(height: isSmall ? 10 : 15),
@@ -391,7 +398,8 @@ class _LoginPageState extends State<LoginPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const ForgotPasswordScreen(),
+                              builder: (context) =>
+                                  const ForgotPasswordScreen(),
                             ),
                           );
                         },
@@ -409,7 +417,8 @@ class _LoginPageState extends State<LoginPage> {
                           const Expanded(child: Divider(color: Colors.grey)),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: Text('OU', style: TextStyle(color: Colors.grey[600])),
+                            child: Text('OU',
+                                style: TextStyle(color: Colors.grey[600])),
                           ),
                           const Expanded(child: Divider(color: Colors.grey)),
                         ],
@@ -421,22 +430,28 @@ class _LoginPageState extends State<LoginPage> {
                         child: OutlinedButton.icon(
                           style: OutlinedButton.styleFrom(
                             side: BorderSide(color: Colors.grey[400]!),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
                           ),
                           onPressed: _isLoading ? null : _handleGoogleLogin,
                           icon: Image.asset(
                             'assets/images/google_logo.png',
                             height: isSmall ? 20 : 24,
-                            errorBuilder: (context, error, stackTrace) => 
-                              Icon(Icons.login, color: Colors.black87, size: isSmall ? 20 : 24),
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                                Icons.login,
+                                color: Colors.black87,
+                                size: isSmall ? 20 : 24),
                           ),
                           label: Text(
                             'Continuar com Google',
                             style: TextStyle(
-                              color: Colors.black87,
-                              fontWeight: FontWeight.w500,
-                              fontSize: ResponsiveUtils.adaptiveFontSize(context, small: 12, medium: 14, large: 15)
-                            ),
+                                color: Colors.black87,
+                                fontWeight: FontWeight.w500,
+                                fontSize: ResponsiveUtils.adaptiveFontSize(
+                                    context,
+                                    small: 12,
+                                    medium: 14,
+                                    large: 15)),
                           ),
                         ),
                       ),
@@ -450,9 +465,7 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
 }
-
 
 // ====== TELA DE REGISTRO ======
 class RegisterPage extends StatefulWidget {
@@ -483,7 +496,6 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 
-
   Future<void> _handleRegister() async {
     final nome = _nomeController.text.trim();
     final email = _emailController.text.trim();
@@ -491,21 +503,25 @@ class _RegisterPageState extends State<RegisterPage> {
     final confSenha = _confirmarSenhaController.text;
 
     if (nome.isEmpty || email.isEmpty || senha.isEmpty || confSenha.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Por favor, preencha todos os campos.")));
-        return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Por favor, preencha todos os campos.")));
+      return;
     }
     if (!CommonUtils.validEmail(email)) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Informe um email válido.")));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Informe um email válido.")));
       return;
     }
     // RN 06: Validação completa de senha
     final senhaValidacao = CommonUtils.validatePassword(senha);
     if (senhaValidacao != null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(senhaValidacao)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(senhaValidacao)));
       return;
     }
     if (senha != confSenha) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("As senhas não coincidem.")));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("As senhas não coincidem.")));
       return;
     }
 
@@ -522,10 +538,15 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() => _isLoading = false);
 
     if (result['success'] == true) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message'] ?? 'Registrado com sucesso')));
-      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const HomeScreen()), (route) => false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(result['message'] ?? 'Registrado com sucesso')));
+      Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (route) => false);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result['message'] ?? 'Erro ao registrar')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message'] ?? 'Erro ao registrar')));
     }
   }
 
@@ -538,18 +559,15 @@ class _RegisterPageState extends State<RegisterPage> {
     setState(() => _isLoading = false);
 
     if (result['success'] == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'] ?? 'Registrado com Google!'))
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(result['message'] ?? 'Registrado com Google!')));
       Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-        (route) => false
-      );
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (route) => false);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'] ?? 'Erro no registro com Google'))
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(result['message'] ?? 'Erro no registro com Google')));
     }
   }
 
@@ -570,26 +588,26 @@ class _RegisterPageState extends State<RegisterPage> {
         child: SingleChildScrollView(
           padding: ResponsiveUtils.adaptivePadding(context),
           child: Container(
-            padding: ResponsiveUtils.adaptivePadding(context, small: 12, medium: 16, large: 20),
+            padding: ResponsiveUtils.adaptivePadding(context,
+                small: 12, medium: 16, large: 20),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: ResponsiveUtils.adaptiveBorderRadius(context, small: 12, medium: 15, large: 15),
+              borderRadius: ResponsiveUtils.adaptiveBorderRadius(context,
+                  small: 12, medium: 15, large: 15),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildTextField(
-                  label: "Nome de usuário", 
-                  hint: "Nome de usuário", 
-                  controller: _nomeController
-                ),
+                    label: "Nome de usuário",
+                    hint: "Nome de usuário",
+                    controller: _nomeController),
                 SizedBox(height: isSmall ? 10 : 15),
                 _buildTextField(
-                  label: "Email", 
-                  hint: "exemplo@email.com", 
-                  controller: _emailController, 
-                  keyboardType: TextInputType.emailAddress
-                ),
+                    label: "Email",
+                    hint: "exemplo@email.com",
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress),
                 SizedBox(height: isSmall ? 10 : 15),
                 _buildTextField(
                   label: "Senha",
@@ -597,8 +615,11 @@ class _RegisterPageState extends State<RegisterPage> {
                   controller: _senhaController,
                   obscure: _obscurePassword,
                   suffix: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    icon: Icon(_obscurePassword
+                        ? Icons.visibility_off
+                        : Icons.visibility),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
                 SizedBox(height: isSmall ? 10 : 15),
@@ -608,8 +629,11 @@ class _RegisterPageState extends State<RegisterPage> {
                   controller: _confirmarSenhaController,
                   obscure: _obscureConfirmPassword,
                   suffix: IconButton(
-                    icon: Icon(_obscureConfirmPassword ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                    icon: Icon(_obscureConfirmPassword
+                        ? Icons.visibility_off
+                        : Icons.visibility),
+                    onPressed: () => setState(() =>
+                        _obscureConfirmPassword = !_obscureConfirmPassword),
                   ),
                 ),
                 SizedBox(height: isSmall ? 16 : 25),
@@ -619,18 +643,20 @@ class _RegisterPageState extends State<RegisterPage> {
                     onPressed: _isLoading ? null : _handleRegister,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : Text(
-                            "Registrar", 
+                        : Text("Registrar",
                             style: TextStyle(
-                              fontWeight: FontWeight.bold, 
-                              color: Colors.white,
-                              fontSize: ResponsiveUtils.adaptiveFontSize(context, small: 14, medium: 15, large: 16)
-                            )
-                          ),
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontSize: ResponsiveUtils.adaptiveFontSize(
+                                    context,
+                                    small: 14,
+                                    medium: 15,
+                                    large: 16))),
                   ),
                 ),
                 SizedBox(height: isSmall ? 12 : 20),
@@ -639,7 +665,8 @@ class _RegisterPageState extends State<RegisterPage> {
                     const Expanded(child: Divider(color: Colors.grey)),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Text('OU', style: TextStyle(color: Colors.grey[600])),
+                      child:
+                          Text('OU', style: TextStyle(color: Colors.grey[600])),
                     ),
                     const Expanded(child: Divider(color: Colors.grey)),
                   ],
@@ -650,22 +677,25 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: Colors.grey[400]!),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: _isLoading ? null : _handleGoogleRegister,
                     icon: Image.asset(
                       'assets/images/google_logo.png',
                       height: isSmall ? 20 : 24,
-                      errorBuilder: (context, error, stackTrace) => 
-                        Icon(Icons.login, color: Colors.black87, size: isSmall ? 20 : 24),
+                      errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.login,
+                          color: Colors.black87,
+                          size: isSmall ? 20 : 24),
                     ),
                     label: Text(
                       'Registrar com Google',
                       style: TextStyle(
-                        color: Colors.black87,
-                        fontWeight: FontWeight.w500,
-                        fontSize: ResponsiveUtils.adaptiveFontSize(context, small: 12, medium: 14, large: 15)
-                      ),
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w500,
+                          fontSize: ResponsiveUtils.adaptiveFontSize(context,
+                              small: 12, medium: 14, large: 15)),
                     ),
                   ),
                 ),
@@ -689,20 +719,25 @@ class _RegisterPageState extends State<RegisterPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
+        Text(label,
+            style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.black87)),
         const SizedBox(height: 5),
         TextField(
           controller: controller,
           obscureText: obscure,
           keyboardType: keyboardType,
-          style: const TextStyle(color: Colors.black), // Texto digitado em preto
+          style:
+              const TextStyle(color: Colors.black), // Texto digitado em preto
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: const TextStyle(color: Colors.grey),
             fillColor: Colors.grey[200], // Fundo cinza claro
             filled: true,
             suffixIcon: suffix,
-             border: OutlineInputBorder(
+            border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide.none,
             ),

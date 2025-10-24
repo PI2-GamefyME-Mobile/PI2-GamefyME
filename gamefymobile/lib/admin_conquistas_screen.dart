@@ -62,7 +62,8 @@ class _AdminConquistasScreenState extends State<AdminConquistasScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.fundoCard,
-        title: const Text('Confirmar exclusão', style: TextStyle(color: AppColors.branco)),
+        title: const Text('Confirmar exclusão',
+            style: TextStyle(color: AppColors.branco)),
         content: const Text(
           'Deseja realmente excluir esta conquista? Esta ação não pode ser desfeita.',
           style: TextStyle(color: AppColors.cinzaSub),
@@ -70,7 +71,8 @@ class _AdminConquistasScreenState extends State<AdminConquistasScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar', style: TextStyle(color: AppColors.cinzaSub)),
+            child: const Text('Cancelar',
+                style: TextStyle(color: AppColors.cinzaSub)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -180,7 +182,9 @@ class _AdminConquistasScreenState extends State<AdminConquistasScreen> {
                                   width: 50,
                                   height: 50,
                                   errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(Icons.emoji_events, color: AppColors.amareloClaro, size: 50),
+                                      const Icon(Icons.emoji_events,
+                                          color: AppColors.amareloClaro,
+                                          size: 50),
                                 ),
                                 title: Text(
                                   conquista['nmconquista'] ?? 'Sem nome',
@@ -194,7 +198,8 @@ class _AdminConquistasScreenState extends State<AdminConquistasScreen> {
                                   children: [
                                     Text(
                                       conquista['dsconquista'] ?? '',
-                                      style: const TextStyle(color: AppColors.cinzaSub),
+                                      style: const TextStyle(
+                                          color: AppColors.cinzaSub),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -212,12 +217,16 @@ class _AdminConquistasScreenState extends State<AdminConquistasScreen> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     IconButton(
-                                      icon: const Icon(Icons.edit, color: AppColors.verdeLima),
-                                      onPressed: () => _abrirFormulario(conquista: conquista),
+                                      icon: const Icon(Icons.edit,
+                                          color: AppColors.verdeLima),
+                                      onPressed: () => _abrirFormulario(
+                                          conquista: conquista),
                                     ),
                                     IconButton(
-                                      icon: const Icon(Icons.delete, color: Colors.red),
-                                      onPressed: () => _excluirConquista(conquista['idconquista']),
+                                      icon: const Icon(Icons.delete,
+                                          color: Colors.red),
+                                      onPressed: () => _excluirConquista(
+                                          conquista['idconquista']),
                                     ),
                                   ],
                                 ),
@@ -238,7 +247,8 @@ class FormularioConquistaScreen extends StatefulWidget {
   const FormularioConquistaScreen({super.key, this.conquista});
 
   @override
-  State<FormularioConquistaScreen> createState() => _FormularioConquistaScreenState();
+  State<FormularioConquistaScreen> createState() =>
+      _FormularioConquistaScreenState();
 }
 
 class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
@@ -247,14 +257,14 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
   final _descricaoController = TextEditingController();
   final _xpController = TextEditingController();
   final _imagemController = TextEditingController();
-  
+
   bool _isLoading = false;
   final ApiService _apiService = ApiService();
   final ImagePicker _picker = ImagePicker();
-  
+
   String? _imagemSelecionada;
   File? _imagemArquivo;
-  
+
   Usuario? _usuario;
   List<Notificacao> _notificacoes = [];
   List<DesafioPendente> _desafios = [];
@@ -316,8 +326,9 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
       setState(() => _isLoading = true);
 
       try {
-        final nomeArquivo = await _apiService.uploadImagemConquista(imagem.path);
-        
+        final nomeArquivo =
+            await _apiService.uploadImagemConquista(imagem.path);
+
         if (!mounted) return;
         setState(() {
           _imagemSelecionada = nomeArquivo;
@@ -366,7 +377,8 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
       };
 
       if (widget.conquista != null) {
-        await _apiService.atualizarConquista(widget.conquista!['idconquista'], dados);
+        await _apiService.atualizarConquista(
+            widget.conquista!['idconquista'], dados);
       } else {
         await _apiService.criarConquista(dados);
       }
@@ -564,10 +576,12 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 child: _isLoading
-                    ? const CircularProgressIndicator(color: AppColors.fundoEscuro)
+                    ? const CircularProgressIndicator(
+                        color: AppColors.fundoEscuro)
                     : Text(
                         widget.conquista != null ? 'ATUALIZAR' : 'CRIAR',
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
               ),
             ],

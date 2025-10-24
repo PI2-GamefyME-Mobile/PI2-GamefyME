@@ -57,7 +57,8 @@ class CommonUtils {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: AppColors.verdeLima, width: 2),
+              borderSide:
+                  const BorderSide(color: AppColors.verdeLima, width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -80,14 +81,20 @@ class CommonUtils {
     required Function(int) onChanged,
   }) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final dificuldades = ['muito_facil', 'facil', 'medio', 'dificil', 'muito_dificil'];
-    
+    final dificuldades = [
+      'muito_facil',
+      'facil',
+      'medio',
+      'dificil',
+      'muito_dificil'
+    ];
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: List.generate(5, (index) {
         bool isSelected = index == dificuldadeSelecionada;
         final dificuldade = dificuldades[index];
-        
+
         return GestureDetector(
           onTap: () => onChanged(index),
           child: Opacity(
@@ -104,7 +111,9 @@ class CommonUtils {
                 Text(
                   FilterHelpers.getDificuldadeDisplayName(dificuldade),
                   style: TextStyle(
-                    color: isSelected ? themeProvider.textoTexto : themeProvider.textoCinza,
+                    color: isSelected
+                        ? themeProvider.textoTexto
+                        : themeProvider.textoCinza,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                   ),
@@ -128,46 +137,33 @@ class CommonUtils {
       children: [
         Expanded(
           child: _buildRecorrenciaButton(
-            context,
-            'ÚNICA', 
-            'unica', 
-            recorrenciaSelecionada, 
-            onChanged
-          ),
+              context, 'ÚNICA', 'unica', recorrenciaSelecionada, onChanged),
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: _buildRecorrenciaButton(
-            context,
-            'RECORRENTE', 
-            'recorrente', 
-            recorrenciaSelecionada, 
-            onChanged
-          ),
+          child: _buildRecorrenciaButton(context, 'RECORRENTE', 'recorrente',
+              recorrenciaSelecionada, onChanged),
         ),
       ],
     );
   }
 
-  static Widget _buildRecorrenciaButton(
-    BuildContext context,
-    String text, 
-    String value, 
-    String recorrenciaSelecionada, 
-    Function(String) onChanged
-  ) {
+  static Widget _buildRecorrenciaButton(BuildContext context, String text,
+      String value, String recorrenciaSelecionada, Function(String) onChanged) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final bool isSelected = recorrenciaSelecionada == value;
     return ElevatedButton(
       onPressed: () => onChanged(value),
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? AppColors.roxoClaro : themeProvider.fundoCard,
+        backgroundColor:
+            isSelected ? AppColors.roxoClaro : themeProvider.fundoCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
       child: Text(
         text,
         style: TextStyle(
-          color: isSelected ? themeProvider.textoTexto : themeProvider.textoCinza,
+          color:
+              isSelected ? themeProvider.textoTexto : themeProvider.textoCinza,
         ),
       ),
     );
@@ -236,4 +232,3 @@ class CommonUtils {
     return null;
   }
 }
-

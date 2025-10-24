@@ -9,18 +9,18 @@ class GoogleAuthService {
 
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   final AuthService _authService = AuthService();
-  
+
   bool _initialized = false;
 
   Future<void> _ensureInitialized() async {
     if (_initialized) return;
-    
+
     await _googleSignIn.initialize(
-      clientId: kIsWeb 
+      clientId: kIsWeb
           ? '848375608749-rcc8rfvbfhqg8i21b6ouiisf20t9a2hq.apps.googleusercontent.com'
           : null,
     );
-    
+
     _initialized = true;
   }
 
@@ -39,16 +39,21 @@ class GoogleAuthService {
     try {
       debugPrint('[GOOGLE] Iniciando Google Sign In...');
       await _ensureInitialized();
-      
+
       GoogleSignInAccount user;
       if (kIsWeb) {
-        try { await _googleSignIn.disconnect(); } catch (_) {}
-        debugPrint('[GOOGLE][WEB] Tentando attemptLightweightAuthentication()...');
-        final maybeUser = await _googleSignIn.attemptLightweightAuthentication();
+        try {
+          await _googleSignIn.disconnect();
+        } catch (_) {}
+        debugPrint(
+            '[GOOGLE][WEB] Tentando attemptLightweightAuthentication()...');
+        final maybeUser =
+            await _googleSignIn.attemptLightweightAuthentication();
         if (maybeUser == null) {
           return {
             'success': false,
-            'message': 'No Web, use o botão Google nativo (GIS). Implementação pendente na UI.',
+            'message':
+                'No Web, use o botão Google nativo (GIS). Implementação pendente na UI.',
           };
         }
         user = maybeUser;
@@ -99,7 +104,8 @@ class GoogleAuthService {
           debugPrint('[GOOGLE] Cadastro falhou: ${registerResult['message']}');
           return {
             'success': false,
-            'message': registerResult['message'] ?? 'Erro ao autenticar com Google',
+            'message':
+                registerResult['message'] ?? 'Erro ao autenticar com Google',
           };
         }
       }
@@ -117,7 +123,9 @@ class GoogleAuthService {
       };
     } catch (error) {
       debugPrint('[GOOGLE] Erro no login com Google: $error');
-      try { await _googleSignIn.disconnect(); } catch (_) {}
+      try {
+        await _googleSignIn.disconnect();
+      } catch (_) {}
       return {
         'success': false,
         'message': 'Erro ao fazer login com Google: $error',

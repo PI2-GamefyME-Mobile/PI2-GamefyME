@@ -70,7 +70,9 @@ class _CustomAppBarState extends State<CustomAppBar> {
       themeProvider.toggleTheme();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(themeProvider.isDarkMode ? 'Tema Escuro Ativado' : 'Tema Claro Ativado'),
+          content: Text(themeProvider.isDarkMode
+              ? 'Tema Escuro Ativado'
+              : 'Tema Claro Ativado'),
           duration: const Duration(seconds: 1),
         ),
       );
@@ -163,7 +165,8 @@ class _CustomAppBarState extends State<CustomAppBar> {
       toolbarHeight: 60,
       leading: widget.showBackButton
           ? IconButton(
-              icon: Icon(Icons.arrow_back_ios, color: Provider.of<ThemeProvider>(context).textoTexto),
+              icon: Icon(Icons.arrow_back_ios,
+                  color: Provider.of<ThemeProvider>(context).textoTexto),
               onPressed: () => Navigator.of(context).pop(),
             )
           : null,
@@ -260,11 +263,15 @@ class _CustomAppBarState extends State<CustomAppBar> {
                   n.lida
                       ? Icons.check_circle_outline
                       : Icons.circle_notifications,
-                  color: n.lida ? themeProvider.textoCinza : AppColors.amareloClaro,
+                  color: n.lida
+                      ? themeProvider.textoCinza
+                      : AppColors.amareloClaro,
                 ),
                 title: Text(n.mensagem,
                     style: TextStyle(
-                        color: n.lida ? themeProvider.textoCinza : themeProvider.textoTexto)),
+                        color: n.lida
+                            ? themeProvider.textoCinza
+                            : themeProvider.textoTexto)),
               ),
             ));
           }
@@ -293,9 +300,9 @@ class _CustomAppBarState extends State<CustomAppBar> {
     final conquistasDesbloqueadas = widget.conquistas
       ..sort((a, b) => a.nome.compareTo(b.nome));
 
-  final themeProvider = Provider.of<ThemeProvider>(context);
-  return PopupMenuButton<int>(
-    color: themeProvider.fundoCard,
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    return PopupMenuButton<int>(
+        color: themeProvider.fundoCard,
         icon: const Icon(Icons.emoji_events,
             color: AppColors.verdeLima, size: 30),
         offset: const Offset(0, 50),
@@ -308,15 +315,16 @@ class _CustomAppBarState extends State<CustomAppBar> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // --- SEÇÃO DE DESAFIOS (Inalterada) ---
-              Text("Desafios diários",
-                style: TextStyle(
-                  color: themeProvider.textoTexto,
+                            Text("Desafios diários",
+                                style: TextStyle(
+                                    color: themeProvider.textoTexto,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14)),
                             const SizedBox(height: 8),
                             if (diarios.isEmpty)
-                Text("Nenhum desafio diário",
-                  style: TextStyle(color: themeProvider.textoCinza))
+                              Text("Nenhum desafio diário",
+                                  style: TextStyle(
+                                      color: themeProvider.textoCinza))
                             else
                               Column(
                                   children: diarios.map((d) {
@@ -346,9 +354,11 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                               children: [
                                             Text(d.nome,
                                                 style: TextStyle(
-                          color: d.completado
-                            ? themeProvider.textoCinza
-                            : themeProvider.textoTexto,
+                                                    color: d.completado
+                                                        ? themeProvider
+                                                            .textoCinza
+                                                        : themeProvider
+                                                            .textoTexto,
                                                     fontWeight:
                                                         FontWeight.bold)),
                                             const SizedBox(height: 6),
@@ -367,9 +377,9 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                       const SizedBox(width: 8),
                                       Text("${d.progresso}/${d.meta}",
                                           style: TextStyle(
-                        color: d.completado
-                          ? themeProvider.textoCinza
-                          : themeProvider.textoTexto)),
+                                              color: d.completado
+                                                  ? themeProvider.textoCinza
+                                                  : themeProvider.textoTexto)),
                                       const SizedBox(width: 8),
                                       Text("${d.xp}xp",
                                           style: const TextStyle(
@@ -383,15 +393,16 @@ class _CustomAppBarState extends State<CustomAppBar> {
                             const SizedBox(height: 8),
 
                             // --- NOVA SEÇÃO DE CONQUISTAS ---
-              Text("Conquistas Desbloqueadas",
-                style: TextStyle(
-                  color: themeProvider.textoTexto,
+                            Text("Conquistas Desbloqueadas",
+                                style: TextStyle(
+                                    color: themeProvider.textoTexto,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14)),
                             const SizedBox(height: 8),
                             if (conquistasDesbloqueadas.isEmpty)
-                Text("Nenhuma conquista desbloqueada",
-                  style: TextStyle(color: themeProvider.textoCinza))
+                              Text("Nenhuma conquista desbloqueada",
+                                  style: TextStyle(
+                                      color: themeProvider.textoCinza))
                             else
                               // Exibição em formato de lista
                               Column(
@@ -411,7 +422,8 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                           child: Text(
                                             c.nome,
                                             style: TextStyle(
-                                                color: themeProvider.textoTexto),
+                                                color:
+                                                    themeProvider.textoTexto),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
@@ -447,20 +459,21 @@ class _CustomAppBarState extends State<CustomAppBar> {
 
   PopupMenuItem<String> _buildPopupMenuItem(
       {required String text, required String value}) {
-  // Importante: usar listen: false aqui porque este método pode ser chamado fora do ciclo de build
-  // (por exemplo, quando o PopupMenu é aberto via gesto), o que quebra o assert do provider.
-  final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-  return PopupMenuItem<String>(
+    // Importante: usar listen: false aqui porque este método pode ser chamado fora do ciclo de build
+    // (por exemplo, quando o PopupMenu é aberto via gesto), o que quebra o assert do provider.
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    return PopupMenuItem<String>(
         value: value,
         child: Container(
             decoration: BoxDecoration(
-        color: themeProvider.botaoDropDown,
+                color: themeProvider.botaoDropDown,
                 borderRadius: BorderRadius.circular(5)),
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
             child: Center(
                 child: Text(text,
-          style: TextStyle(
-            fontFamily: 'Jersey 10', color: themeProvider.textoTexto)))));
+                    style: TextStyle(
+                        fontFamily: 'Jersey 10',
+                        color: themeProvider.textoTexto)))));
   }
 
   void _showAllNotificationsModal(BuildContext context) {

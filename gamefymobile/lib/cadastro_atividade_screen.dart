@@ -69,7 +69,11 @@ class _CadastroAtividadeScreenState extends State<CadastroAtividadeScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       final Map<int, String> dificuldades = {
-        0: 'muito_facil', 1: 'facil', 2: 'medio', 3: 'dificil', 4: 'muito_dificil'
+        0: 'muito_facil',
+        1: 'facil',
+        2: 'medio',
+        3: 'dificil',
+        4: 'muito_dificil'
       };
       final result = await _apiService.cadastrarAtividade(
         nome: _nomeController.text,
@@ -133,7 +137,8 @@ class _CadastroAtividadeScreenState extends State<CadastroAtividadeScreen> {
               CommonUtils.buildRecorrenciaSelector(
                 context: context,
                 recorrenciaSelecionada: _recorrenciaSelecionada,
-                onChanged: (value) => setState(() => _recorrenciaSelecionada = value),
+                onChanged: (value) =>
+                    setState(() => _recorrenciaSelecionada = value),
               ),
               const SizedBox(height: 20),
               CommonUtils.buildTextField(
@@ -158,7 +163,8 @@ class _CadastroAtividadeScreenState extends State<CadastroAtividadeScreen> {
               CommonUtils.buildDificuldadeSelector(
                 context: context,
                 dificuldadeSelecionada: _dificuldadeSelecionada,
-                onChanged: (value) => setState(() => _dificuldadeSelecionada = value),
+                onChanged: (value) =>
+                    setState(() => _dificuldadeSelecionada = value),
               ), // Alteração aqui
               const SizedBox(height: 40),
               ElevatedButton(
@@ -185,8 +191,4 @@ class _CadastroAtividadeScreenState extends State<CadastroAtividadeScreen> {
       ),
     );
   }
-
-
-
-
 }

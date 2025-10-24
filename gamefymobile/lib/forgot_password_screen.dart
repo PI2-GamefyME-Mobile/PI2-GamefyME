@@ -28,7 +28,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       _isLoading = true;
     });
 
-    final result = await _authService.requestPasswordReset(_emailController.text.trim());
+    final result =
+        await _authService.requestPasswordReset(_emailController.text.trim());
 
     if (!mounted) return;
     setState(() {
@@ -46,7 +47,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => VerifyCodeScreen(email: _emailController.text.trim()),
+          builder: (context) =>
+              VerifyCodeScreen(email: _emailController.text.trim()),
         ),
       );
     } else {
@@ -63,7 +65,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF4E008A),
       appBar: AppBar(
-        title: const Text('Redefinir Senha', style: TextStyle(color: Colors.white)),
+        title: const Text('Redefinir Senha',
+            style: TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFF4E008A),
         elevation: 0,
         leading: IconButton(
@@ -77,7 +80,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/images/logo.png', height: 150, errorBuilder: (c, e, s) => const SizedBox()),
+              Image.asset('assets/images/logo.png',
+                  height: 150, errorBuilder: (c, e, s) => const SizedBox()),
               const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.all(20),
@@ -107,12 +111,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
                         ),
                         onPressed: _isLoading ? null : _sendPasswordResetEmail,
                         child: _isLoading
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : const Text("Enviar", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                            ? const CircularProgressIndicator(
+                                color: Colors.white)
+                            : const Text("Enviar",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white)),
                       ),
                     ),
                   ],
@@ -124,7 +133,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ),
     );
   }
-  
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -136,7 +145,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
+        Text(label,
+            style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.black87)),
         const SizedBox(height: 5),
         TextField(
           controller: controller,

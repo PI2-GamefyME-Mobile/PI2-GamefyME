@@ -48,7 +48,8 @@ pw.Widget _buildStatCard({
       children: [
         pw.Text(title, style: pw.TextStyle(font: ttfBold, fontSize: 11)),
         pw.SizedBox(height: 8),
-        pw.Text(value, style: pw.TextStyle(font: ttfBold, fontSize: 24, color: color)),
+        pw.Text(value,
+            style: pw.TextStyle(font: ttfBold, fontSize: 24, color: color)),
         pw.SizedBox(height: 4),
         pw.Text(percentage, style: pw.TextStyle(fontSize: 10, color: color)),
       ],
@@ -66,7 +67,8 @@ pw.Widget _buildPieChart({
 }) {
   if (total == 0) {
     return pw.Center(
-      child: pw.Text('Nenhuma atividade no período', style: const pw.TextStyle(fontSize: 12)),
+      child: pw.Text('Nenhuma atividade no período',
+          style: const pw.TextStyle(fontSize: 12)),
     );
   }
 
@@ -112,10 +114,11 @@ pw.Widget _buildPieChart({
 
                   for (final item in data) {
                     final sweepAngle = (item.percentage / 100) * 360;
-                    
+
                     // Converter para radianos
                     final startRad = currentAngle * 3.14159265359 / 180;
-                    final endRad = (currentAngle + sweepAngle) * 3.14159265359 / 180;
+                    final endRad =
+                        (currentAngle + sweepAngle) * 3.14159265359 / 180;
 
                     // Desenhar fatia
                     canvas
@@ -148,32 +151,35 @@ pw.Widget _buildPieChart({
       pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.start,
         mainAxisAlignment: pw.MainAxisAlignment.center,
-        children: data.map((item) => pw.Padding(
-          padding: const pw.EdgeInsets.only(bottom: 12),
-          child: pw.Row(
-            children: [
-              pw.Container(
-                width: 16,
-                height: 16,
-                decoration: pw.BoxDecoration(
-                  color: item.color,
-                  borderRadius: pw.BorderRadius.circular(3),
-                ),
-              ),
-              pw.SizedBox(width: 8),
-              pw.Column(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Text(item.label, style: pw.TextStyle(font: ttfBold, fontSize: 11)),
-                  pw.Text(
-                    '${item.value} (${item.percentage.toStringAsFixed(1)}%)',
-                    style: const pw.TextStyle(fontSize: 9),
+        children: data
+            .map((item) => pw.Padding(
+                  padding: const pw.EdgeInsets.only(bottom: 12),
+                  child: pw.Row(
+                    children: [
+                      pw.Container(
+                        width: 16,
+                        height: 16,
+                        decoration: pw.BoxDecoration(
+                          color: item.color,
+                          borderRadius: pw.BorderRadius.circular(3),
+                        ),
+                      ),
+                      pw.SizedBox(width: 8),
+                      pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Text(item.label,
+                              style: pw.TextStyle(font: ttfBold, fontSize: 11)),
+                          pw.Text(
+                            '${item.value} (${item.percentage.toStringAsFixed(1)}%)',
+                            style: const pw.TextStyle(fontSize: 9),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ],
-          ),
-        )).toList(),
+                ))
+            .toList(),
       ),
     ],
   );
@@ -184,7 +190,7 @@ double _cos(double radians) {
   // Normalizar o ângulo para [-π, π]
   while (radians > 3.14159265359) radians -= 2 * 3.14159265359;
   while (radians < -3.14159265359) radians += 2 * 3.14159265359;
-  
+
   // Série de Taylor para cos(x)
   double result = 1.0;
   double term = 1.0;
@@ -199,7 +205,7 @@ double _sin(double radians) {
   // Normalizar o ângulo para [-π, π]
   while (radians > 3.14159265359) radians -= 2 * 3.14159265359;
   while (radians < -3.14159265359) radians += 2 * 3.14159265359;
-  
+
   // Série de Taylor para sin(x)
   double result = radians;
   double term = radians;
@@ -225,7 +231,6 @@ class _PieChartData {
   });
 }
 
-
 Future<Uint8List> buildActivitiesPdf({
   required List<AtividadeResumo> atividades,
   required DateTimeRange periodo,
@@ -247,16 +252,18 @@ Future<Uint8List> buildActivitiesPdf({
   final periodoStr = '${df.format(periodo.start)} a ${df.format(periodo.end)}';
 
   // Incluir todas as atividades do período
-  final itens = atividades.toList()
-    ..sort((a, b) => a.data.compareTo(b.data));
+  final itens = atividades.toList()..sort((a, b) => a.data.compareTo(b.data));
 
   // Estatísticas por status
-  final concluidas = itens.where((a) => a.situacao.toLowerCase() == 'realizada').length;
-  final canceladas = itens.where((a) => a.situacao.toLowerCase() == 'cancelada').length;
-  final ativas = itens.where((a) => 
-    a.situacao.toLowerCase() != 'realizada' && 
-    a.situacao.toLowerCase() != 'cancelada'
-  ).length;
+  final concluidas =
+      itens.where((a) => a.situacao.toLowerCase() == 'realizada').length;
+  final canceladas =
+      itens.where((a) => a.situacao.toLowerCase() == 'cancelada').length;
+  final ativas = itens
+      .where((a) =>
+          a.situacao.toLowerCase() != 'realizada' &&
+          a.situacao.toLowerCase() != 'cancelada')
+      .length;
   final total = itens.length;
 
   doc.addPage(
@@ -271,11 +278,15 @@ Future<Uint8List> buildActivitiesPdf({
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           crossAxisAlignment: pw.CrossAxisAlignment.end,
           children: [
-            pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
-              pw.Text(titulo, style: pw.TextStyle(font: ttfBold, fontSize: 20)),
-              pw.SizedBox(height: 4),
-              pw.Text('Período: $periodoStr', style: const pw.TextStyle(fontSize: 10)),
-            ]),
+            pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text(titulo,
+                      style: pw.TextStyle(font: ttfBold, fontSize: 20)),
+                  pw.SizedBox(height: 4),
+                  pw.Text('Período: $periodoStr',
+                      style: const pw.TextStyle(fontSize: 10)),
+                ]),
             pw.Text(DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now()),
                 style: const pw.TextStyle(fontSize: 10)),
           ],
@@ -292,10 +303,13 @@ Future<Uint8List> buildActivitiesPdf({
           child: pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
-              pw.Text('Resumo Geral', style: pw.TextStyle(color: headerFg, font: ttfBold, fontSize: 14)),
+              pw.Text('Resumo Geral',
+                  style: pw.TextStyle(
+                      color: headerFg, font: ttfBold, fontSize: 14)),
               pw.Text(
                 'Total: $total atividades',
-                style: pw.TextStyle(color: headerFg, font: ttfBold, fontSize: 12),
+                style:
+                    pw.TextStyle(color: headerFg, font: ttfBold, fontSize: 12),
               ),
             ],
           ),
@@ -309,21 +323,27 @@ Future<Uint8List> buildActivitiesPdf({
             _buildStatCard(
               title: 'Concluídas',
               value: concluidas.toString(),
-              percentage: total > 0 ? '${((concluidas / total) * 100).toStringAsFixed(1)}%' : '0%',
+              percentage: total > 0
+                  ? '${((concluidas / total) * 100).toStringAsFixed(1)}%'
+                  : '0%',
               color: PdfColors.green,
               ttfBold: ttfBold,
             ),
             _buildStatCard(
               title: 'Ativas',
               value: ativas.toString(),
-              percentage: total > 0 ? '${((ativas / total) * 100).toStringAsFixed(1)}%' : '0%',
+              percentage: total > 0
+                  ? '${((ativas / total) * 100).toStringAsFixed(1)}%'
+                  : '0%',
               color: PdfColors.blue,
               ttfBold: ttfBold,
             ),
             _buildStatCard(
               title: 'Canceladas',
               value: canceladas.toString(),
-              percentage: total > 0 ? '${((canceladas / total) * 100).toStringAsFixed(1)}%' : '0%',
+              percentage: total > 0
+                  ? '${((canceladas / total) * 100).toStringAsFixed(1)}%'
+                  : '0%',
               color: PdfColors.red,
               ttfBold: ttfBold,
             ),
@@ -341,7 +361,8 @@ Future<Uint8List> buildActivitiesPdf({
           child: pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.center,
             children: [
-              pw.Text('Distribuição de Atividades', style: pw.TextStyle(font: ttfBold, fontSize: 14)),
+              pw.Text('Distribuição de Atividades',
+                  style: pw.TextStyle(font: ttfBold, fontSize: 14)),
               pw.SizedBox(height: 16),
               _buildPieChart(
                 concluidas: concluidas,
@@ -356,10 +377,12 @@ Future<Uint8List> buildActivitiesPdf({
         pw.SizedBox(height: 20),
 
         // Tabela de Atividades
-        pw.Text('Detalhamento das Atividades', style: pw.TextStyle(font: ttfBold, fontSize: 14)),
+        pw.Text('Detalhamento das Atividades',
+            style: pw.TextStyle(font: ttfBold, fontSize: 14)),
         pw.SizedBox(height: 12),
         pw.Table(
-          border: pw.TableBorder.symmetric(inside: pw.BorderSide(color: PdfColors.grey300)),
+          border: pw.TableBorder.symmetric(
+              inside: pw.BorderSide(color: PdfColors.grey300)),
           columnWidths: {
             0: const pw.FlexColumnWidth(1.2),
             1: const pw.FlexColumnWidth(2.5),
@@ -371,44 +394,73 @@ Future<Uint8List> buildActivitiesPdf({
             pw.TableRow(
               decoration: pw.BoxDecoration(color: PdfColors.grey200),
               children: [
-                pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Data', style: pw.TextStyle(font: ttfBold))),
-                pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Atividade', style: pw.TextStyle(font: ttfBold))),
-                pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Dificuldade', style: pw.TextStyle(font: ttfBold))),
-                pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Situação', style: pw.TextStyle(font: ttfBold))),
-                pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('XP', style: pw.TextStyle(font: ttfBold))),
+                pw.Padding(
+                    padding: const pw.EdgeInsets.all(6),
+                    child: pw.Text('Data', style: pw.TextStyle(font: ttfBold))),
+                pw.Padding(
+                    padding: const pw.EdgeInsets.all(6),
+                    child: pw.Text('Atividade',
+                        style: pw.TextStyle(font: ttfBold))),
+                pw.Padding(
+                    padding: const pw.EdgeInsets.all(6),
+                    child: pw.Text('Dificuldade',
+                        style: pw.TextStyle(font: ttfBold))),
+                pw.Padding(
+                    padding: const pw.EdgeInsets.all(6),
+                    child: pw.Text('Situação',
+                        style: pw.TextStyle(font: ttfBold))),
+                pw.Padding(
+                    padding: const pw.EdgeInsets.all(6),
+                    child: pw.Text('XP', style: pw.TextStyle(font: ttfBold))),
               ],
             ),
             ...itens.map((a) => pw.TableRow(
-              children: [
-                pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(df.format(a.data))),
-                pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(a.nome)),
-                pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(a.dificuldade)),
-                pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(a.situacao)),
-                pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(a.experiencia.toString())),
-              ],
-            )),
+                  children: [
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text(df.format(a.data))),
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text(a.nome)),
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text(a.dificuldade)),
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text(a.situacao)),
+                    pw.Padding(
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Text(a.experiencia.toString())),
+                  ],
+                )),
           ],
         ),
         if (itens.any((a) => (a.descricao ?? '').isNotEmpty)) ...[
           pw.SizedBox(height: 16),
-          pw.Text('Descrições', style: pw.TextStyle(font: ttfBold, fontSize: 14)),
+          pw.Text('Descrições',
+              style: pw.TextStyle(font: ttfBold, fontSize: 14)),
           pw.SizedBox(height: 8),
-          ...itens.where((a) => (a.descricao ?? '').isNotEmpty).map((a) => pw.Padding(
-            padding: const pw.EdgeInsets.only(bottom: 8),
-            child: pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start,
-              children: [
-                pw.Text('${df.format(a.data)} • ${a.nome}', style: pw.TextStyle(font: ttfBold, fontSize: 11)),
-                pw.SizedBox(height: 2),
-                pw.Text(a.descricao ?? '', style: const pw.TextStyle(fontSize: 10)),
-              ],
-            ),
-          )),
+          ...itens
+              .where((a) => (a.descricao ?? '').isNotEmpty)
+              .map((a) => pw.Padding(
+                    padding: const pw.EdgeInsets.only(bottom: 8),
+                    child: pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('${df.format(a.data)} • ${a.nome}',
+                            style: pw.TextStyle(font: ttfBold, fontSize: 11)),
+                        pw.SizedBox(height: 2),
+                        pw.Text(a.descricao ?? '',
+                            style: const pw.TextStyle(fontSize: 10)),
+                      ],
+                    ),
+                  )),
         ],
       ],
       footer: (ctx) => pw.Align(
         alignment: pw.Alignment.centerRight,
-        child: pw.Text('Página ${ctx.pageNumber}/${ctx.pagesCount}', style: const pw.TextStyle(fontSize: 10)),
+        child: pw.Text('Página ${ctx.pageNumber}/${ctx.pagesCount}',
+            style: const pw.TextStyle(fontSize: 10)),
       ),
     ),
   );

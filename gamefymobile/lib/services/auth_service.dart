@@ -64,14 +64,22 @@ class AuthService {
         await _saveTokens(accessToken, refreshToken);
         return {'success': true, 'message': 'Login bem-sucedido!'};
       } else {
-        return {'success': false, 'message': responseBody['detail'] ?? responseBody['erro'] ?? 'Credenciais inválidas.'};
+        return {
+          'success': false,
+          'message': responseBody['detail'] ??
+              responseBody['erro'] ??
+              'Credenciais inválidas.'
+        };
       }
     } catch (e) {
       debugPrint("Erro na requisição de login: $e");
-      return {'success': false, 'message': 'Erro de conexão. Verifique se a API está rodando.'};
+      return {
+        'success': false,
+        'message': 'Erro de conexão. Verifique se a API está rodando.'
+      };
     }
   }
-  
+
   Future<Map<String, dynamic>> register({
     required String nome,
     required String email,
@@ -99,11 +107,17 @@ class AuthService {
         await _saveTokens(accessToken, refreshToken);
         return {'success': true, 'message': responseBody['message']};
       } else {
-        return {'success': false, 'message': responseBody['erro'] ?? 'Ocorreu um erro no cadastro.'};
+        return {
+          'success': false,
+          'message': responseBody['erro'] ?? 'Ocorreu um erro no cadastro.'
+        };
       }
     } catch (e) {
       debugPrint("Erro na requisição de cadastro: $e");
-      return {'success': false, 'message': 'Erro de conexão. Verifique se a API está rodando.'};
+      return {
+        'success': false,
+        'message': 'Erro de conexão. Verifique se a API está rodando.'
+      };
     }
   }
 
@@ -124,22 +138,25 @@ class AuthService {
     try {
       debugPrint('🌐 [AUTH] Enviando para: $url');
       debugPrint('📦 [AUTH] Body: $body');
-      
-      final response = await http.post(
+
+      final response = await http
+          .post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: body,
-      ).timeout(
+      )
+          .timeout(
         const Duration(seconds: 10),
         onTimeout: () {
-          debugPrint('⏱️ [AUTH] TIMEOUT: Servidor não respondeu em 10 segundos');
+          debugPrint(
+              '⏱️ [AUTH] TIMEOUT: Servidor não respondeu em 10 segundos');
           throw Exception('Timeout ao conectar ao servidor');
         },
       );
-      
+
       debugPrint('📡 [AUTH] Status: ${response.statusCode}');
       debugPrint('📨 [AUTH] Response: ${response.body}');
-      
+
       final responseBody = jsonDecode(response.body);
       if (response.statusCode == 200) {
         final String accessToken = responseBody['tokens']['access'];
@@ -149,11 +166,20 @@ class AuthService {
         return {'success': true, 'message': 'Login com Google realizado!'};
       } else {
         debugPrint('[AUTH] Falha no login: ${response.statusCode}');
-        return {'success': false, 'message': responseBody['error'] ?? responseBody['detail'] ?? responseBody['erro'] ?? 'Erro no login com Google.'};
+        return {
+          'success': false,
+          'message': responseBody['error'] ??
+              responseBody['detail'] ??
+              responseBody['erro'] ??
+              'Erro no login com Google.'
+        };
       }
     } catch (e) {
       debugPrint("[AUTH] Erro na requisição de login com Google: $e");
-      return {'success': false, 'message': 'Erro de conexão. Verifique se a API está rodando.'};
+      return {
+        'success': false,
+        'message': 'Erro de conexão. Verifique se a API está rodando.'
+      };
     }
   }
 
@@ -176,36 +202,49 @@ class AuthService {
     try {
       debugPrint('🌐 [AUTH] Tentando cadastro. Enviando para: $url');
       debugPrint('📦 [AUTH] Body: $body');
-      
-      final response = await http.post(
+
+      final response = await http
+          .post(
         url,
         headers: {'Content-Type': 'application/json'},
         body: body,
-      ).timeout(
+      )
+          .timeout(
         const Duration(seconds: 10),
         onTimeout: () {
           debugPrint('[AUTH] TIMEOUT: Servidor não respondeu em 10 segundos');
           throw Exception('Timeout ao conectar ao servidor');
         },
       );
-      
+
       debugPrint('[AUTH] Status: ${response.statusCode}');
       debugPrint('[AUTH] Response: ${response.body}');
-      
+
       final responseBody = jsonDecode(response.body);
       if (response.statusCode == 201) {
         final String accessToken = responseBody['tokens']['access'];
         final String refreshToken = responseBody['tokens']['refresh'];
         await _saveTokens(accessToken, refreshToken);
         debugPrint('[AUTH] Cadastro com Google realizado!');
-        return {'success': true, 'message': responseBody['message'] ?? 'Conta criada com sucesso!'};
+        return {
+          'success': true,
+          'message': responseBody['message'] ?? 'Conta criada com sucesso!'
+        };
       } else {
         debugPrint('[AUTH] Falha no cadastro: ${response.statusCode}');
-        return {'success': false, 'message': responseBody['error'] ?? responseBody['erro'] ?? 'Erro ao criar conta com Google.'};
+        return {
+          'success': false,
+          'message': responseBody['error'] ??
+              responseBody['erro'] ??
+              'Erro ao criar conta com Google.'
+        };
       }
     } catch (e) {
       debugPrint("[AUTH] Erro na requisição de cadastro com Google: $e");
-      return {'success': false, 'message': 'Erro de conexão. Verifique se a API está rodando.'};
+      return {
+        'success': false,
+        'message': 'Erro de conexão. Verifique se a API está rodando.'
+      };
     }
   }
 
@@ -219,13 +258,17 @@ class AuthService {
         body: body,
       );
       final responseBody = jsonDecode(response.body);
-      return {'success': response.statusCode == 200, 'message': responseBody['message'] ?? responseBody['error']};
+      return {
+        'success': response.statusCode == 200,
+        'message': responseBody['message'] ?? responseBody['error']
+      };
     } catch (e) {
       return {'success': false, 'message': 'Erro de conexão.'};
     }
   }
 
-  Future<Map<String, dynamic>> confirmPasswordReset(String email, String token, String newPassword, String confirmPassword) async {
+  Future<Map<String, dynamic>> confirmPasswordReset(String email, String token,
+      String newPassword, String confirmPassword) async {
     final url = Uri.parse("$_baseUrl/password-reset/confirm/");
     final body = jsonEncode({
       'email': email,
@@ -241,35 +284,38 @@ class AuthService {
         body: body,
       );
       final responseBody = jsonDecode(response.body);
-      return {'success': response.statusCode == 200, 'message': responseBody['message'] ?? responseBody['error']};
-    } catch(e) {
-       return {'success': false, 'message': 'Erro de conexão.'};
+      return {
+        'success': response.statusCode == 200,
+        'message': responseBody['message'] ?? responseBody['error']
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'Erro de conexão.'};
     }
   }
-  
+
   Future<bool> refreshAccessToken() async {
-  final refreshToken = await _storage.read(key: 'refresh_token');
-  if (refreshToken == null) return false;
+    final refreshToken = await _storage.read(key: 'refresh_token');
+    if (refreshToken == null) return false;
 
-  final url = Uri.parse("$_baseUrl/token/refresh/");
-  try {
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'refresh': refreshToken}),
-    );
+    final url = Uri.parse("$_baseUrl/token/refresh/");
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'refresh': refreshToken}),
+      );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final String newAccess = data['access'];
-      await _storage.write(key: 'access_token', value: newAccess);
-      return true;
-    } else {
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final String newAccess = data['access'];
+        await _storage.write(key: 'access_token', value: newAccess);
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      debugPrint("Erro ao renovar token: $e");
       return false;
     }
-  } catch (e) {
-    debugPrint("Erro ao renovar token: $e");
-    return false;
   }
-}
 }

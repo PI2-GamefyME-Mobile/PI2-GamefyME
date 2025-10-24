@@ -60,7 +60,8 @@ class _AdminDesafiosScreenState extends State<AdminDesafiosScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.fundoCard,
-        title: const Text('Confirmar exclusão', style: TextStyle(color: AppColors.branco)),
+        title: const Text('Confirmar exclusão',
+            style: TextStyle(color: AppColors.branco)),
         content: const Text(
           'Deseja realmente excluir este desafio? Esta ação não pode ser desfeita.',
           style: TextStyle(color: AppColors.cinzaSub),
@@ -68,7 +69,8 @@ class _AdminDesafiosScreenState extends State<AdminDesafiosScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar', style: TextStyle(color: AppColors.cinzaSub)),
+            child: const Text('Cancelar',
+                style: TextStyle(color: AppColors.cinzaSub)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
@@ -190,7 +192,8 @@ class _AdminDesafiosScreenState extends State<AdminDesafiosScreen> {
                                   children: [
                                     Text(
                                       desafio['dsdesafio'] ?? '',
-                                      style: const TextStyle(color: AppColors.cinzaSub),
+                                      style: const TextStyle(
+                                          color: AppColors.cinzaSub),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -208,12 +211,16 @@ class _AdminDesafiosScreenState extends State<AdminDesafiosScreen> {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     IconButton(
-                                      icon: const Icon(Icons.edit, color: AppColors.verdeLima),
-                                      onPressed: () => _abrirFormulario(desafio: desafio),
+                                      icon: const Icon(Icons.edit,
+                                          color: AppColors.verdeLima),
+                                      onPressed: () =>
+                                          _abrirFormulario(desafio: desafio),
                                     ),
                                     IconButton(
-                                      icon: const Icon(Icons.delete, color: Colors.red),
-                                      onPressed: () => _excluirDesafio(desafio['iddesafio']),
+                                      icon: const Icon(Icons.delete,
+                                          color: Colors.red),
+                                      onPressed: () =>
+                                          _excluirDesafio(desafio['iddesafio']),
                                     ),
                                   ],
                                 ),
@@ -234,7 +241,8 @@ class FormularioDesafioScreen extends StatefulWidget {
   const FormularioDesafioScreen({super.key, this.desafio});
 
   @override
-  State<FormularioDesafioScreen> createState() => _FormularioDesafioScreenState();
+  State<FormularioDesafioScreen> createState() =>
+      _FormularioDesafioScreenState();
 }
 
 class _FormularioDesafioScreenState extends State<FormularioDesafioScreen> {
@@ -243,7 +251,7 @@ class _FormularioDesafioScreenState extends State<FormularioDesafioScreen> {
   final _descricaoController = TextEditingController();
   final _xpController = TextEditingController();
   final _parametroController = TextEditingController();
-  
+
   String _tipoSelecionado = 'diario';
   String _tipoLogicaSelecionada = 'atividades_concluidas';
   DateTime? _dataInicio;
@@ -251,7 +259,7 @@ class _FormularioDesafioScreenState extends State<FormularioDesafioScreen> {
   bool _isLoading = false;
 
   final ApiService _apiService = ApiService();
-  
+
   Usuario? _usuario;
   List<Notificacao> _notificacoes = [];
   List<DesafioPendente> _desafiosPendentes = [];
@@ -265,10 +273,12 @@ class _FormularioDesafioScreenState extends State<FormularioDesafioScreen> {
       _nomeController.text = widget.desafio!['nmdesafio'] ?? '';
       _descricaoController.text = widget.desafio!['dsdesafio'] ?? '';
       _xpController.text = widget.desafio!['expdesafio']?.toString() ?? '';
-      _parametroController.text = widget.desafio!['parametro']?.toString() ?? '';
+      _parametroController.text =
+          widget.desafio!['parametro']?.toString() ?? '';
       _tipoSelecionado = widget.desafio!['tipo'] ?? 'diario';
-      _tipoLogicaSelecionada = widget.desafio!['tipo_logica'] ?? 'atividades_concluidas';
-      
+      _tipoLogicaSelecionada =
+          widget.desafio!['tipo_logica'] ?? 'atividades_concluidas';
+
       if (widget.desafio!['dtinicio'] != null) {
         _dataInicio = DateTime.parse(widget.desafio!['dtinicio']);
       }
@@ -441,11 +451,20 @@ class _FormularioDesafioScreenState extends State<FormularioDesafioScreen> {
                   ),
                 ),
                 items: const [
-                  DropdownMenuItem(value: 'atividades_concluidas', child: Text('Atividades Concluídas')),
-                  DropdownMenuItem(value: 'recorrentes_concluidas', child: Text('Recorrentes Concluídas')),
-                  DropdownMenuItem(value: 'min_dificeis', child: Text('Mínimo Difíceis')),
-                  DropdownMenuItem(value: 'desafios_concluidos', child: Text('Desafios Concluídos')),
-                  DropdownMenuItem(value: 'atividades_criadas', child: Text('Atividades Criadas')),
+                  DropdownMenuItem(
+                      value: 'atividades_concluidas',
+                      child: Text('Atividades Concluídas')),
+                  DropdownMenuItem(
+                      value: 'recorrentes_concluidas',
+                      child: Text('Recorrentes Concluídas')),
+                  DropdownMenuItem(
+                      value: 'min_dificeis', child: Text('Mínimo Difíceis')),
+                  DropdownMenuItem(
+                      value: 'desafios_concluidos',
+                      child: Text('Desafios Concluídos')),
+                  DropdownMenuItem(
+                      value: 'atividades_criadas',
+                      child: Text('Atividades Criadas')),
                 ],
                 onChanged: (v) => setState(() => _tipoLogicaSelecionada = v!),
               ),
@@ -495,7 +514,10 @@ class _FormularioDesafioScreenState extends State<FormularioDesafioScreen> {
                 const SizedBox(height: 16),
                 const Text(
                   'Período do Desafio Único',
-                  style: TextStyle(color: AppColors.verdeLima, fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: AppColors.verdeLima,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 ListTile(
@@ -506,7 +528,8 @@ class _FormularioDesafioScreenState extends State<FormularioDesafioScreen> {
                         : 'Início: ${_dataInicio!.day}/${_dataInicio!.month}/${_dataInicio!.year}',
                     style: const TextStyle(color: AppColors.branco),
                   ),
-                  trailing: const Icon(Icons.calendar_today, color: AppColors.verdeLima),
+                  trailing: const Icon(Icons.calendar_today,
+                      color: AppColors.verdeLima),
                   onTap: () async {
                     final data = await showDatePicker(
                       context: context,
@@ -528,11 +551,13 @@ class _FormularioDesafioScreenState extends State<FormularioDesafioScreen> {
                         : 'Fim: ${_dataFim!.day}/${_dataFim!.month}/${_dataFim!.year}',
                     style: const TextStyle(color: AppColors.branco),
                   ),
-                  trailing: const Icon(Icons.calendar_today, color: AppColors.verdeLima),
+                  trailing: const Icon(Icons.calendar_today,
+                      color: AppColors.verdeLima),
                   onTap: () async {
                     final data = await showDatePicker(
                       context: context,
-                      initialDate: _dataFim ?? DateTime.now().add(const Duration(days: 7)),
+                      initialDate: _dataFim ??
+                          DateTime.now().add(const Duration(days: 7)),
                       firstDate: DateTime(2020),
                       lastDate: DateTime(2030),
                     );
@@ -551,10 +576,12 @@ class _FormularioDesafioScreenState extends State<FormularioDesafioScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 child: _isLoading
-                    ? const CircularProgressIndicator(color: AppColors.fundoEscuro)
+                    ? const CircularProgressIndicator(
+                        color: AppColors.fundoEscuro)
                     : Text(
                         widget.desafio != null ? 'ATUALIZAR' : 'CRIAR',
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
               ),
             ],

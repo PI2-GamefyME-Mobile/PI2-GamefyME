@@ -33,7 +33,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
       );
       return;
     }
-    
+
     if (newPassword != confirmPassword) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -59,7 +59,8 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
     if (result['success']) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message'] ?? 'Senha redefinida com sucesso! Faça o login.'),
+          content: Text(result['message'] ??
+              'Senha redefinida com sucesso! Faça o login.'),
           backgroundColor: Colors.green,
         ),
       );
@@ -82,7 +83,8 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF4E008A),
       appBar: AppBar(
-        title: const Text('Verificar Código', style: TextStyle(color: Colors.white)),
+        title: const Text('Verificar Código',
+            style: TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFF4E008A),
         elevation: 0,
         leading: IconButton(
@@ -115,8 +117,11 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                   hint: "Digite sua nova senha",
                   obscure: _obscurePassword,
                   suffix: IconButton(
-                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                    icon: Icon(_obscurePassword
+                        ? Icons.visibility_off
+                        : Icons.visibility),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -126,8 +131,11 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                   hint: "Repita sua nova senha",
                   obscure: _obscureConfirmPassword,
                   suffix: IconButton(
-                    icon: Icon(_obscureConfirmPassword ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                    icon: Icon(_obscureConfirmPassword
+                        ? Icons.visibility_off
+                        : Icons.visibility),
+                    onPressed: () => setState(() =>
+                        _obscureConfirmPassword = !_obscureConfirmPassword),
                   ),
                 ),
                 const SizedBox(height: 25),
@@ -137,12 +145,16 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
                     ),
                     onPressed: _isLoading ? null : _resetPassword,
                     child: _isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("Redefinir Senha", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                        : const Text("Redefinir Senha",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white)),
                   ),
                 ),
               ],
@@ -152,7 +164,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
       ),
     );
   }
-  
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -164,7 +176,11 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
+        Text(label,
+            style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.black87)),
         const SizedBox(height: 5),
         TextField(
           controller: controller,

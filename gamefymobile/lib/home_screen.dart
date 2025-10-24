@@ -67,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
             curve: Curves.ease,
           );
         },
-  backgroundColor: AppColors.roxoHeader,
+        backgroundColor: AppColors.roxoHeader,
         selectedItemColor: AppColors.verdeLima,
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
@@ -165,7 +165,8 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
   Future<void> _showAvatarModal() async {
     final newAvatar = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: Provider.of<ThemeProvider>(context, listen: false).fundoCard,
+      backgroundColor:
+          Provider.of<ThemeProvider>(context, listen: false).fundoCard,
       builder: (context) {
         return Padding(
           padding: const EdgeInsets.all(20),
@@ -224,7 +225,11 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
             _carregarDados();
           }
         },
-        child: Icon(Icons.add, color: themeProvider.isDarkMode ? AppColors.fundoEscuro : AppColors.branco, size: 30),
+        child: Icon(Icons.add,
+            color: themeProvider.isDarkMode
+                ? AppColors.fundoEscuro
+                : AppColors.branco,
+            size: 30),
       ),
     );
   }
@@ -232,14 +237,15 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
   Widget _buildBody() {
     switch (_screenState) {
       case ScreenState.loading:
-    return const Center(
-      child: CircularProgressIndicator(color: AppColors.verdeLima));
+        return const Center(
+            child: CircularProgressIndicator(color: AppColors.verdeLima));
       case ScreenState.error:
         return Center(
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      Text('Erro ao carregar dados.',
-        style: TextStyle(color: Provider.of<ThemeProvider>(context).textoTexto)),
+          Text('Erro ao carregar dados.',
+              style: TextStyle(
+                  color: Provider.of<ThemeProvider>(context).textoTexto)),
           const SizedBox(height: 10),
           ElevatedButton(
               onPressed: _carregarDados,
@@ -254,10 +260,10 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
         }
         final isSmall = ResponsiveUtils.isSmallScreen(context);
         final screenWidth = MediaQuery.of(context).size.width;
-        
+
         // Ajustar largura do card de usuário para telas muito pequenas
         final userCardWidth = screenWidth < 370 ? 130.0 : 150.0;
-        
+
         return ListView(
           padding: ResponsiveUtils.adaptivePadding(context),
           children: [
@@ -309,12 +315,12 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isSmall = ResponsiveUtils.isSmallScreen(context);
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     // Ajustar tamanho do avatar baseado na largura da tela
     final avatarRadius = screenWidth < 370 ? 38.0 : 46.0;
     final padding = isSmall ? 12.0 : 16.0;
     final nameFontSize = screenWidth < 370 ? 13.0 : 14.0;
-    
+
     return Container(
       padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
@@ -349,21 +355,21 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
     final double progress = usuario.expTotalNivel > 0
         ? usuario.exp.toDouble() / usuario.expTotalNivel.toDouble()
         : 0;
-    
+
     // Formato para exibir o dia da semana
     final DateFormat dayFormatter = DateFormat('EEE', 'pt_BR');
 
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isSmall = ResponsiveUtils.isSmallScreen(context);
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     // Tamanhos adaptativos baseados na largura da tela
     final titleFontSize = screenWidth < 370 ? 13.0 : 16.0;
     final dayFontSize = screenWidth < 370 ? 11.0 : 14.0;
     final imageSize = screenWidth < 370 ? 22.0 : 28.0;
     final xpFontSize = screenWidth < 370 ? 11.0 : 14.0;
     final padding = isSmall ? 8.0 : 12.0;
-    
+
     return Container(
       padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
@@ -385,7 +391,8 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: _streakData.map((dia) {
                 final date = DateTime.parse(dia['date']);
-                final String diaSemana = dayFormatter.format(date).toUpperCase();
+                final String diaSemana =
+                    dayFormatter.format(date).toUpperCase();
                 String imagePath;
 
                 switch (dia['status']) {
@@ -398,25 +405,22 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                   default: // inativo
                     imagePath = 'assets/images/fogo-inativo.png';
                 }
-                
+
                 return Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min, 
-                    children: [
-                      Text(diaSemana,
-                          style: TextStyle(
-                              fontSize: dayFontSize,
-                              fontWeight: FontWeight.bold,
-                              color: themeProvider.textoTexto),
-                          maxLines: 1,
-                          overflow: TextOverflow.clip),
-                      SizedBox(height: isSmall ? 4 : 8),
-                      Image.asset(imagePath,
-                          width: imageSize, 
-                          height: imageSize,
-                          fit: BoxFit.contain),
-                    ]
-                  ),
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Text(diaSemana,
+                        style: TextStyle(
+                            fontSize: dayFontSize,
+                            fontWeight: FontWeight.bold,
+                            color: themeProvider.textoTexto),
+                        maxLines: 1,
+                        overflow: TextOverflow.clip),
+                    SizedBox(height: isSmall ? 4 : 8),
+                    Image.asset(imagePath,
+                        width: imageSize,
+                        height: imageSize,
+                        fit: BoxFit.contain),
+                  ]),
                 );
               }).toList(),
             ),
@@ -428,7 +432,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                 child: Text('${usuario.exp} XP',
                     style: TextStyle(
                         fontSize: xpFontSize,
-                        color: themeProvider.textoTexto, 
+                        color: themeProvider.textoTexto,
                         fontWeight: FontWeight.bold),
                     overflow: TextOverflow.ellipsis),
               ),
@@ -437,7 +441,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                 child: Text('Nível ${usuario.nivel}',
                     style: TextStyle(
                         fontSize: xpFontSize,
-                        color: themeProvider.textoTexto, 
+                        color: themeProvider.textoTexto,
                         fontWeight: FontWeight.bold),
                     overflow: TextOverflow.ellipsis),
               ),
@@ -445,7 +449,7 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                 child: Text('${usuario.expTotalNivel} XP',
                     style: TextStyle(
                         fontSize: xpFontSize,
-                        color: themeProvider.textoTexto, 
+                        color: themeProvider.textoTexto,
                         fontWeight: FontWeight.bold),
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.right),
@@ -607,8 +611,8 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppColors.verdeLima,
                         borderRadius: BorderRadius.circular(12),
@@ -627,14 +631,16 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                   ],
                 ),
                 const SizedBox(height: 4),
-                // Badges de informações
-                Row(
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
                   children: [
-                    // Badge de dificuldade
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: atividade.dificuldadeColor.withValues(alpha: 0.2),
+                        color:
+                            atividade.dificuldadeColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: atividade.dificuldadeColor,
@@ -651,7 +657,9 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            FilterHelpers.getDificuldadeDisplayName(atividade.dificuldade).toUpperCase(),
+                            FilterHelpers.getDificuldadeDisplayName(
+                                    atividade.dificuldade)
+                                .toUpperCase(),
                             style: TextStyle(
                               color: atividade.dificuldadeColor,
                               fontSize: 10,
@@ -661,12 +669,14 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    // const SizedBox(width: 6), // espaçamento agora vem do Wrap.spacing
                     // Badge de recorrência
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
-                        color: atividade.recorrenciaColor.withValues(alpha: 0.2),
+                        color:
+                            atividade.recorrenciaColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: atividade.recorrenciaColor,
@@ -683,7 +693,9 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            FilterHelpers.getRecorrenciaDisplayName(atividade.recorrencia).toUpperCase(),
+                            FilterHelpers.getRecorrenciaDisplayName(
+                                    atividade.recorrencia)
+                                .toUpperCase(),
                             style: TextStyle(
                               color: atividade.recorrenciaColor,
                               fontSize: 10,
@@ -693,10 +705,11 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 6),
+                    // const SizedBox(width: 6), // espaçamento agora vem do Wrap.spacing
                     // Badge de situação
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: atividade.situacaoColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
@@ -706,7 +719,8 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                         ),
                       ),
                       child: Text(
-                        FilterHelpers.getSituacaoDisplayName(atividade.situacao).toUpperCase(),
+                        FilterHelpers.getSituacaoDisplayName(atividade.situacao)
+                            .toUpperCase(),
                         style: TextStyle(
                           color: atividade.situacaoColor,
                           fontSize: 10,
@@ -720,8 +734,8 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
             ),
 
             // ícone à direita para indicar clique
-      trailing: Icon(Icons.arrow_forward_ios,
-        color: themeProvider.textoCinza, size: 18),
+            trailing: Icon(Icons.arrow_forward_ios,
+                color: themeProvider.textoCinza, size: 18),
           ),
         );
       },

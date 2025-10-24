@@ -41,7 +41,11 @@ class _EditarAtividadeScreenState extends State<EditarAtividadeScreen> {
   bool _isLoading = false;
 
   final Map<String, int> _dificuldadeMap = {
-    'muito_facil': 0, 'facil': 1, 'medio': 2, 'dificil': 3, 'muito_dificil': 4,
+    'muito_facil': 0,
+    'facil': 1,
+    'medio': 2,
+    'dificil': 3,
+    'muito_dificil': 4,
   };
 
   @override
@@ -69,7 +73,11 @@ class _EditarAtividadeScreenState extends State<EditarAtividadeScreen> {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       final Map<int, String> dificuldades = {
-        0: 'muito_facil', 1: 'facil', 2: 'medio', 3: 'dificil', 4: 'muito_dificil'
+        0: 'muito_facil',
+        1: 'facil',
+        2: 'medio',
+        3: 'dificil',
+        4: 'muito_dificil'
       };
       final result = await _apiService.updateAtividade(
         id: widget.atividade.id,
@@ -93,50 +101,49 @@ class _EditarAtividadeScreenState extends State<EditarAtividadeScreen> {
   }
 
   Future<void> _cancelarAtividade() async {
-  final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-  final bool confirm = await showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: themeProvider.fundoCard,
-          title: Text(
-            'Confirmar Remoção',
-            style: TextStyle(color: themeProvider.textoTexto),
-          ),
-          content: Text(
-            'Tem certeza de que deseja cancelar esta atividade?',
-            style: TextStyle(color: themeProvider.textoTexto),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text('Cancelar',
-                  style: TextStyle(color: themeProvider.textoCinza)),
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final bool confirm = await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: themeProvider.fundoCard,
+            title: Text(
+              'Confirmar Remoção',
+              style: TextStyle(color: themeProvider.textoTexto),
             ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Cancelar',
-                  style: TextStyle(color: Colors.red)),
+            content: Text(
+              'Tem certeza de que deseja cancelar esta atividade?',
+              style: TextStyle(color: themeProvider.textoTexto),
             ),
-          ],
-        ),
-      ) ??
-      false;
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text('Cancelar',
+                    style: TextStyle(color: themeProvider.textoCinza)),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child:
+                    const Text('Cancelar', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+        ) ??
+        false;
 
-  if (confirm) {
-    setState(() => _isLoading = true);
-    final success = await _apiService.cancelAtividade(widget.atividade.id);
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-    if (success) {
-      Navigator.pop(context, true);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Erro ao cancelar a atividade.'),
-          backgroundColor: Colors.red));
+    if (confirm) {
+      setState(() => _isLoading = true);
+      final success = await _apiService.cancelAtividade(widget.atividade.id);
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      if (success) {
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Erro ao cancelar a atividade.'),
+            backgroundColor: Colors.red));
+      }
     }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -163,7 +170,8 @@ class _EditarAtividadeScreenState extends State<EditarAtividadeScreen> {
                 controller: _nomeController,
                 label: 'Nome da atividade',
                 hint: 'Digite o nome da atividade',
-                validator: (value) => value!.isEmpty ? 'Campo obrigatório' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Campo obrigatório' : null,
               ),
               const SizedBox(height: 20),
               CommonUtils.buildTextField(
@@ -178,7 +186,8 @@ class _EditarAtividadeScreenState extends State<EditarAtividadeScreen> {
               CommonUtils.buildRecorrenciaSelector(
                 context: context,
                 recorrenciaSelecionada: _recorrenciaSelecionada,
-                onChanged: (value) => setState(() => _recorrenciaSelecionada = value),
+                onChanged: (value) =>
+                    setState(() => _recorrenciaSelecionada = value),
               ),
               const SizedBox(height: 20),
               CommonUtils.buildTextField(
@@ -203,7 +212,8 @@ class _EditarAtividadeScreenState extends State<EditarAtividadeScreen> {
               CommonUtils.buildDificuldadeSelector(
                 context: context,
                 dificuldadeSelecionada: _dificuldadeSelecionada,
-                onChanged: (value) => setState(() => _dificuldadeSelecionada = value),
+                onChanged: (value) =>
+                    setState(() => _dificuldadeSelecionada = value),
               ),
               const SizedBox(height: 40),
               Row(children: [

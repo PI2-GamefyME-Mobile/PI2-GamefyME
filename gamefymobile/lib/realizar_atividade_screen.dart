@@ -22,14 +22,15 @@ class RealizarAtividadeScreen extends StatefulWidget {
       _RealizarAtividadeScreenState();
 }
 
-class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   final ApiService _apiService = ApiService();
   final NotificationService _notificationService = NotificationService();
   final TimerService _timerService = TimerService();
   final AudioPlayer _audioPlayer = AudioPlayer();
-  
+
   ScreenState _screenState = ScreenState.loading;
-  
+
   Atividade? _atividade;
   Usuario? _usuario;
   List<Notificacao> _notificacoes = [];
@@ -48,7 +49,7 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
 
   StreamSubscription? _timerSubscription;
   StreamSubscription? _completionSubscription;
-  
+
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
 
@@ -56,7 +57,7 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
+
     // Configurar animação de pulso
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -65,7 +66,7 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
-    
+
     _carregarDados();
     _setupTimerListeners();
   }
@@ -101,7 +102,8 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
       }
     });
 
-    _completionSubscription = _timerService.completionStream.listen((data) async {
+    _completionSubscription =
+        _timerService.completionStream.listen((data) async {
       await _notificationService.showActivityCompletedNotification(
         activityName: data['activityName'],
         xpGained: data['activityXP'],
@@ -116,11 +118,13 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
   void _onTimerComplete() {
     // Iniciar animação de pulso
     _pulseController.repeat(reverse: true);
-    
+
     // Tocar som de conclusão
     try {
       // Usando um tom de sistema como fallback se não houver arquivo de áudio
-      _audioPlayer.play(AssetSource('sounds/timer_complete.mp3')).catchError((e) {
+      _audioPlayer
+          .play(AssetSource('sounds/timer_complete.mp3'))
+          .catchError((e) {
         debugPrint('Erro ao tocar som: $e');
       });
     } catch (e) {
@@ -181,7 +185,7 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
 
   void _startTimer() {
     if (_isTimerRunning || _isFinished) return;
-    
+
     _timerService.startTimer(
       duration: _duration,
       activityId: _atividade!.id,
@@ -236,7 +240,7 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
       if (_isPomodoro) {
         final focus = const Duration(minutes: 25);
         _duration = _totalRemaining < focus ? _totalRemaining : focus;
-  _inFocusPhase = true;
+        _inFocusPhase = true;
       } else {
         _duration = _maxDuration;
       }
@@ -251,14 +255,14 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
   Future<void> _concluirAtividadeAutomaticamente() async {
     await Future.delayed(const Duration(milliseconds: 500));
     if (!mounted) return;
-    
+
     final success = await _apiService.realizarAtividade(_atividade!.id);
-    
+
     await _notificationService.showActivityCompletedNotification(
       activityName: _atividade!.nome,
       xpGained: _atividade!.xp,
     );
-    
+
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
@@ -273,7 +277,8 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
       }
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Não foi possível completar a atividade automaticamente.',
+          content: Text(
+              'Não foi possível completar a atividade automaticamente.',
               style: TextStyle(fontFamily: 'Jersey 10', fontSize: 16)),
           backgroundColor: Colors.red));
     }
@@ -298,7 +303,7 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
       _startTimer();
     } else {
       // Fim da pausa, volta ao foco
-  _inFocusPhase = true;
+      _inFocusPhase = true;
       final focus = const Duration(minutes: 25);
       if (_totalRemaining <= Duration.zero) {
         await _concluirAtividadeAutomaticamente();
@@ -331,12 +336,18 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
 
   int get dificuldadeLevel {
     switch (_atividade?.dificuldade) {
-      case 'muito_facil': return 1;
-      case 'facil': return 2;
-      case 'medio': return 3;
-      case 'dificil': return 4;
-      case 'muito_dificil': return 5;
-      default: return 1;
+      case 'muito_facil':
+        return 1;
+      case 'facil':
+        return 2;
+      case 'medio':
+        return 3;
+      case 'dificil':
+        return 4;
+      case 'muito_dificil':
+        return 5;
+      default:
+        return 1;
     }
   }
 
@@ -363,28 +374,29 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
         return const Center(
             child: CircularProgressIndicator(color: AppColors.verdeLima));
       case ScreenState.error:
-    return Center(
+        return Center(
             child:
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 60),
-              const SizedBox(height: 16),
-        Text('Erro ao carregar a atividade.',
-          style: TextStyle(
-            color: Provider.of<ThemeProvider>(context).textoTexto, 
-            fontFamily: 'Jersey 10',
-            fontSize: 20)),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                  onPressed: _carregarDados,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Tentar Novamente',
-                      style: TextStyle(fontFamily: 'Jersey 10', fontSize: 18)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.verdeLima,
-          foregroundColor: AppColors.fundoEscuro,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  )),
-            ]));
+          const Icon(Icons.error_outline, color: Colors.red, size: 60),
+          const SizedBox(height: 16),
+          Text('Erro ao carregar a atividade.',
+              style: TextStyle(
+                  color: Provider.of<ThemeProvider>(context).textoTexto,
+                  fontFamily: 'Jersey 10',
+                  fontSize: 20)),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+              onPressed: _carregarDados,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Tentar Novamente',
+                  style: TextStyle(fontFamily: 'Jersey 10', fontSize: 18)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.verdeLima,
+                foregroundColor: AppColors.fundoEscuro,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              )),
+        ]));
       case ScreenState.loaded:
         return Container(
           decoration: BoxDecoration(
@@ -393,26 +405,33 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
               end: Alignment.bottomCenter,
               colors: [
                 Provider.of<ThemeProvider>(context).fundoApp,
-                Provider.of<ThemeProvider>(context).fundoApp.withValues(alpha: 0.95),
+                Provider.of<ThemeProvider>(context)
+                    .fundoApp
+                    .withValues(alpha: 0.95),
               ],
             ),
           ),
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             child: Padding(
-              padding: ResponsiveUtils.adaptivePadding(context, small: 12, medium: 16, large: 20),
+              padding: ResponsiveUtils.adaptivePadding(context,
+                  small: 12, medium: 16, large: 20),
               child: Column(
                 children: [
-                  ResponsiveUtils.adaptiveVerticalSpace(context, small: 16, medium: 24, large: 28),
+                  ResponsiveUtils.adaptiveVerticalSpace(context,
+                      small: 16, medium: 24, large: 28),
                   // Seção do Timer
                   _buildTimerSection(context),
-                  ResponsiveUtils.adaptiveVerticalSpace(context, small: 16, medium: 24, large: 28),
+                  ResponsiveUtils.adaptiveVerticalSpace(context,
+                      small: 16, medium: 24, large: 28),
                   // Seção de Informações da Tarefa
                   _buildTaskSection(context),
-                  ResponsiveUtils.adaptiveVerticalSpace(context, small: 16, medium: 24, large: 28),
+                  ResponsiveUtils.adaptiveVerticalSpace(context,
+                      small: 16, medium: 24, large: 28),
                   // Seção de Botões
                   _buildButtonsSection(context),
-                  ResponsiveUtils.adaptiveVerticalSpace(context, small: 16, medium: 20, large: 24),
+                  ResponsiveUtils.adaptiveVerticalSpace(context,
+                      small: 16, medium: 20, large: 24),
                 ],
               ),
             ),
@@ -420,21 +439,24 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
         );
     }
   }
-  
+
   Widget _buildTimerSection(BuildContext context) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     final minutes = twoDigits(_duration.inMinutes.remainder(60));
     final seconds = twoDigits(_duration.inSeconds.remainder(60));
-  // Progresso geral baseado no restante total
-  final totalRemaining = _isPomodoro ? _totalRemaining.inSeconds : _duration.inSeconds;
-  final totalOriginal = _isPomodoro ? _totalOriginal.inSeconds : _maxDuration.inSeconds;
-  final progress = totalOriginal > 0 ? (totalRemaining / totalOriginal) : 0.0;
+    // Progresso geral baseado no restante total
+    final totalRemaining =
+        _isPomodoro ? _totalRemaining.inSeconds : _duration.inSeconds;
+    final totalOriginal =
+        _isPomodoro ? _totalOriginal.inSeconds : _maxDuration.inSeconds;
+    final progress = totalOriginal > 0 ? (totalRemaining / totalOriginal) : 0.0;
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isSmall = ResponsiveUtils.isSmallScreen(context);
     final timerSize = isSmall ? 180.0 : 220.0;
-    
+
     return Container(
-      padding: ResponsiveUtils.adaptivePadding(context, small: 20, medium: 26, large: 32),
+      padding: ResponsiveUtils.adaptivePadding(context,
+          small: 20, medium: 26, large: 32),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -444,7 +466,8 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
             themeProvider.fundoCard.withValues(alpha: 0.8),
           ],
         ),
-        borderRadius: ResponsiveUtils.adaptiveBorderRadius(context, small: 16, medium: 20, large: 24),
+        borderRadius: ResponsiveUtils.adaptiveBorderRadius(context,
+            small: 16, medium: 20, large: 24),
         boxShadow: [
           BoxShadow(
             color: (_isFinished ? AppColors.roxoClaro : AppColors.verdeLima)
@@ -473,7 +496,9 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: (_isFinished ? AppColors.roxoClaro : AppColors.verdeLima)
+                      color: (_isFinished
+                              ? AppColors.roxoClaro
+                              : AppColors.verdeLima)
                           .withValues(alpha: _isTimerRunning ? 0.3 : 0.1),
                       blurRadius: _isTimerRunning ? 30 : 15,
                       spreadRadius: _isTimerRunning ? 5 : 0,
@@ -485,7 +510,8 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
                     value: progress,
                     strokeWidth: 12,
                     strokeCap: StrokeCap.round,
-                    backgroundColor: AppColors.roxoProfundo.withValues(alpha: 0.2),
+                    backgroundColor:
+                        AppColors.roxoProfundo.withValues(alpha: 0.2),
                     valueColor: AlwaysStoppedAnimation<Color>(
                       _isFinished
                           ? AppColors.roxoClaro
@@ -508,7 +534,9 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
                             height: 1,
                             shadows: [
                               Shadow(
-                                color: (_isFinished ? AppColors.roxoClaro : AppColors.verdeLima)
+                                color: (_isFinished
+                                        ? AppColors.roxoClaro
+                                        : AppColors.verdeLima)
                                     .withValues(alpha: 0.3),
                                 blurRadius: 10,
                               ),
@@ -539,10 +567,14 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
             const SizedBox(width: 24),
             // Botão Play/Pause
             _buildTimerControlButton(
-              icon: _isTimerRunning ? Icons.pause_rounded : Icons.play_arrow_rounded,
+              icon: _isTimerRunning
+                  ? Icons.pause_rounded
+                  : Icons.play_arrow_rounded,
               label: _isTimerRunning ? 'Pausar' : 'Iniciar',
               onPressed: _toggleTimer,
-              color: _isTimerRunning ? AppColors.amareloClaro : AppColors.verdeLima,
+              color: _isTimerRunning
+                  ? AppColors.amareloClaro
+                  : AppColors.verdeLima,
               isSecondary: false,
               isPrimary: true,
             ),
@@ -697,7 +729,8 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
                 _buildInfoChip(
                   icon: Icons.repeat_rounded,
                   label: _atividade?.recorrencia.toUpperCase() ?? 'ÚNICA',
-                  color: _atividade?.recorrenciaColor ?? AppColors.recorrenciaUnica,
+                  color: _atividade?.recorrenciaColor ??
+                      AppColors.recorrenciaUnica,
                 ),
               ],
             ),
@@ -745,7 +778,8 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
                     ),
                   ),
                   Text(
-                    FilterHelpers.getDificuldadeDisplayName(_atividade?.dificuldade ?? 'facil'),
+                    FilterHelpers.getDificuldadeDisplayName(
+                        _atividade?.dificuldade ?? 'facil'),
                     style: TextStyle(
                       color: themeProvider.textoAtividade,
                       fontSize: 14,

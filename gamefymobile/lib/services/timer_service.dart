@@ -16,10 +16,12 @@ class TimerService {
 
   Timer? _backgroundTimer;
   final _timerController = StreamController<Duration>.broadcast();
-  final _completionController = StreamController<Map<String, dynamic>>.broadcast();
+  final _completionController =
+      StreamController<Map<String, dynamic>>.broadcast();
 
   Stream<Duration> get timerStream => _timerController.stream;
-  Stream<Map<String, dynamic>> get completionStream => _completionController.stream;
+  Stream<Map<String, dynamic>> get completionStream =>
+      _completionController.stream;
 
   Future<void> startTimer({
     required Duration duration,
@@ -38,7 +40,8 @@ class TimerService {
     await prefs.setInt(_keyActivityXP, activityXP);
 
     _startBackgroundTimer();
-    debugPrint('Timer iniciado: ${duration.inMinutes} minutos, termina em: $endTime');
+    debugPrint(
+        'Timer iniciado: ${duration.inMinutes} minutos, termina em: $endTime');
   }
 
   Future<void> stopTimer() async {
@@ -63,7 +66,7 @@ class TimerService {
   Future<Duration?> getRemainingTime() async {
     final prefs = await SharedPreferences.getInstance();
     final isRunning = prefs.getBool(_keyTimerRunning) ?? false;
-    
+
     if (!isRunning) return null;
 
     final endTimeStr = prefs.getString(_keyTimerEndTime);
@@ -71,7 +74,7 @@ class TimerService {
 
     final endTime = DateTime.parse(endTimeStr);
     final now = DateTime.now();
-    
+
     if (now.isAfter(endTime)) {
       return Duration.zero;
     }
@@ -87,7 +90,7 @@ class TimerService {
   Future<Map<String, dynamic>?> getTimerData() async {
     final prefs = await SharedPreferences.getInstance();
     final isRunning = prefs.getBool(_keyTimerRunning) ?? false;
-    
+
     if (!isRunning) return null;
 
     final activityId = prefs.getInt(_keyActivityId);
@@ -96,7 +99,10 @@ class TimerService {
     final duration = prefs.getInt(_keyTimerDuration);
     final remaining = await getRemainingTime();
 
-    if (activityId == null || activityName == null || activityXP == null || duration == null) {
+    if (activityId == null ||
+        activityName == null ||
+        activityXP == null ||
+        duration == null) {
       return null;
     }
 
@@ -111,9 +117,10 @@ class TimerService {
 
   void _startBackgroundTimer() {
     _backgroundTimer?.cancel();
-    _backgroundTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+    _backgroundTimer =
+        Timer.periodic(const Duration(seconds: 1), (timer) async {
       final remaining = await getRemainingTime();
-      
+
       if (remaining == null) {
         timer.cancel();
         return;

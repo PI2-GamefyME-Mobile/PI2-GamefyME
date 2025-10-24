@@ -22,7 +22,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _emailController = TextEditingController();
 
   Usuario? _usuario;
-  List<Usuario> _leaderboard = []; // Adicionado para guardar os dados da leaderboard
+  List<Usuario> _leaderboard =
+      []; // Adicionado para guardar os dados da leaderboard
   List<Notificacao> _notificacoes = [];
   List<DesafioPendente> _desafios = [];
   List<Conquista> _conquistas = [];
@@ -64,7 +65,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _notificacoes = results[1] as List<Notificacao>;
         _desafios = results[2] as List<DesafioPendente>;
         _conquistas = results[3] as List<Conquista>;
-        _leaderboard = results[4] as List<Usuario>; // Armazena os dados da leaderboard
+        _leaderboard =
+            results[4] as List<Usuario>; // Armazena os dados da leaderboard
         _nomeController.text = _usuario!.nome;
         _emailController.text = _usuario!.email;
         _isLoading = false;
@@ -132,7 +134,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Inativar', style: TextStyle(color: Colors.white)),
+            child:
+                const Text('Inativar', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -144,11 +147,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() => _isLoading = false);
 
       if (!mounted) return;
-      
+
       if (result['success']) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Conta inativada com sucesso. Você será desconectado.'),
+            content:
+                Text('Conta inativada com sucesso. Você será desconectado.'),
             backgroundColor: Colors.orange,
           ),
         );
@@ -156,7 +160,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         await Future.delayed(const Duration(seconds: 2));
         if (!mounted) return;
         // Navega para a tela de login
-        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil('/login', (route) => false);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -207,7 +212,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               icon: const Icon(Icons.block, color: Colors.red),
               label: const Text(
                 'Inativar Minha Conta',
-                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                style:
+                    TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
               ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Colors.red),
@@ -226,7 +232,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    
+
     return Scaffold(
       backgroundColor: themeProvider.fundoApp,
       appBar: CustomAppBar(
@@ -255,8 +261,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildBody(ThemeProvider themeProvider) {
     if (_usuario == null) {
       return Center(
-        child:
-            Text("Nenhum usuário encontrado", style: TextStyle(color: themeProvider.textoTexto)),
+        child: Text("Nenhum usuário encontrado",
+            style: TextStyle(color: themeProvider.textoTexto)),
       );
     }
     return ListView(
@@ -269,8 +275,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 width: 150, height: 220, child: _buildUserInfoCard(_usuario!)),
             const SizedBox(width: 16),
             Expanded(
-              child:
-                  SizedBox(height: 220, child: _buildStreakCard(_usuario!)),
+              child: SizedBox(height: 220, child: _buildStreakCard(_usuario!)),
             ),
           ],
         ),
@@ -281,17 +286,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
           _buildDangerZone(themeProvider),
         ],
         const SizedBox(height: 20),
-        _buildLeaderboard(themeProvider), // Widget da leaderboard adicionado aqui
+        _buildLeaderboard(
+            themeProvider), // Widget da leaderboard adicionado aqui
         const SizedBox(height: 20),
         _buildEstatisticasButton(themeProvider), // Botão para estatísticas
       ],
     );
   }
 
-
   Widget _buildUserInfoDetails() {
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -316,7 +321,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildDetailRow(String label, String value) {
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
@@ -327,7 +332,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(width: 10),
           Expanded(
               child: Text(value,
-                  style: TextStyle(color: themeProvider.textoTexto, fontSize: 16))),
+                  style: TextStyle(
+                      color: themeProvider.textoTexto, fontSize: 16))),
         ],
       ),
     );
@@ -335,7 +341,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildEditForm() {
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -356,8 +362,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _buildTextField(
               controller: _nomeController,
               label: 'Nome',
-              validator: (value) =>
-                  value!.isEmpty ? 'Campo obrigatório' : null,
+              validator: (value) => value!.isEmpty ? 'Campo obrigatório' : null,
             ),
             const SizedBox(height: 20),
             _buildTextField(
@@ -404,7 +409,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       TextInputType? keyboardType,
       String? Function(String?)? validator}) {
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    
+
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
@@ -427,7 +432,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildUserInfoCard(Usuario user) {
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -499,13 +504,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
               Text('${usuario.exp} XP',
                   style: TextStyle(
-                      color: themeProvider.textoTexto, fontWeight: FontWeight.bold)),
+                      color: themeProvider.textoTexto,
+                      fontWeight: FontWeight.bold)),
               Text('Nível ${usuario.nivel}',
                   style: TextStyle(
-                      color: themeProvider.textoTexto, fontWeight: FontWeight.bold)),
+                      color: themeProvider.textoTexto,
+                      fontWeight: FontWeight.bold)),
               Text('${usuario.expTotalNivel} XP',
                   style: TextStyle(
-                      color: themeProvider.textoTexto, fontWeight: FontWeight.bold)),
+                      color: themeProvider.textoTexto,
+                      fontWeight: FontWeight.bold)),
             ]),
             const SizedBox(height: 4),
             LinearProgressIndicator(
@@ -521,6 +529,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+
   Widget _buildLeaderboard(ThemeProvider themeProvider) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -534,7 +543,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Text(
             "Leaderboard",
             style: TextStyle(
-                color: themeProvider.textoTexto, fontSize: 18, fontWeight: FontWeight.bold),
+                color: themeProvider.textoTexto,
+                fontSize: 18,
+                fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
           ListView.builder(

@@ -11,20 +11,23 @@ class ApiConfig {
     }
 
     if (kIsWeb) {
-      debugPrint('🌐 [CONFIG] Plataforma: Web - URL: http://localhost:8000/api');
+      debugPrint(
+          '🌐 [CONFIG] Plataforma: Web - URL: http://localhost:8000/api');
       return 'http://localhost:8000/api';
     }
 
     try {
       if (Platform.isAndroid) {
-        debugPrint('🌐 [CONFIG] Plataforma: Android - URL: http://192.168.114.159:8000/api');
+        debugPrint(
+            '🌐 [CONFIG] Plataforma: Android - URL: http://192.168.114.159:8000/api');
         return 'http://192.168.114.159:8000/api';
       }
     } catch (_) {
       // Fallback seguro caso Platform não esteja disponível
     }
 
-    debugPrint('🌐 [CONFIG] Plataforma: Desktop/Fallback - URL: http://127.0.0.1:8000/api');
+    debugPrint(
+        '🌐 [CONFIG] Plataforma: Desktop/Fallback - URL: http://127.0.0.1:8000/api');
     return 'http://127.0.0.1:8000/api';
   }
 

@@ -256,7 +256,8 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: AppColors.roxoHeader,
                   borderRadius: BorderRadius.circular(20),
@@ -298,7 +299,8 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
               value: progresso.percentual / 100,
               minHeight: 20,
               backgroundColor: themeProvider.fundoApp,
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.roxoHeader),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(AppColors.roxoHeader),
             ),
           ),
           const SizedBox(height: 8),
@@ -346,7 +348,8 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
     );
   }
 
-  Widget _buildHeatMapGrid(List<HeatMapData> data, ThemeProvider themeProvider) {
+  Widget _buildHeatMapGrid(
+      List<HeatMapData> data, ThemeProvider themeProvider) {
     // Agrupa por semanas
     final semanas = <List<HeatMapData>>[];
     for (int i = 0; i < data.length; i += 7) {
@@ -438,7 +441,8 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
 
   Widget _buildGraficoUltimos30Dias(ThemeProvider themeProvider) {
     final dados = _estatisticas!.atividadesUltimos30Dias;
-    final maxValue = dados.map((e) => e.count).reduce((a, b) => a > b ? a : b).toDouble();
+    final maxValue =
+        dados.map((e) => e.count).reduce((a, b) => a > b ? a : b).toDouble();
     final heightFactor = maxValue > 0 ? 100 / maxValue : 1.0;
 
     return Container(
@@ -640,7 +644,8 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: LinearProgressIndicator(
-                              value: semana.count / 50, // normalizado para max 50
+                              value:
+                                  semana.count / 50, // normalizado para max 50
                               minHeight: 20,
                               backgroundColor: themeProvider.fundoApp,
                               valueColor: const AlwaysStoppedAnimation<Color>(

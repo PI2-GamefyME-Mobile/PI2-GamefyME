@@ -170,8 +170,7 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
                       ),
                     ),
                     IconButton(
-                      icon: Icon(Icons.close,
-                          color: themeProvider.textoCinza),
+                      icon: Icon(Icons.close, color: themeProvider.textoCinza),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ],
@@ -216,8 +215,8 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
                             child: _buildInfoCard(
                               icon: Icons.calendar_today,
                               label: 'Data',
-                              value: DateFormat('dd/MM/yyyy')
-                                  .format(DateTime.parse(atividade.dtAtividade)),
+                              value: DateFormat('dd/MM/yyyy').format(
+                                  DateTime.parse(atividade.dtAtividade)),
                               color: AppColors.verdeLima,
                               themeProvider: themeProvider,
                             ),
@@ -268,10 +267,12 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: atividade.dificuldadeColor.withValues(alpha: 0.1),
+                          color:
+                              atividade.dificuldadeColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: atividade.dificuldadeColor.withValues(alpha: 0.3),
+                            color: atividade.dificuldadeColor
+                                .withValues(alpha: 0.3),
                             width: 2,
                           ),
                         ),
@@ -445,11 +446,12 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
         children: [
           // Filtros na parte superior
           _buildFiltros(themeProvider),
-          
+
           // Lista de atividades
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator(
+                ? const Center(
+                    child: CircularProgressIndicator(
                     color: AppColors.verdeLima,
                   ))
                 : _atividadesFiltradas.isEmpty
@@ -481,7 +483,8 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
                           itemCount: _atividadesFiltradas.length,
                           itemBuilder: (context, index) {
                             final atividade = _atividadesFiltradas[index];
-                            return _buildAtividadeCard(atividade, themeProvider);
+                            return _buildAtividadeCard(
+                                atividade, themeProvider);
                           },
                         ),
                       ),
@@ -578,11 +581,13 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
                       runSpacing: 6,
                       children: [
                         _buildCompactBadge(
-                          FilterHelpers.getSituacaoDisplayName(atividade.situacao),
+                          FilterHelpers.getSituacaoDisplayName(
+                              atividade.situacao),
                           atividade.situacaoColor,
                         ),
                         _buildCompactBadge(
-                          FilterHelpers.getDificuldadeDisplayName(atividade.dificuldade),
+                          FilterHelpers.getDificuldadeDisplayName(
+                              atividade.dificuldade),
                           atividade.dificuldadeColor,
                         ),
                       ],
@@ -751,10 +756,12 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
             decoration: InputDecoration(
               hintText: 'Buscar por nome...',
               hintStyle: TextStyle(color: themeProvider.textoCinza),
-              prefixIcon: Icon(Icons.search, color: AppColors.verdeLima, size: 20),
+              prefixIcon:
+                  Icon(Icons.search, color: AppColors.verdeLima, size: 20),
               suffixIcon: _nomeController.text.isNotEmpty
                   ? IconButton(
-                      icon: Icon(Icons.clear, color: themeProvider.textoCinza, size: 20),
+                      icon: Icon(Icons.clear,
+                          color: themeProvider.textoCinza, size: 20),
                       onPressed: () {
                         _nomeController.clear();
                         _filtrarAtividades();
@@ -763,7 +770,8 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
                   : null,
               filled: true,
               fillColor: themeProvider.fundoApp,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -774,7 +782,8 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.verdeLima, width: 2),
+                borderSide:
+                    const BorderSide(color: AppColors.verdeLima, width: 2),
               ),
             ),
             onChanged: (value) => _filtrarAtividades(),
@@ -791,7 +800,8 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
                 const SizedBox(width: 8),
                 Text(
                   'Situação',
-                  style: TextStyle(color: themeProvider.textoCinza, fontSize: 14),
+                  style:
+                      TextStyle(color: themeProvider.textoCinza, fontSize: 14),
                 ),
               ],
             ),
@@ -800,7 +810,8 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
             decoration: InputDecoration(
               filled: true,
               fillColor: themeProvider.fundoApp,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -819,8 +830,10 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
           ),
 
           // Botões de ação
-          if (_dataInicio != null || _dataFim != null || 
-              _nomeController.text.isNotEmpty || _situacaoSelecionada != null) ...[
+          if (_dataInicio != null ||
+              _dataFim != null ||
+              _nomeController.text.isNotEmpty ||
+              _situacaoSelecionada != null) ...[
             const SizedBox(height: 12),
             Row(
               children: [
@@ -846,25 +859,28 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () async {
-                        final periodo = DateTimeRange(start: _dataInicio!, end: _dataFim!);
-                        final atividadesResumo = _atividadesFiltradas
-                            .map((a) {
-                              DateTime data;
-                              if ((a.dtAtividadeRealizada ?? '').isNotEmpty) {
-                                data = DateTime.tryParse(a.dtAtividadeRealizada!) ?? DateTime.now();
-                              } else {
-                                data = DateTime.tryParse(a.dtAtividade) ?? DateTime.now();
-                              }
-                              return AtividadeResumo(
-                                nome: a.nome,
-                                situacao: a.situacao,
-                                dificuldade: FilterHelpers.getDificuldadeDisplayName(a.dificuldade),
-                                experiencia: a.xp,
-                                data: data,
-                                descricao: a.descricao.isEmpty ? null : a.descricao,
-                              );
-                            })
-                            .toList();
+                        final periodo =
+                            DateTimeRange(start: _dataInicio!, end: _dataFim!);
+                        final atividadesResumo = _atividadesFiltradas.map((a) {
+                          DateTime data;
+                          if ((a.dtAtividadeRealizada ?? '').isNotEmpty) {
+                            data = DateTime.tryParse(a.dtAtividadeRealizada!) ??
+                                DateTime.now();
+                          } else {
+                            data = DateTime.tryParse(a.dtAtividade) ??
+                                DateTime.now();
+                          }
+                          return AtividadeResumo(
+                            nome: a.nome,
+                            situacao: a.situacao,
+                            dificuldade:
+                                FilterHelpers.getDificuldadeDisplayName(
+                                    a.dificuldade),
+                            experiencia: a.xp,
+                            data: data,
+                            descricao: a.descricao.isEmpty ? null : a.descricao,
+                          );
+                        }).toList();
 
                         await shareActivitiesPdf(
                           atividades: atividadesResumo,

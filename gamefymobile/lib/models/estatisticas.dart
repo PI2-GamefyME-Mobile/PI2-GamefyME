@@ -18,12 +18,12 @@ class Estatisticas {
   factory Estatisticas.fromJson(Map<String, dynamic> json) {
     return Estatisticas(
       resumo: ResumoEstatisticas.fromJson(json['resumo'] ?? {}),
-      atividadesPorDificuldade: Map<String, int>.from(
-        json['atividades_por_dificuldade'] ?? {}
-      ),
-      atividadesUltimos30Dias: (json['atividades_ultimos_30_dias'] as List? ?? [])
-          .map((e) => AtividadeDia.fromJson(e))
-          .toList(),
+      atividadesPorDificuldade:
+          Map<String, int>.from(json['atividades_por_dificuldade'] ?? {}),
+      atividadesUltimos30Dias:
+          (json['atividades_ultimos_30_dias'] as List? ?? [])
+              .map((e) => AtividadeDia.fromJson(e))
+              .toList(),
       atividadesPorSemana: (json['atividades_por_semana'] as List? ?? [])
           .map((e) => AtividadeSemana.fromJson(e))
           .toList(),

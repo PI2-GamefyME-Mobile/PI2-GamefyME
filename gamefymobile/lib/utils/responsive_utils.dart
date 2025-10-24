@@ -22,7 +22,8 @@ class ResponsiveUtils {
     return MediaQuery.of(context).size.height;
   }
 
-  static EdgeInsets adaptivePadding(BuildContext context, {
+  static EdgeInsets adaptivePadding(
+    BuildContext context, {
     double small = 8.0,
     double medium = 12.0,
     double large = 16.0,
@@ -35,7 +36,8 @@ class ResponsiveUtils {
     return EdgeInsets.all(large);
   }
 
-  static EdgeInsets adaptiveHorizontalPadding(BuildContext context, {
+  static EdgeInsets adaptiveHorizontalPadding(
+    BuildContext context, {
     double small = 8.0,
     double medium = 12.0,
     double large = 16.0,
@@ -48,7 +50,8 @@ class ResponsiveUtils {
     return EdgeInsets.symmetric(horizontal: large);
   }
 
-  static double adaptiveFontSize(BuildContext context, {
+  static double adaptiveFontSize(
+    BuildContext context, {
     double small = 12.0,
     double medium = 14.0,
     double large = 16.0,
@@ -61,7 +64,8 @@ class ResponsiveUtils {
     return large;
   }
 
-  static SizedBox adaptiveVerticalSpace(BuildContext context, {
+  static SizedBox adaptiveVerticalSpace(
+    BuildContext context, {
     double small = 8.0,
     double medium = 12.0,
     double large = 16.0,
@@ -74,7 +78,8 @@ class ResponsiveUtils {
     return SizedBox(height: large);
   }
 
-  static SizedBox adaptiveHorizontalSpace(BuildContext context, {
+  static SizedBox adaptiveHorizontalSpace(
+    BuildContext context, {
     double small = 8.0,
     double medium = 12.0,
     double large = 16.0,
@@ -87,7 +92,8 @@ class ResponsiveUtils {
     return SizedBox(width: large);
   }
 
-  static double adaptiveIconSize(BuildContext context, {
+  static double adaptiveIconSize(
+    BuildContext context, {
     double small = 20.0,
     double medium = 24.0,
     double large = 28.0,
@@ -108,7 +114,8 @@ class ResponsiveUtils {
     return screenHeight(context) * (percentage / 100);
   }
 
-  static BorderRadius adaptiveBorderRadius(BuildContext context, {
+  static BorderRadius adaptiveBorderRadius(
+    BuildContext context, {
     double small = 8.0,
     double medium = 10.0,
     double large = 12.0,
@@ -121,7 +128,8 @@ class ResponsiveUtils {
     return BorderRadius.circular(large);
   }
 
-  static double adaptiveButtonHeight(BuildContext context, {
+  static double adaptiveButtonHeight(
+    BuildContext context, {
     double small = 40.0,
     double medium = 45.0,
     double large = 50.0,
@@ -134,7 +142,8 @@ class ResponsiveUtils {
     return large;
   }
 
-  static double adaptiveAvatarSize(BuildContext context, {
+  static double adaptiveAvatarSize(
+    BuildContext context, {
     double small = 36.0,
     double medium = 42.0,
     double large = 46.0,

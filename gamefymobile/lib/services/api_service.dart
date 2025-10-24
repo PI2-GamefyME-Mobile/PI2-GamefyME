@@ -35,10 +35,13 @@ class ApiService {
     bool byConclusao = false,
   }) async {
     final query = <String, String>{};
-    if (startDate != null) query['start_date'] = startDate.toIso8601String().substring(0, 10);
-    if (endDate != null) query['end_date'] = endDate.toIso8601String().substring(0, 10);
+    if (startDate != null)
+      query['start_date'] = startDate.toIso8601String().substring(0, 10);
+    if (endDate != null)
+      query['end_date'] = endDate.toIso8601String().substring(0, 10);
     if (byConclusao) query['by'] = 'conclusao';
-    final url = Uri.parse('$_baseRoot/atividades/').replace(queryParameters: query.isEmpty ? null : query);
+    final url = Uri.parse('$_baseRoot/atividades/')
+        .replace(queryParameters: query.isEmpty ? null : query);
     final res =
         await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
@@ -55,10 +58,13 @@ class ApiService {
     bool byConclusao = false,
   }) async {
     final query = <String, String>{};
-    if (startDate != null) query['start_date'] = startDate.toIso8601String().substring(0, 10);
-    if (endDate != null) query['end_date'] = endDate.toIso8601String().substring(0, 10);
+    if (startDate != null)
+      query['start_date'] = startDate.toIso8601String().substring(0, 10);
+    if (endDate != null)
+      query['end_date'] = endDate.toIso8601String().substring(0, 10);
     if (byConclusao) query['by'] = 'conclusao';
-    final url = Uri.parse('$_baseRoot/atividades/historico/').replace(queryParameters: query.isEmpty ? null : query);
+    final url = Uri.parse('$_baseRoot/atividades/historico/')
+        .replace(queryParameters: query.isEmpty ? null : query);
     final res =
         await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
@@ -115,8 +121,10 @@ class ApiService {
     }
   }
 
-  Future<List<Conquista>> fetchConquistas({bool todasConquistas = false}) async {
-    final url = Uri.parse('$_baseRoot/conquistas/${todasConquistas ? '' : 'usuario/'}'); 
+  Future<List<Conquista>> fetchConquistas(
+      {bool todasConquistas = false}) async {
+    final url =
+        Uri.parse('$_baseRoot/conquistas/${todasConquistas ? '' : 'usuario/'}');
     final res =
         await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
@@ -365,10 +373,11 @@ class ApiService {
   }
 
   // ===== MÉTODOS DE ADMINISTRAÇÃO - DESAFIOS =====
-  
+
   Future<List<dynamic>> fetchDesafiosAdmin() async {
     final url = Uri.parse('$_baseRoot/desafios/admin/');
-    final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
+    final res =
+        await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
       return json.decode(utf8.decode(res.bodyBytes));
     } else {
@@ -409,10 +418,11 @@ class ApiService {
   }
 
   // ===== MÉTODOS DE ADMINISTRAÇÃO - CONQUISTAS =====
-  
+
   Future<List<dynamic>> fetchConquistasAdmin() async {
     final url = Uri.parse('$_baseRoot/conquistas/admin/');
-    final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
+    final res =
+        await _authorizedRequest((headers) => http.get(url, headers: headers));
     if (res.statusCode == 200) {
       return json.decode(utf8.decode(res.bodyBytes));
     } else {
@@ -453,7 +463,7 @@ class ApiService {
   }
 
   // ===== GERENCIAMENTO DE CONTA =====
-  
+
   Future<Map<String, dynamic>> inativarConta() async {
     final url = Uri.parse('$_baseRoot/usuarios/inativar/');
     try {
@@ -462,7 +472,10 @@ class ApiService {
         return {'success': true, 'message': 'Conta inativada com sucesso.'};
       } else {
         final responseBody = jsonDecode(response.body);
-        return {'success': false, 'message': responseBody['erro'] ?? 'Erro ao inativar conta.'};
+        return {
+          'success': false,
+          'message': responseBody['erro'] ?? 'Erro ao inativar conta.'
+        };
       }
     } catch (e) {
       return {'success': false, 'message': 'Erro de conexão: $e'};
@@ -472,14 +485,14 @@ class ApiService {
   Future<String> uploadImagemConquista(String filePath) async {
     final url = Uri.parse('$_baseRoot/conquistas/admin/upload-image/');
     final token = await _authService.getToken();
-    
+
     var request = http.MultipartRequest('POST', url);
     request.headers['Authorization'] = 'Bearer $token';
     request.files.add(await http.MultipartFile.fromPath('image', filePath));
-    
+
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
-    
+
     if (response.statusCode == 201) {
       final data = json.decode(utf8.decode(response.bodyBytes));
       return data['filename'];
