@@ -9,6 +9,7 @@ import 'services/api_service.dart';
 import 'services/notification_service.dart';
 import 'services/timer_service.dart';
 import 'widgets/custom_app_bar.dart';
+import 'utils/responsive_utils.dart';
 
 enum ScreenState { loading, loaded, error }
 
@@ -399,19 +400,19 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+              padding: ResponsiveUtils.adaptivePadding(context, small: 12, medium: 16, large: 20),
               child: Column(
                 children: [
-                  const SizedBox(height: 28),
+                  ResponsiveUtils.adaptiveVerticalSpace(context, small: 16, medium: 24, large: 28),
                   // Seção do Timer
                   _buildTimerSection(context),
-                  const SizedBox(height: 28),
+                  ResponsiveUtils.adaptiveVerticalSpace(context, small: 16, medium: 24, large: 28),
                   // Seção de Informações da Tarefa
                   _buildTaskSection(context),
-                  const SizedBox(height: 28),
+                  ResponsiveUtils.adaptiveVerticalSpace(context, small: 16, medium: 24, large: 28),
                   // Seção de Botões
                   _buildButtonsSection(context),
-                  const SizedBox(height: 24),
+                  ResponsiveUtils.adaptiveVerticalSpace(context, small: 16, medium: 20, large: 24),
                 ],
               ),
             ),
@@ -429,9 +430,11 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
   final totalOriginal = _isPomodoro ? _totalOriginal.inSeconds : _maxDuration.inSeconds;
   final progress = totalOriginal > 0 ? (totalRemaining / totalOriginal) : 0.0;
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final isSmall = ResponsiveUtils.isSmallScreen(context);
+    final timerSize = isSmall ? 180.0 : 220.0;
     
     return Container(
-      padding: const EdgeInsets.all(32),
+      padding: ResponsiveUtils.adaptivePadding(context, small: 20, medium: 26, large: 32),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -441,7 +444,7 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
             themeProvider.fundoCard.withValues(alpha: 0.8),
           ],
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: ResponsiveUtils.adaptiveBorderRadius(context, small: 16, medium: 20, large: 24),
         boxShadow: [
           BoxShadow(
             color: (_isFinished ? AppColors.roxoClaro : AppColors.verdeLima)
@@ -464,8 +467,8 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen> with 
             return Transform.scale(
               scale: _isFinished ? _pulseAnimation.value : 1.0,
               child: Container(
-                width: 220,
-                height: 220,
+                width: timerSize,
+                height: timerSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   boxShadow: [

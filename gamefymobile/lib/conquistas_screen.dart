@@ -5,6 +5,7 @@ import 'package:gamefymobile/services/api_service.dart';
 import 'package:gamefymobile/widgets/custom_app_bar.dart';
 import 'config/app_colors.dart';
 import 'config/theme_provider.dart';
+import 'utils/responsive_utils.dart';
 
 class ConquistasScreen extends StatefulWidget {
   const ConquistasScreen({super.key});
@@ -135,12 +136,12 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
       ),
       backgroundColor: themeProvider.fundoApp,
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: ResponsiveUtils.adaptivePadding(context),
         child: Column(
           children: [
             if (isAdmin)
               Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
+                padding: EdgeInsets.only(bottom: ResponsiveUtils.isSmallScreen(context) ? 6 : 8),
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
@@ -148,18 +149,21 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
                       Navigator.pushNamed(context, '/admin-conquistas')
                           .then((_) => _carregarDados());
                     },
-                    icon: const Icon(Icons.admin_panel_settings),
+                    icon: Icon(Icons.admin_panel_settings, 
+                      size: ResponsiveUtils.adaptiveIconSize(context, small: 20, medium: 22, large: 24)),
                     label: const Text('Gerenciar Conquistas'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.roxoProfundo,
                       foregroundColor: AppColors.verdeLima,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      padding: EdgeInsets.symmetric(
+                        vertical: ResponsiveUtils.isSmallScreen(context) ? 12 : 14
+                      ),
                     ),
                   ),
                 ),
               ),
             _buildFiltro(),
-            const SizedBox(height: 16),
+            ResponsiveUtils.adaptiveVerticalSpace(context, small: 12, medium: 16, large: 16),
             Expanded(
               child: _isLoading
                   ? const Center(child: CircularProgressIndicator())

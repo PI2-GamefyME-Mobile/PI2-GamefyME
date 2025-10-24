@@ -15,6 +15,7 @@ import 'config/app_colors.dart';
 import 'config/theme_provider.dart';
 import 'forgot_password_screen.dart';
 import 'utils/common_utils.dart';
+import 'utils/responsive_utils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -88,48 +89,77 @@ class WelcomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isSmall = ResponsiveUtils.isSmallScreen(context);
     return Scaffold(
       backgroundColor: const Color(0xFF4E008A), // Cor antiga
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              "GamefyME",
-              style: TextStyle(fontSize: 60, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            const SizedBox(height: 30),
-            Image.asset("assets/images/logo.png", width: 190, errorBuilder: (c, e, s) => const SizedBox()),
-            const SizedBox(height: 50),
-            Row(
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: ResponsiveUtils.adaptivePadding(context),
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Flexible(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6A0DAD), // Cor antiga
-                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    onPressed: () => Navigator.of(context).push(_createSlideRoute(const LoginPage())),
-                    child: const Text("Login", style: TextStyle(fontSize: 18, color: Colors.white)),
+                Text(
+                  "GamefyME",
+                  style: TextStyle(
+                    fontSize: isSmall ? 48 : 60, 
+                    fontWeight: FontWeight.bold, 
+                    color: Colors.white
                   ),
                 ),
-                const SizedBox(width: 20),
-                Flexible(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6A0DAD), // Cor antiga
-                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    onPressed: () => Navigator.of(context).push(_createSlideRoute(const RegisterPage())),
-                    child: const Text("Registrar", style: TextStyle(fontSize: 18, color: Colors.white)),
-                  ),
+                SizedBox(height: isSmall ? 20 : 30),
+                Image.asset(
+                  "assets/images/logo.png", 
+                  width: isSmall ? 140 : 190, 
+                  errorBuilder: (c, e, s) => const SizedBox()
                 ),
+                SizedBox(height: isSmall ? 30 : 50),
+                Padding(
+                  padding: ResponsiveUtils.adaptiveHorizontalPadding(context),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6A0DAD),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isSmall ? 20 : 30, 
+                              vertical: isSmall ? 12 : 15
+                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () => Navigator.of(context).push(_createSlideRoute(const LoginPage())),
+                          child: Text(
+                            "Login", 
+                            style: TextStyle(fontSize: isSmall ? 16 : 18, color: Colors.white)
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: isSmall ? 12 : 20),
+                      Flexible(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6A0DAD),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isSmall ? 20 : 30, 
+                              vertical: isSmall ? 12 : 15
+                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          onPressed: () => Navigator.of(context).push(_createSlideRoute(const RegisterPage())),
+                          child: Text(
+                            "Registrar", 
+                            style: TextStyle(fontSize: isSmall ? 16 : 18, color: Colors.white)
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
               ],
-            )
-          ],
+            ),
+          ),
         ),
       ),
     );
@@ -261,149 +291,160 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isSmall = ResponsiveUtils.isSmallScreen(context);
     return Scaffold(
-      backgroundColor: const Color(0xFF4E008A), // Cor antiga
+      backgroundColor: const Color(0xFF4E008A),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF4E008A), // Cor antiga
+        backgroundColor: const Color(0xFF4E008A),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset('assets/images/logo.png', height: 150, errorBuilder: (c, e, s) => const SizedBox()),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white, // Card branco
-                  borderRadius: BorderRadius.circular(15),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: ResponsiveUtils.adaptivePadding(context),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/logo.png', 
+                  height: isSmall ? 100 : 150, 
+                  errorBuilder: (c, e, s) => const SizedBox()
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CommonUtils.buildTextField(
-                      context: context,
-                      controller: _emailController,
-                      label: "Email",
-                      hint: "Digite seu email",
-                      keyboardType: TextInputType.emailAddress
-                    ),
-                    const SizedBox(height: 15),
-                    CommonUtils.buildTextField(
-                      context: context,
-                      controller: _passwordController,
-                      label: "Senha",
-                      hint: "Digite sua senha",
-                      obscureText: _obscurePassword,
-                      suffixIcon: IconButton(
-                        icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                SizedBox(height: isSmall ? 12 : 20),
+                Container(
+                  padding: ResponsiveUtils.adaptivePadding(context, small: 12, medium: 16, large: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: ResponsiveUtils.adaptiveBorderRadius(context, small: 12, medium: 15, large: 15),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CommonUtils.buildTextField(
+                        context: context,
+                        controller: _emailController,
+                        label: "Email",
+                        hint: "Digite seu email",
+                        keyboardType: TextInputType.emailAddress
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    // Checkbox "Lembrar-me"
-                    Row(
-                      children: [
-                        Checkbox(
-                          value: _rememberMe,
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() {
-                                _rememberMe = value;
-                              });
-                            }
-                          },
-                          checkColor: Colors.white,
-                          activeColor: const Color(0xFF7B1FA2),
+                      SizedBox(height: isSmall ? 10 : 15),
+                      CommonUtils.buildTextField(
+                        context: context,
+                        controller: _passwordController,
+                        label: "Senha",
+                        hint: "Digite sua senha",
+                        obscureText: _obscurePassword,
+                        suffixIcon: IconButton(
+                          icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                         ),
-                        Expanded(
-                          child: const Text("Lembrar-me", style: TextStyle(color: Colors.black87)),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black, // Botão preto
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        onPressed: _isLoading ? null : _handleLogin,
-                        child: _isLoading
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : const Text("Login", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                       ),
-                    ),
-                    const SizedBox(height: 15),
-                    GestureDetector(
-                      onTap: () {
-                        // Ação para "Esqueceu a senha?"
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ForgotPasswordScreen(),
+                      SizedBox(height: isSmall ? 6 : 10),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _rememberMe,
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() {
+                                  _rememberMe = value;
+                                });
+                              }
+                            },
+                            checkColor: Colors.white,
+                            activeColor: const Color(0xFF7B1FA2),
                           ),
-                        );
-                      },
-                      child: const Text(
-                        'Esqueceu a senha?',
-                        style: TextStyle(
-                          color: AppColors.roxoProfundo,
-                          decoration: TextDecoration.underline,
+                          const Expanded(
+                            child: Text("Lembrar-me", style: TextStyle(color: Colors.black87)),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: isSmall ? 6 : 10),
+                      SizedBox(
+                        width: double.infinity,
+                        height: ResponsiveUtils.adaptiveButtonHeight(context),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          onPressed: _isLoading ? null : _handleLogin,
+                          child: _isLoading
+                              ? const CircularProgressIndicator(color: Colors.white)
+                              : Text(
+                                  "Login", 
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold, 
+                                    color: Colors.white,
+                                    fontSize: ResponsiveUtils.adaptiveFontSize(context, small: 14, medium: 15, large: 16)
+                                  )
+                                ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    // Divider com "OU"
-                    Row(
-                      children: [
-                        const Expanded(child: Divider(color: Colors.grey)),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: Text('OU', style: TextStyle(color: Colors.grey[600])),
-                        ),
-                        const Expanded(child: Divider(color: Colors.grey)),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    // Botão de login com Google
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: Colors.grey[400]!),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        onPressed: _isLoading ? null : _handleGoogleLogin,
-                        icon: Image.asset(
-                          'assets/images/google_logo.png',
-                          height: 24,
-                          errorBuilder: (context, error, stackTrace) => 
-                            const Icon(Icons.login, color: Colors.black87),
-                        ),
-                        label: const Text(
-                          'Continuar com Google',
+                      SizedBox(height: isSmall ? 10 : 15),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ForgotPasswordScreen(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Esqueceu a senha?',
                           style: TextStyle(
-                            color: Colors.black87,
-                            fontWeight: FontWeight.w500,
+                            color: AppColors.roxoProfundo,
+                            decoration: TextDecoration.underline,
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                      SizedBox(height: isSmall ? 12 : 20),
+                      Row(
+                        children: [
+                          const Expanded(child: Divider(color: Colors.grey)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: Text('OU', style: TextStyle(color: Colors.grey[600])),
+                          ),
+                          const Expanded(child: Divider(color: Colors.grey)),
+                        ],
+                      ),
+                      SizedBox(height: isSmall ? 12 : 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: ResponsiveUtils.adaptiveButtonHeight(context),
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.grey[400]!),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          onPressed: _isLoading ? null : _handleGoogleLogin,
+                          icon: Image.asset(
+                            'assets/images/google_logo.png',
+                            height: isSmall ? 20 : 24,
+                            errorBuilder: (context, error, stackTrace) => 
+                              Icon(Icons.login, color: Colors.black87, size: isSmall ? 20 : 24),
+                          ),
+                          label: Text(
+                            'Continuar com Google',
+                            style: TextStyle(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.w500,
+                              fontSize: ResponsiveUtils.adaptiveFontSize(context, small: 12, medium: 14, large: 15)
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -514,104 +555,122 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isSmall = ResponsiveUtils.isSmallScreen(context);
     return Scaffold(
-      backgroundColor: const Color(0xFF4E008A), // Cor antiga
+      backgroundColor: const Color(0xFF4E008A),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF4E008A), // Cor antiga
+        backgroundColor: const Color(0xFF4E008A),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildTextField(label: "Nome de usuário", hint: "Nome de usuário", controller: _nomeController),
-              const SizedBox(height: 15),
-              _buildTextField(label: "Email", hint: "exemplo@email.com", controller: _emailController, keyboardType: TextInputType.emailAddress),
-              const SizedBox(height: 15),
-              _buildTextField(
-                label: "Senha",
-                hint: "Digite sua senha",
-                controller: _senhaController,
-                obscure: _obscurePassword,
-                suffix: IconButton(
-                  icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: ResponsiveUtils.adaptivePadding(context),
+          child: Container(
+            padding: ResponsiveUtils.adaptivePadding(context, small: 12, medium: 16, large: 20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: ResponsiveUtils.adaptiveBorderRadius(context, small: 12, medium: 15, large: 15),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildTextField(
+                  label: "Nome de usuário", 
+                  hint: "Nome de usuário", 
+                  controller: _nomeController
                 ),
-              ),
-              const SizedBox(height: 15),
-              _buildTextField(
-                label: "Confirmar Senha",
-                hint: "Repita sua senha",
-                controller: _confirmarSenhaController,
-                obscure: _obscureConfirmPassword,
-                suffix: IconButton(
-                  icon: Icon(_obscureConfirmPassword ? Icons.visibility_off : Icons.visibility),
-                  onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                SizedBox(height: isSmall ? 10 : 15),
+                _buildTextField(
+                  label: "Email", 
+                  hint: "exemplo@email.com", 
+                  controller: _emailController, 
+                  keyboardType: TextInputType.emailAddress
                 ),
-              ),
-              const SizedBox(height: 25),
-              SizedBox(
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleRegister,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black, // Botão preto
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                SizedBox(height: isSmall ? 10 : 15),
+                _buildTextField(
+                  label: "Senha",
+                  hint: "Digite sua senha",
+                  controller: _senhaController,
+                  obscure: _obscurePassword,
+                  suffix: IconButton(
+                    icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Registrar", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
-              ),
-              const SizedBox(height: 20),
-              // Divider com "OU"
-              Row(
-                children: [
-                  const Expanded(child: Divider(color: Colors.grey)),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: Text('OU', style: TextStyle(color: Colors.grey[600])),
+                SizedBox(height: isSmall ? 10 : 15),
+                _buildTextField(
+                  label: "Confirmar Senha",
+                  hint: "Repita sua senha",
+                  controller: _confirmarSenhaController,
+                  obscure: _obscureConfirmPassword,
+                  suffix: IconButton(
+                    icon: Icon(_obscureConfirmPassword ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
                   ),
-                  const Expanded(child: Divider(color: Colors.grey)),
-                ],
-              ),
-              const SizedBox(height: 20),
-              // Botão de registro com Google
-              SizedBox(
-                height: 50,
-                child: OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.grey[400]!),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                SizedBox(height: isSmall ? 16 : 25),
+                SizedBox(
+                  height: ResponsiveUtils.adaptiveButtonHeight(context),
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _handleRegister,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : Text(
+                            "Registrar", 
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold, 
+                              color: Colors.white,
+                              fontSize: ResponsiveUtils.adaptiveFontSize(context, small: 14, medium: 15, large: 16)
+                            )
+                          ),
                   ),
-                  onPressed: _isLoading ? null : _handleGoogleRegister,
-                  icon: Image.asset(
-                    'assets/images/google_logo.png',
-                    height: 24,
-                    errorBuilder: (context, error, stackTrace) => 
-                      const Icon(Icons.login, color: Colors.black87),
-                  ),
-                  label: const Text(
-                    'Registrar com Google',
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w500,
+                ),
+                SizedBox(height: isSmall ? 12 : 20),
+                Row(
+                  children: [
+                    const Expanded(child: Divider(color: Colors.grey)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Text('OU', style: TextStyle(color: Colors.grey[600])),
+                    ),
+                    const Expanded(child: Divider(color: Colors.grey)),
+                  ],
+                ),
+                SizedBox(height: isSmall ? 12 : 20),
+                SizedBox(
+                  height: ResponsiveUtils.adaptiveButtonHeight(context),
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.grey[400]!),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onPressed: _isLoading ? null : _handleGoogleRegister,
+                    icon: Image.asset(
+                      'assets/images/google_logo.png',
+                      height: isSmall ? 20 : 24,
+                      errorBuilder: (context, error, stackTrace) => 
+                        Icon(Icons.login, color: Colors.black87, size: isSmall ? 20 : 24),
+                    ),
+                    label: Text(
+                      'Registrar com Google',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.w500,
+                        fontSize: ResponsiveUtils.adaptiveFontSize(context, small: 12, medium: 14, large: 15)
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

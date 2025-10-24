@@ -7,6 +7,7 @@ import 'package:gamefymobile/widgets/custom_app_bar.dart';
 import 'package:provider/provider.dart';
 import 'config/app_colors.dart';
 import 'config/theme_provider.dart';
+import 'utils/responsive_utils.dart';
 
 class DesafiosScreen extends StatefulWidget {
   const DesafiosScreen({super.key});
@@ -100,20 +101,20 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
       ),
       backgroundColor: themeProvider.fundoApp,
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: ResponsiveUtils.adaptivePadding(context),
         child: Column(
           children: [
             Row(
               children: [
                 Expanded(child: _buildFiltroTipo()),
                 if (isAdmin) ...[
-                  const SizedBox(width: 8),
+                  ResponsiveUtils.adaptiveHorizontalSpace(context, small: 6, medium: 8, large: 8),
                   ElevatedButton.icon(
                     onPressed: () {
                       Navigator.pushNamed(context, '/admin-desafios')
                           .then((_) => _carregarDados());
                     },
-                    icon: const Icon(Icons.admin_panel_settings, size: 20),
+                    icon: Icon(Icons.admin_panel_settings, size: ResponsiveUtils.adaptiveIconSize(context, small: 18, medium: 20, large: 20)),
                     label: const Text('Admin'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.roxoProfundo,

@@ -15,6 +15,7 @@ import 'realizar_atividade_screen.dart';
 import 'editar_atividade_screen.dart';
 import 'widgets/user_level_avatar.dart';
 import 'widgets/custom_app_bar.dart';
+import 'utils/responsive_utils.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -251,19 +252,49 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
           return const Center(
               child: CircularProgressIndicator(color: AppColors.verdeLima));
         }
+        final isSmall = ResponsiveUtils.isSmallScreen(context);
+        final screenWidth = MediaQuery.of(context).size.width;
+        
+        // Ajustar largura do card de usuário para telas muito pequenas
+        final userCardWidth = screenWidth < 370 ? 130.0 : 150.0;
+        
         return ListView(
-          padding: const EdgeInsets.all(16.0),
+          padding: ResponsiveUtils.adaptivePadding(context),
           children: [
-            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              SizedBox(
-                  width: 150,
-                  height: 220,
-                  child: _buildUserInfoCard(_usuario!)),
-              const SizedBox(width: 16),
-              Expanded(
-                  child: SizedBox(
-                      height: 220, child: _buildStreakCard(_usuario!))),
-            ]),
+            // Layout adaptativo: coluna em telas pequenas, linha em telas maiores
+            isSmall
+                ? Column(
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        height: 200,
+                        child: _buildUserInfoCard(_usuario!),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 200,
+                        child: _buildStreakCard(_usuario!),
+                      ),
+                    ],
+                  )
+                : Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: userCardWidth,
+                        height: 220,
+                        child: _buildUserInfoCard(_usuario!),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: SizedBox(
+                          height: 220,
+                          child: _buildStreakCard(_usuario!),
+                        ),
+                      ),
+                    ],
+                  ),
             const SizedBox(height: 16),
             SizedBox(
               height: MediaQuery.of(context).size.height * 0.55,
@@ -276,8 +307,16 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
 
   Widget _buildUserInfoCard(Usuario user) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final isSmall = ResponsiveUtils.isSmallScreen(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    
+    // Ajustar tamanho do avatar baseado na largura da tela
+    final avatarRadius = screenWidth < 370 ? 38.0 : 46.0;
+    final padding = isSmall ? 12.0 : 16.0;
+    final nameFontSize = screenWidth < 370 ? 13.0 : 14.0;
+    
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
         color: themeProvider.fundoCard,
         borderRadius: BorderRadius.circular(10),
@@ -287,12 +326,13 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            UserLevelAvatar(user: user, radius: 46),
-            const SizedBox(height: 12),
+            UserLevelAvatar(user: user, radius: avatarRadius),
+            SizedBox(height: isSmall ? 8 : 12),
             Text(
               user.nome,
               textAlign: TextAlign.center,
               style: TextStyle(
+                fontSize: nameFontSize,
                 color: themeProvider.textoTexto,
                 fontWeight: FontWeight.bold,
               ),
@@ -314,8 +354,18 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
     final DateFormat dayFormatter = DateFormat('EEE', 'pt_BR');
 
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final isSmall = ResponsiveUtils.isSmallScreen(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    
+    // Tamanhos adaptativos baseados na largura da tela
+    final titleFontSize = screenWidth < 370 ? 13.0 : 16.0;
+    final dayFontSize = screenWidth < 370 ? 11.0 : 14.0;
+    final imageSize = screenWidth < 370 ? 22.0 : 28.0;
+    final xpFontSize = screenWidth < 370 ? 11.0 : 14.0;
+    final padding = isSmall ? 8.0 : 12.0;
+    
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
         color: themeProvider.fundoCard,
         borderRadius: BorderRadius.circular(10),
@@ -326,10 +376,10 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
           Text("Dias contínuos de atividades",
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontSize: 16,
+                  fontSize: titleFontSize,
                   fontWeight: FontWeight.bold,
                   color: themeProvider.textoTexto)),
-          const SizedBox(height: 12),
+          SizedBox(height: isSmall ? 8 : 12),
           Expanded(
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -350,40 +400,64 @@ class _HomeTabState extends State<HomeTab> with TickerProviderStateMixin {
                 }
                 
                 return Expanded(
-                  child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    Text(diaSemana,
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: themeProvider.textoTexto)),
-                    const SizedBox(height: 8),
-                    Image.asset(imagePath,
-                        width: 28, height: 28),
-                  ]),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min, 
+                    children: [
+                      Text(diaSemana,
+                          style: TextStyle(
+                              fontSize: dayFontSize,
+                              fontWeight: FontWeight.bold,
+                              color: themeProvider.textoTexto),
+                          maxLines: 1,
+                          overflow: TextOverflow.clip),
+                      SizedBox(height: isSmall ? 4 : 8),
+                      Image.asset(imagePath,
+                          width: imageSize, 
+                          height: imageSize,
+                          fit: BoxFit.contain),
+                    ]
+                  ),
                 );
               }).toList(),
             ),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: isSmall ? 8 : 12),
           Column(children: [
             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Text('${usuario.exp} XP',
-                  style: TextStyle(
-                      color: themeProvider.textoTexto, fontWeight: FontWeight.bold)),
-              Text('Nível ${usuario.nivel}',
-                  style: TextStyle(
-                      color: themeProvider.textoTexto, fontWeight: FontWeight.bold)),
-              Text('${usuario.expTotalNivel} XP',
-                  style: TextStyle(
-                      color: themeProvider.textoTexto, fontWeight: FontWeight.bold)),
+              Flexible(
+                child: Text('${usuario.exp} XP',
+                    style: TextStyle(
+                        fontSize: xpFontSize,
+                        color: themeProvider.textoTexto, 
+                        fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text('Nível ${usuario.nivel}',
+                    style: TextStyle(
+                        fontSize: xpFontSize,
+                        color: themeProvider.textoTexto, 
+                        fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis),
+              ),
+              Flexible(
+                child: Text('${usuario.expTotalNivel} XP',
+                    style: TextStyle(
+                        fontSize: xpFontSize,
+                        color: themeProvider.textoTexto, 
+                        fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.right),
+              ),
             ]),
-            const SizedBox(height: 4),
+            SizedBox(height: isSmall ? 3 : 4),
             LinearProgressIndicator(
               value: progress,
               backgroundColor: AppColors.roxoProfundo,
               valueColor:
                   const AlwaysStoppedAnimation<Color>(AppColors.verdeLima),
-              minHeight: 10,
+              minHeight: isSmall ? 8 : 10,
               borderRadius: BorderRadius.circular(5),
             ),
           ]),

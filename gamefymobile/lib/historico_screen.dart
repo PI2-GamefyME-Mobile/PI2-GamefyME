@@ -7,6 +7,7 @@ import 'package:gamefymobile/widgets/custom_app_bar.dart';
 import 'config/app_colors.dart';
 import 'config/theme_provider.dart';
 import 'package:intl/intl.dart';
+import 'utils/responsive_utils.dart';
 
 class HistoricoScreen extends StatefulWidget {
   const HistoricoScreen({super.key});
@@ -476,7 +477,7 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
                         color: AppColors.verdeLima,
                         onRefresh: _carregarDados,
                         child: ListView.builder(
-                          padding: const EdgeInsets.all(16),
+                          padding: ResponsiveUtils.adaptivePadding(context),
                           itemCount: _atividadesFiltradas.length,
                           itemBuilder: (context, index) {
                             final atividade = _atividadesFiltradas[index];
@@ -491,10 +492,11 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
   }
 
   Widget _buildAtividadeCard(Atividade atividade, ThemeProvider themeProvider) {
+    final isSmall = ResponsiveUtils.isSmallScreen(context);
     return GestureDetector(
       onTap: () => _mostrarDetalhesAtividade(atividade),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: EdgeInsets.only(bottom: isSmall ? 8 : 12),
         decoration: BoxDecoration(
           color: themeProvider.cardAtividade,
           borderRadius: BorderRadius.circular(16),
