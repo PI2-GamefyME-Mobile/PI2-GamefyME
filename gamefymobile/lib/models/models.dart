@@ -321,6 +321,7 @@ class Conquista {
   final String nome;
   final String descricao;
   final String imagem;
+  final String? imagemUrl; // URL completa da imagem
   final int xp;
   final String dataDesbloqueio;
   final bool completada;
@@ -330,6 +331,7 @@ class Conquista {
     required this.nome,
     required this.descricao,
     required this.imagem,
+    this.imagemUrl,
     required this.xp,
     required this.dataDesbloqueio,
     required this.completada,
@@ -345,6 +347,7 @@ class Conquista {
       nome: conquistaData['nmconquista'] ?? 'Conquista sem nome',
       descricao: conquistaData['dsconquista'] ?? '',
       imagem: conquistaData['nmimagem'] ?? 'relogio.png',
+      imagemUrl: conquistaData['imagem_url'],
       xp: conquistaData['expconquista'] ?? 0,
       dataDesbloqueio: dataConcessao,
       // Se tem data de concessão, significa que foi desbloqueada
@@ -359,6 +362,7 @@ class Conquista {
       nome: json['nmconquista'] ?? 'Conquista sem nome',
       descricao: json['dsconquista'] ?? '',
       imagem: json['nmimagem'] ?? 'relogio.png',
+      imagemUrl: json['imagem_url'],
       xp: json['expconquista'] ?? 0,
       dataDesbloqueio: '', // Não tem data de concessão no endpoint geral
       completada: json['completada'] ?? false, // Vem do serializer do backend

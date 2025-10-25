@@ -3,10 +3,19 @@ from .models import Conquista, UsuarioConquista
 
 class ConquistaSerializer(serializers.ModelSerializer):
     completada = serializers.SerializerMethodField()
+    imagem_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Conquista
-        fields = ['idconquista', 'nmconquista', 'dsconquista', 'nmimagem', 'expconquista', 'completada']
+        fields = ['idconquista', 'nmconquista', 'dsconquista', 'nmimagem', 'imagem_url', 'expconquista', 'completada']
+
+    def get_imagem_url(self, obj):
+        if obj.nmimagem:
+            request = self.context.get('request')
+            if request is not None:
+                return request.build_absolute_uri(obj.nmimagem.url)
+            return obj.nmimagem.url
+        return None
 
     def get_completada(self, obj):
         # Pega o usuário da requisição que está no contexto do serializer, com fallback
@@ -33,17 +42,17 @@ class ConquistaCreateSerializer(serializers.ModelSerializer):
     """
     Serializer para criação e edição de conquistas (apenas admin).
     """
+    imagem_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Conquista
-        fields = ['idconquista', 'nmconquista', 'dsconquista', 'nmimagem', 'expconquista']
+        fields = ['idconquista', 'nmconquista', 'dsconquista', 'nmimagem', 'imagem_url', 'expconquista']
         read_only_fields = ['idconquista']
 
-    def validate_nmimagem(self, value):
-        """
-        Valida se o nome da imagem tem extensão.
-        """
-        if not value.endswith(('.png', '.jpg', '.jpeg')):
-            raise serializers.ValidationError(
-                "O nome da imagem deve ter uma extensão válida (.png, .jpg, .jpeg)."
-            )
-        return value
+    def get_imagem_url(self, obj):
+        if obj.nmimagem:
+            request = self.context.get('request')
+            if request is not None:
+                return request.build_absolute_uri(obj.nmimagem.url)
+            return obj.nmimagem.url
+        return None

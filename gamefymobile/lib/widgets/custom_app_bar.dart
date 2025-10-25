@@ -412,11 +412,23 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                         vertical: 4.0),
                                     child: Row(
                                       children: [
-                                        Image.asset(
-                                            "assets/conquistas/${c.imagem}",
-                                            width: 30,
-                                            height: 30,
-                                            fit: BoxFit.contain),
+                                        c.imagemUrl != null && c.imagemUrl!.isNotEmpty
+                                            ? Image.network(
+                                                c.imagemUrl!,
+                                                width: 30,
+                                                height: 30,
+                                                fit: BoxFit.contain,
+                                                errorBuilder: (context, error, stackTrace) =>
+                                                    const Icon(Icons.emoji_events, size: 30),
+                                              )
+                                            : Image.asset(
+                                                "assets/conquistas/${c.imagem}",
+                                                width: 30,
+                                                height: 30,
+                                                fit: BoxFit.contain,
+                                                errorBuilder: (context, error, stackTrace) =>
+                                                    const Icon(Icons.emoji_events, size: 30),
+                                              ),
                                         const SizedBox(width: 12),
                                         Expanded(
                                           child: Text(

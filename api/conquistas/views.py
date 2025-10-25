@@ -49,6 +49,11 @@ class ConquistaAdminListCreateView(generics.ListCreateAPIView):
         if self.request.method == 'POST':
             return ConquistaCreateSerializer
         return ConquistaSerializer
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
 
 class ConquistaAdminDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
@@ -58,6 +63,11 @@ class ConquistaAdminDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ConquistaCreateSerializer
     permission_classes = [IsAdmin]
     lookup_field = 'idconquista'
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
 
 class ConquistaImageUploadView(APIView):
     """
@@ -91,36 +101,25 @@ class ConquistaImageUploadView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Criar diretório se não existir
-        conquistas_dir = os.path.join(settings.BASE_DIR, '..', 'gamefymobile', 'assets', 'conquistas')
-        os.makedirs(conquistas_dir, exist_ok=True)
-
-        # Gerar nome único se já existir
-        filename = image.name
-        filepath = os.path.join(conquistas_dir, filename)
-        counter = 1
-        while os.path.exists(filepath):
-            name, ext = os.path.splitext(image.name)
-            filename = f"{name}_{counter}{ext}"
-            filepath = os.path.join(conquistas_dir, filename)
-            counter += 1
-
-        # Salvar arquivo
-        try:
-            with open(filepath, 'wb+') as destination:
-                for chunk in image.chunks():
-                    destination.write(chunk)
-            
-            return Response(
-                {
-                    'success': True,
-                    'filename': filename,
-                    'message': 'Imagem salva com sucesso'
-                },
-                status=status.HTTP_201_CREATED
-            )
-        except Exception as e:
-            return Response(
-                {'error': f'Erro ao salvar imagem: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+        # Salvar temporariamente no modelo para obter a URL
+        # Criar uma conquista temporária apenas para gerar a URL correta
+        conquista_temp = Conquista(nmimagem=image)
+        conquista_temp.save()
+        
+        # Pegar a URL completa da imagem
+        imagem_url = request.build_absolute_uri(conquista_temp.nmimagem.url)
+        filename = os.path.basename(conquista_temp.nmimagem.name)
+        
+        # Deletar a conquista temporária (mas manter o arquivo)
+        filepath = conquista_temp.nmimagem.path
+        conquista_temp.delete()
+        
+        return Response(
+            {
+                'success': True,
+                'filename': filename,
+                'url': imagem_url,
+                'message': 'Imagem salva com sucesso'
+            },
+            status=status.HTTP_201_CREATED
+        )

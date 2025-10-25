@@ -5,7 +5,7 @@ class Conquista(models.Model):
     idconquista = models.AutoField(primary_key=True)
     nmconquista = models.CharField(max_length=100)
     dsconquista = models.TextField()
-    nmimagem = models.CharField(max_length=100)
+    nmimagem = models.ImageField(upload_to='conquistas/', blank=True, null=True)
     expconquista = models.SmallIntegerField(default=0)
 
     class Meta:

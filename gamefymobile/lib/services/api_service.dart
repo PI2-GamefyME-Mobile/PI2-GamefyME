@@ -482,7 +482,7 @@ class ApiService {
     }
   }
 
-  Future<String> uploadImagemConquista(String filePath) async {
+  Future<Map<String, dynamic>> uploadImagemConquista(String filePath) async {
     final url = Uri.parse('$_baseRoot/conquistas/admin/upload-image/');
     final token = await _authService.getToken();
 
@@ -495,7 +495,10 @@ class ApiService {
 
     if (response.statusCode == 201) {
       final data = json.decode(utf8.decode(response.bodyBytes));
-      return data['filename'];
+      return {
+        'filename': data['filename'],
+        'url': data['url'],
+      };
     } else {
       final error = json.decode(utf8.decode(response.bodyBytes));
       throw Exception(error['error'] ?? 'Erro ao fazer upload da imagem');

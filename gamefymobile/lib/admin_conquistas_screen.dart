@@ -173,19 +173,26 @@ class _AdminConquistasScreenState extends State<AdminConquistasScreen> {
                           itemCount: _conquistasAdmin.length,
                           itemBuilder: (context, index) {
                             final conquista = _conquistasAdmin[index];
+                            final imagemUrl = conquista['imagem_url'];
+                            
                             return Card(
                               color: AppColors.fundoCard,
                               margin: const EdgeInsets.only(bottom: 12),
                               child: ListTile(
-                                leading: Image.asset(
-                                  'assets/conquistas/${conquista['nmimagem']}',
-                                  width: 50,
-                                  height: 50,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(Icons.emoji_events,
-                                          color: AppColors.amareloClaro,
-                                          size: 50),
-                                ),
+                                leading: imagemUrl != null && imagemUrl.isNotEmpty
+                                    ? Image.network(
+                                        imagemUrl,
+                                        width: 50,
+                                        height: 50,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) =>
+                                            const Icon(Icons.emoji_events,
+                                                color: AppColors.amareloClaro,
+                                                size: 50),
+                                      )
+                                    : const Icon(Icons.emoji_events,
+                                        color: AppColors.amareloClaro,
+                                        size: 50),
                                 title: Text(
                                   conquista['nmconquista'] ?? 'Sem nome',
                                   style: const TextStyle(
@@ -263,6 +270,7 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
   final ImagePicker _picker = ImagePicker();
 
   String? _imagemSelecionada;
+  String? _imagemUrl; // URL da imagem do servidor
   File? _imagemArquivo;
 
   Usuario? _usuario;
@@ -280,6 +288,7 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
       _xpController.text = widget.conquista!['expconquista']?.toString() ?? '';
       _imagemController.text = widget.conquista!['nmimagem'] ?? '';
       _imagemSelecionada = widget.conquista!['nmimagem'];
+      _imagemUrl = widget.conquista!['imagem_url'];
     }
   }
 
@@ -326,13 +335,14 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
       setState(() => _isLoading = true);
 
       try {
-        final nomeArquivo =
+        final resultado =
             await _apiService.uploadImagemConquista(imagem.path);
 
         if (!mounted) return;
         setState(() {
-          _imagemSelecionada = nomeArquivo;
-          _imagemController.text = nomeArquivo;
+          _imagemSelecionada = resultado['filename'];
+          _imagemUrl = resultado['url'];
+          _imagemController.text = resultado['filename'];
           _imagemArquivo = File(imagem.path);
           _isLoading = false;
         });
@@ -503,12 +513,12 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
                           ),
                         ),
                       )
-                    else if (_imagemSelecionada != null)
+                    else if (_imagemUrl != null && _imagemUrl!.isNotEmpty)
                       Center(
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(
-                            'assets/conquistas/$_imagemSelecionada',
+                          child: Image.network(
+                            _imagemUrl!,
                             height: 150,
                             width: 150,
                             fit: BoxFit.cover,

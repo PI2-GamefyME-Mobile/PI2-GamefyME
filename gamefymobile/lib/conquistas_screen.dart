@@ -90,13 +90,21 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Image.asset(
-                  'assets/conquistas/${conquista.imagem}',
-                  width: 100,
-                  height: 100,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.error, color: Colors.white, size: 100),
-                ),
+                conquista.imagemUrl != null && conquista.imagemUrl!.isNotEmpty
+                    ? Image.network(
+                        conquista.imagemUrl!,
+                        width: 100,
+                        height: 100,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(Icons.emoji_events, color: Colors.white, size: 100),
+                      )
+                    : Image.asset(
+                        'assets/conquistas/${conquista.imagem}',
+                        width: 100,
+                        height: 100,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(Icons.emoji_events, color: Colors.white, size: 100),
+                      ),
                 const SizedBox(height: 16),
                 Text(conquista.descricao,
                     style: const TextStyle(color: Colors.grey)),
@@ -258,14 +266,23 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
               child: ListTile(
                 leading: Stack(
                   children: [
-                    Image.asset(
-                      'assets/conquistas/${conquista.imagem}',
-                      width: 50,
-                      height: 50,
-                      errorBuilder: (context, error, stackTrace) => Icon(
-                          Icons.error,
-                          color: themeProvider.textoAtividade),
-                    ),
+                    conquista.imagemUrl != null && conquista.imagemUrl!.isNotEmpty
+                        ? Image.network(
+                            conquista.imagemUrl!,
+                            width: 50,
+                            height: 50,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                                Icons.emoji_events,
+                                color: themeProvider.textoAtividade),
+                          )
+                        : Image.asset(
+                            'assets/conquistas/${conquista.imagem}',
+                            width: 50,
+                            height: 50,
+                            errorBuilder: (context, error, stackTrace) => Icon(
+                                Icons.emoji_events,
+                                color: themeProvider.textoAtividade),
+                          ),
                     if (!conquista.completada)
                       Positioned.fill(
                         child: Container(
