@@ -1,11 +1,12 @@
 from django.db import models
 from usuarios.models import Usuario
+from django.conf import settings
 
 class Conquista(models.Model):
     idconquista = models.AutoField(primary_key=True)
     nmconquista = models.CharField(max_length=100)
     dsconquista = models.TextField()
-    nmimagem = models.ImageField(upload_to='conquistas/', blank=True, null=True)
+    nmimagem = models.CharField(max_length=255, blank=True, null=True)
     expconquista = models.SmallIntegerField(default=0)
 
     class Meta:
@@ -13,6 +14,25 @@ class Conquista(models.Model):
 
     def __str__(self):
         return self.nmconquista
+    
+    def get_imagem_url(self, request=None):
+        """Retorna a URL completa da imagem"""
+        if not self.nmimagem:
+            return None
+        
+        # Se já é uma URL completa, retornar como está
+        if self.nmimagem.startswith('http'):
+            return self.nmimagem
+        
+        # Construir URL baseada no MEDIA_URL
+        imagem_path = self.nmimagem
+        if not imagem_path.startswith('/'):
+            imagem_path = f'{settings.MEDIA_URL}{imagem_path}'
+        
+        if request:
+            return request.build_absolute_uri(imagem_path)
+        
+        return imagem_path
 
 class UsuarioConquista(models.Model):
     idusuarioconquista = models.AutoField(primary_key=True)

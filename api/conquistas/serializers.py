@@ -10,12 +10,8 @@ class ConquistaSerializer(serializers.ModelSerializer):
         fields = ['idconquista', 'nmconquista', 'dsconquista', 'nmimagem', 'imagem_url', 'expconquista', 'completada']
 
     def get_imagem_url(self, obj):
-        if obj.nmimagem:
-            request = self.context.get('request')
-            if request is not None:
-                return request.build_absolute_uri(obj.nmimagem.url)
-            return obj.nmimagem.url
-        return None
+        request = self.context.get('request')
+        return obj.get_imagem_url(request)
 
     def get_completada(self, obj):
         # Pega o usuário da requisição que está no contexto do serializer, com fallback
@@ -50,9 +46,14 @@ class ConquistaCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ['idconquista']
 
     def get_imagem_url(self, obj):
-        if obj.nmimagem:
-            request = self.context.get('request')
-            if request is not None:
-                return request.build_absolute_uri(obj.nmimagem.url)
-            return obj.nmimagem.url
-        return None
+        request = self.context.get('request')
+        return obj.get_imagem_url(request)
+    
+    def validate_nmimagem(self, value):
+        """
+        Garante que o caminho da imagem está no formato correto.
+        """
+        if value and not value.startswith('conquistas/'):
+            # Se for apenas o nome do arquivo, adicionar o prefixo
+            return f'conquistas/{value}'
+        return value

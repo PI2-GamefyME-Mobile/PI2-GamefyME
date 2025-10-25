@@ -101,25 +101,40 @@ class ConquistaImageUploadView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Salvar temporariamente no modelo para obter a URL
-        # Criar uma conquista temporária apenas para gerar a URL correta
-        conquista_temp = Conquista(nmimagem=image)
-        conquista_temp.save()
-        
-        # Pegar a URL completa da imagem
-        imagem_url = request.build_absolute_uri(conquista_temp.nmimagem.url)
-        filename = os.path.basename(conquista_temp.nmimagem.name)
-        
-        # Deletar a conquista temporária (mas manter o arquivo)
-        filepath = conquista_temp.nmimagem.path
-        conquista_temp.delete()
-        
-        return Response(
-            {
-                'success': True,
-                'filename': filename,
-                'url': imagem_url,
-                'message': 'Imagem salva com sucesso'
-            },
-            status=status.HTTP_201_CREATED
-        )
+        # Criar diretório se não existir
+        conquistas_dir = os.path.join(settings.MEDIA_ROOT, 'conquistas')
+        os.makedirs(conquistas_dir, exist_ok=True)
+
+        # Gerar nome único se já existir
+        filename = image.name
+        filepath = os.path.join(conquistas_dir, filename)
+        counter = 1
+        while os.path.exists(filepath):
+            name, ext = os.path.splitext(image.name)
+            filename = f"{name}_{counter}{ext}"
+            filepath = os.path.join(conquistas_dir, filename)
+            counter += 1
+
+        # Salvar arquivo
+        try:
+            with open(filepath, 'wb+') as destination:
+                for chunk in image.chunks():
+                    destination.write(chunk)
+            
+            # Construir URL completa
+            imagem_url = request.build_absolute_uri(f'{settings.MEDIA_URL}conquistas/{filename}')
+            
+            return Response(
+                {
+                    'success': True,
+                    'filename': filename,
+                    'url': imagem_url,
+                    'message': 'Imagem salva com sucesso'
+                },
+                status=status.HTTP_201_CREATED
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'Erro ao salvar imagem: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

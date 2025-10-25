@@ -155,7 +155,7 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
       children: [
         Expanded(
           child: DropdownButtonFormField<String>(
-            initialValue: _tipoSelecionado,
+            value: _tipoSelecionado,
             hint: Text('Filtrar por tipo',
                 style: TextStyle(
                   color: themeProvider.textoTexto,
