@@ -28,7 +28,7 @@ class Usuario {
     required this.streakData,
   });
 
-  bool get isAdmin => tipoUsuario == 'admin';
+  bool get isAdmin => tipoUsuario == 'administrador';
 
   factory Usuario.fromJson(Map<String, dynamic> json) {
     return Usuario(
