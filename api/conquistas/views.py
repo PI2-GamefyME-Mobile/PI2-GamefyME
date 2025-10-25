@@ -46,9 +46,8 @@ class ConquistaAdminListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAdmin]
     
     def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return ConquistaCreateSerializer
-        return ConquistaSerializer
+        # Para admin, tanto GET quanto POST usam o serializer completo com regras
+        return ConquistaCreateSerializer
     
     def get_serializer_context(self):
         context = super().get_serializer_context()

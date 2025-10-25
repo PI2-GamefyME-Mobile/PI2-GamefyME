@@ -218,6 +218,24 @@ class _AdminConquistasScreenState extends State<AdminConquistasScreen> {
                                         fontSize: 12,
                                       ),
                                     ),
+                                    const SizedBox(height: 2),
+                                    if (conquista['regra'] != null) ...[
+                                      Text(
+                                        'Regra: ${conquista['regra']}  |  Meta: ${conquista['parametro'] ?? ''}',
+                                        style: const TextStyle(
+                                          color: AppColors.cinzaSub,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      if (conquista['periodo'] != null)
+                                        Text(
+                                          'Período: ${conquista['periodo']}',
+                                          style: const TextStyle(
+                                            color: AppColors.cinzaSub,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                    ],
                                   ],
                                 ),
                                 trailing: Row(
@@ -264,6 +282,8 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
   final _descricaoController = TextEditingController();
   final _xpController = TextEditingController();
   final _imagemController = TextEditingController();
+  final _parametroController = TextEditingController();
+  final _pomodoroMinutosController = TextEditingController(text: '60');
 
   bool _isLoading = false;
   final ApiService _apiService = ApiService();
@@ -272,6 +292,12 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
   String? _imagemSelecionada;
   String? _imagemUrl; // URL da imagem do servidor
   File? _imagemArquivo;
+
+  // Campos dinâmicos de regra de conquista
+  String? _regra; // chave da regra
+  String? _periodo; // diario, semanal, mensal, null
+  String? _dificuldadeAlvo; // para regra dificuldade
+  String? _tipoDesafioAlvo; // para desafios por tipo
 
   Usuario? _usuario;
   List<Notificacao> _notificacoes = [];
@@ -289,6 +315,12 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
       _imagemController.text = widget.conquista!['nmimagem'] ?? '';
       _imagemSelecionada = widget.conquista!['nmimagem'];
       _imagemUrl = widget.conquista!['imagem_url'];
+      _regra = widget.conquista!['regra'];
+      _periodo = widget.conquista!['periodo'];
+      _parametroController.text = (widget.conquista!['parametro']?.toString() ?? '1');
+      _dificuldadeAlvo = widget.conquista!['dificuldade_alvo'];
+      _tipoDesafioAlvo = widget.conquista!['tipo_desafio_alvo'];
+      _pomodoroMinutosController.text = (widget.conquista!['pomodoro_minutos']?.toString() ?? '60');
     }
   }
 
@@ -318,6 +350,8 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
     _descricaoController.dispose();
     _xpController.dispose();
     _imagemController.dispose();
+    _parametroController.dispose();
+    _pomodoroMinutosController.dispose();
     super.dispose();
   }
 
@@ -384,6 +418,17 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
         'dsconquista': _descricaoController.text,
         'expconquista': int.parse(_xpController.text),
         'nmimagem': _imagemController.text,
+        if (_regra != null && _regra!.isNotEmpty) 'regra': _regra,
+        if (_periodo != null && _periodo!.isNotEmpty) 'periodo': _periodo,
+        if (_parametroController.text.isNotEmpty)
+          'parametro': int.tryParse(_parametroController.text) ?? 1,
+        if (_dificuldadeAlvo != null && _dificuldadeAlvo!.isNotEmpty)
+          'dificuldade_alvo': _dificuldadeAlvo,
+        if (_tipoDesafioAlvo != null && _tipoDesafioAlvo!.isNotEmpty)
+          'tipo_desafio_alvo': _tipoDesafioAlvo,
+        if (_regra == 'pomodoro_concluidas_total' &&
+            _pomodoroMinutosController.text.isNotEmpty)
+          'pomodoro_minutos': int.tryParse(_pomodoroMinutosController.text) ?? 60,
       };
 
       if (widget.conquista != null) {
@@ -434,6 +479,190 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Seção de regras
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.fundoCard,
+                  border: Border.all(color: AppColors.cinzaSub),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Regra de Validação',
+                      style: TextStyle(
+                        color: AppColors.verdeLima,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      value: _regra,
+                      dropdownColor: AppColors.fundoCard,
+                      style: const TextStyle(color: AppColors.branco),
+                      decoration: const InputDecoration(
+                        labelText: 'Tipo de Regra',
+                        labelStyle: TextStyle(color: AppColors.cinzaSub),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: AppColors.cinzaSub),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: AppColors.verdeLima),
+                        ),
+                      ),
+                      items: const [
+                        DropdownMenuItem(
+                          value: 'atividades_concluidas_total',
+                          child: Text('Atividades concluídas (total)'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'recorrentes_concluidas_total',
+                          child: Text('Atividades recorrentes concluídas (total)'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'dificuldade_concluidas_total',
+                          child: Text('Atividades por dificuldade (total)'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'desafios_concluidos_total',
+                          child: Text('Desafios concluídos (total)'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'desafios_concluidos_por_tipo',
+                          child: Text('Desafios concluídos por tipo'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'streak_conclusao',
+                          child: Text('Streak de conclusão'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'streak_criacao',
+                          child: Text('Streak de criação'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'pomodoro_concluidas_total',
+                          child: Text('Atividades longas (>= min) concluídas'),
+                        ),
+                      ],
+                      onChanged: (v) => setState(() => _regra = v),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _parametroController,
+                            style: const TextStyle(color: AppColors.branco),
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Parâmetro/meta',
+                              labelStyle: TextStyle(color: AppColors.cinzaSub),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: AppColors.cinzaSub),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: AppColors.verdeLima),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: _periodo,
+                            dropdownColor: AppColors.fundoCard,
+                            style: const TextStyle(color: AppColors.branco),
+                            decoration: const InputDecoration(
+                              labelText: 'Período (opcional)',
+                              labelStyle: TextStyle(color: AppColors.cinzaSub),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: AppColors.cinzaSub),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: AppColors.verdeLima),
+                              ),
+                            ),
+                            items: const [
+                              DropdownMenuItem(value: 'diario', child: Text('Diário')),
+                              DropdownMenuItem(value: 'semanal', child: Text('Semanal')),
+                              DropdownMenuItem(value: 'mensal', child: Text('Mensal')),
+                            ],
+                            onChanged: (v) => setState(() => _periodo = v),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    if (_regra == 'dificuldade_concluidas_total')
+                      DropdownButtonFormField<String>(
+                        value: _dificuldadeAlvo,
+                        dropdownColor: AppColors.fundoCard,
+                        style: const TextStyle(color: AppColors.branco),
+                        decoration: const InputDecoration(
+                          labelText: 'Dificuldade alvo',
+                          labelStyle: TextStyle(color: AppColors.cinzaSub),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.cinzaSub),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.verdeLima),
+                          ),
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: 'muito_facil', child: Text('Muito Fácil')),
+                          DropdownMenuItem(value: 'facil', child: Text('Fácil')),
+                          DropdownMenuItem(value: 'medio', child: Text('Médio')),
+                          DropdownMenuItem(value: 'dificil', child: Text('Difícil')),
+                          DropdownMenuItem(value: 'muito_dificil', child: Text('Muito Difícil')),
+                        ],
+                        onChanged: (v) => setState(() => _dificuldadeAlvo = v),
+                      ),
+                    if (_regra == 'desafios_concluidos_por_tipo')
+                      DropdownButtonFormField<String>(
+                        value: _tipoDesafioAlvo,
+                        dropdownColor: AppColors.fundoCard,
+                        style: const TextStyle(color: AppColors.branco),
+                        decoration: const InputDecoration(
+                          labelText: 'Tipo de desafio alvo',
+                          labelStyle: TextStyle(color: AppColors.cinzaSub),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.cinzaSub),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.verdeLima),
+                          ),
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: 'diario', child: Text('Diário')),
+                          DropdownMenuItem(value: 'semanal', child: Text('Semanal')),
+                          DropdownMenuItem(value: 'mensal', child: Text('Mensal')),
+                          DropdownMenuItem(value: 'unico', child: Text('Único')),
+                        ],
+                        onChanged: (v) => setState(() => _tipoDesafioAlvo = v),
+                      ),
+                    if (_regra == 'pomodoro_concluidas_total')
+                      TextFormField(
+                        controller: _pomodoroMinutosController,
+                        style: const TextStyle(color: AppColors.branco),
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Minutos mínimos (Pomodoro)',
+                          labelStyle: TextStyle(color: AppColors.cinzaSub),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.cinzaSub),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.verdeLima),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _nomeController,
                 style: const TextStyle(color: AppColors.branco),

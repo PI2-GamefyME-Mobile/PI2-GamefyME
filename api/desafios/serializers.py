@@ -102,11 +102,20 @@ class DesafioCreateSerializer(serializers.ModelSerializer):
         """
         Validações customizadas.
         """
+        # Para desafios únicos, dtinicio/dtfim são obrigatórios
         if data.get('tipo') == TipoDesafio.UNICO:
             if not data.get('dtinicio') or not data.get('dtfim'):
                 raise serializers.ValidationError(
                     "Desafios únicos precisam de data de início e fim."
                 )
+            if data.get('dtinicio') >= data.get('dtfim'):
+                raise serializers.ValidationError(
+                    "A data de início deve ser anterior à data de fim."
+                )
+        
+        # Para desafios diário/semanal/mensal, se dtinicio/dtfim forem fornecidos,
+        # validar consistência (início < fim)
+        if data.get('dtinicio') and data.get('dtfim'):
             if data.get('dtinicio') >= data.get('dtfim'):
                 raise serializers.ValidationError(
                     "A data de início deve ser anterior à data de fim."

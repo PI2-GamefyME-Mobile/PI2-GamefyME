@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Conquista, UsuarioConquista
+from .models import Conquista, UsuarioConquista, TipoRegraConquista, PeriodoConquista
 
 class ConquistaSerializer(serializers.ModelSerializer):
     completada = serializers.SerializerMethodField()
@@ -42,7 +42,10 @@ class ConquistaCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Conquista
-        fields = ['idconquista', 'nmconquista', 'dsconquista', 'nmimagem', 'imagem_url', 'expconquista']
+        fields = [
+            'idconquista', 'nmconquista', 'dsconquista', 'nmimagem', 'imagem_url', 'expconquista',
+            'regra', 'parametro', 'periodo', 'dificuldade_alvo', 'tipo_desafio_alvo', 'pomodoro_minutos'
+        ]
         read_only_fields = ['idconquista']
 
     def get_imagem_url(self, obj):
@@ -57,3 +60,18 @@ class ConquistaCreateSerializer(serializers.ModelSerializer):
             # Se for apenas o nome do arquivo, adicionar o prefixo
             return f'conquistas/{value}'
         return value
+
+    def validate(self, data):
+        # Regras básicas de coerência dos campos dinâmicos
+        regra = data.get('regra')
+        if regra:
+            if regra in [TipoRegraConquista.DIFICULDADE_CONCLUIDAS_TOTAL]:
+                if not data.get('dificuldade_alvo'):
+                    raise serializers.ValidationError('dificuldade_alvo é obrigatório para a regra de dificuldade.')
+            if regra in [TipoRegraConquista.DESAFIOS_CONCLUIDOS_POR_TIPO]:
+                if not data.get('tipo_desafio_alvo'):
+                    raise serializers.ValidationError('tipo_desafio_alvo é obrigatório para regras de desafios por tipo.')
+            if regra in [TipoRegraConquista.POMODORO_CONCLUIDAS_TOTAL]:
+                if not data.get('pomodoro_minutos'):
+                    data['pomodoro_minutos'] = 60
+        return data

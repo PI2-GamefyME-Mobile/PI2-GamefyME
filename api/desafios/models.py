@@ -20,10 +20,21 @@ class Desafio(models.Model):
     parametro = models.IntegerField(null=True, blank=True)
 
     def is_ativo(self):
-        if self.tipo != TipoDesafio.UNICO:
-            return True
-        agora = timezone.now()
-        return self.dtinicio and self.dtfim and self.dtinicio <= agora <= self.dtfim
+        # Desafios únicos precisam obrigatoriamente de dtinicio/dtfim
+        if self.tipo == TipoDesafio.UNICO:
+            if not (self.dtinicio and self.dtfim):
+                return False
+            agora = timezone.now()
+            return self.dtinicio <= agora <= self.dtfim
+        
+        # Desafios diário/semanal/mensal podem ter janela opcional
+        # Se tiverem dtinicio/dtfim configurados, respeitar a janela
+        if self.dtinicio and self.dtfim:
+            agora = timezone.now()
+            return self.dtinicio <= agora <= self.dtfim
+        
+        # Sem janela definida: sempre ativo
+        return True
 
     class Meta:
         db_table = 'desafios'

@@ -4,8 +4,9 @@ from django.dispatch import receiver
 from django.utils import timezone
 from datetime import timedelta
 from .models import Atividade, AtividadeConcluidas
-from desafios.models import Desafio, UsuarioDesafio
-from conquistas.models import Conquista, UsuarioConquista
+from desafios.models import Desafio, UsuarioDesafio, TipoDesafio
+from django.db.models import Q
+from conquistas.models import Conquista, UsuarioConquista, TipoRegraConquista
 from notificacoes.services import criar_notificacao
 
 # Helper para XP / level up centralizado
@@ -84,7 +85,13 @@ def on_atividade_criada(sender, instance, created, **kwargs):
 def _verificar_e_premiar_desafios(usuario):
     agora = timezone.now()
     hoje = agora.date()
-    desafios_ativos = Desafio.objects.filter(dtinicio__lte=agora, dtfim__gte=agora)
+    # Todos os desafios podem ter janela dtinicio/dtfim opcional.
+    # Se dtinicio/dtfim estiverem definidos, só validar dentro da janela.
+    # Se não estiverem definidos, validar sempre (exceto únicos que precisam obrigatoriamente).
+    desafios_ativos = Desafio.objects.filter(
+        Q(dtinicio__isnull=True, dtfim__isnull=True) |  # Sem janela: sempre ativo
+        Q(dtinicio__lte=agora, dtfim__gte=agora)  # Com janela: dentro do período
+    )
 
     logicas = {
         'recorrentes_concluidas': verificar_recorrentes_concluidas,
@@ -123,54 +130,65 @@ def _verificar_e_premiar_conquistas(usuario):
 
     for conquista in conquistas_nao_obtidas:
         atingiu_criterio = False
-        nome_conquista = (conquista.nmconquista or "").upper()
 
-        # Mapeamento da lógica de conquistas
-        if nome_conquista == "ATIVIDADE CUMPRIDA":
-            atingiu_criterio = AtividadeConcluidas.objects.filter(idusuario=usuario).count() >= 1
-        elif nome_conquista == "PRODUTIVIDADE EM ALTA":
-            atingiu_criterio = AtividadeConcluidas.objects.filter(idusuario=usuario).count() >= 10
-        elif nome_conquista == "RECORRÊNCIA - DE NOVO!":
-            atingiu_criterio = AtividadeConcluidas.objects.filter(idusuario=usuario, idatividade__recorrencia='recorrente').count() >= 5
-        elif nome_conquista == "USUÁRIO HARDCORE":
-            atingiu_criterio = AtividadeConcluidas.objects.filter(idusuario=usuario, idatividade__dificuldade='muito_dificil').count() >= 5
-        elif nome_conquista == "DESAFIANTE AMADOR":
-            atingiu_criterio = UsuarioDesafio.objects.filter(idusuario=usuario).count() >= 1
-        elif nome_conquista == "CAMPEÃO SEMANAL":
-            desafios_semanais_vencidos = UsuarioDesafio.objects.filter(idusuario=usuario, iddesafio__tipo='semanal').values('iddesafio').distinct().count()
-            total_desafios_semanais = Desafio.objects.filter(tipo='semanal', dtinicio__lte=timezone.now(), dtfim__gte=timezone.now()).count()
-            atingiu_criterio = total_desafios_semanais > 0 and desafios_semanais_vencidos == total_desafios_semanais
-        elif nome_conquista == "MISSÃO CUMPRIDA":
-            atingiu_criterio = UsuarioDesafio.objects.filter(idusuario=usuario, iddesafio__tipo='mensal').exists()
-        elif nome_conquista == "DESAFIANTE MESTRE":
-            atingiu_criterio = UsuarioDesafio.objects.filter(idusuario=usuario).count() >= 50
-        elif nome_conquista == "UM DIA APÓS O OUTRO":
-            atingiu_criterio = calcular_streak_conclusao(usuario) >= 5
-        elif nome_conquista == "RITUAL SEMANAL":
-            atingiu_criterio = calcular_streak_criacao_atividades(usuario) >= 7
-        elif nome_conquista == "CONSISTÊNCIA INABALÁVEL":
-            atingiu_criterio = calcular_streak_conclusao(usuario) >= 15
+        regra = getattr(conquista, 'regra', None)
+        parametro = getattr(conquista, 'parametro', 1) or 1
+        periodo = getattr(conquista, 'periodo', None)
 
-        # --- Conquistas baseadas em Pomodoro (atividades longas >= 60 min) ---
-        elif nome_conquista == "POMODORO INICIANTE":
-            pomodoro_count = AtividadeConcluidas.objects.filter(
-                idusuario=usuario,
-                idatividade__tpestimado__gte=60
-            ).count()
-            atingiu_criterio = pomodoro_count >= 1
-        elif nome_conquista == "POMODORO DEDICADO":
-            pomodoro_count = AtividadeConcluidas.objects.filter(
-                idusuario=usuario,
-                idatividade__tpestimado__gte=60
-            ).count()
-            atingiu_criterio = pomodoro_count >= 5
-        elif nome_conquista == "POMODORO MESTRE":
-            pomodoro_count = AtividadeConcluidas.objects.filter(
-                idusuario=usuario,
-                idatividade__tpestimado__gte=60
-            ).count()
-            atingiu_criterio = pomodoro_count >= 20
+        # Determina janela de datas (opcional)
+        inicio, fim = (None, None)
+        if periodo:
+            inicio, fim = get_date_range(periodo)
 
+        # Avaliação genérica com base na regra
+        if regra == TipoRegraConquista.ATIVIDADES_CONCLUIDAS_TOTAL:
+            qs = AtividadeConcluidas.objects.filter(idusuario=usuario)
+            if inicio is not None:
+                qs = qs.filter(dtconclusao__date__range=[inicio, fim])
+            atingiu_criterio = qs.count() >= parametro
+
+        elif regra == TipoRegraConquista.RECORRENTES_CONCLUIDAS_TOTAL:
+            qs = AtividadeConcluidas.objects.filter(idusuario=usuario, idatividade__recorrencia='recorrente')
+            if inicio is not None:
+                qs = qs.filter(dtconclusao__date__range=[inicio, fim])
+            atingiu_criterio = qs.count() >= parametro
+
+        elif regra == TipoRegraConquista.DIFICULDADE_CONCLUIDAS_TOTAL:
+            dificuldade = getattr(conquista, 'dificuldade_alvo', None)
+            if dificuldade:
+                qs = AtividadeConcluidas.objects.filter(idusuario=usuario, idatividade__dificuldade=dificuldade)
+                if inicio is not None:
+                    qs = qs.filter(dtconclusao__date__range=[inicio, fim])
+                atingiu_criterio = qs.count() >= parametro
+
+        elif regra == TipoRegraConquista.DESAFIOS_CONCLUIDOS_TOTAL:
+            qs = UsuarioDesafio.objects.filter(idusuario=usuario)
+            if inicio is not None:
+                qs = qs.filter(dtpremiacao__date__range=[inicio, fim])
+            atingiu_criterio = qs.count() >= parametro
+
+        elif regra == TipoRegraConquista.DESAFIOS_CONCLUIDOS_POR_TIPO:
+            tipo_alvo = getattr(conquista, 'tipo_desafio_alvo', None)
+            if tipo_alvo:
+                qs = UsuarioDesafio.objects.filter(idusuario=usuario, iddesafio__tipo=tipo_alvo)
+                if inicio is not None:
+                    qs = qs.filter(dtpremiacao__date__range=[inicio, fim])
+                atingiu_criterio = qs.count() >= parametro
+
+        elif regra == TipoRegraConquista.STREAK_CONCLUSAO:
+            atingiu_criterio = calcular_streak_conclusao(usuario) >= parametro
+
+        elif regra == TipoRegraConquista.STREAK_CRIACAO:
+            atingiu_criterio = calcular_streak_criacao_atividades(usuario) >= parametro
+
+        elif regra == TipoRegraConquista.POMODORO_CONCLUIDAS_TOTAL:
+            minutos = getattr(conquista, 'pomodoro_minutos', 60) or 60
+            qs = AtividadeConcluidas.objects.filter(idusuario=usuario, idatividade__tpestimado__gte=minutos)
+            if inicio is not None:
+                qs = qs.filter(dtconclusao__date__range=[inicio, fim])
+            atingiu_criterio = qs.count() >= parametro
+
+        # Se nenhuma regra definida, fallback opcional: não premia automaticamente
         if atingiu_criterio:
             UsuarioConquista.objects.create(idusuario=usuario, idconquista=conquista)
             criar_notificacao(

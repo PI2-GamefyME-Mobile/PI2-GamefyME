@@ -39,9 +39,10 @@ class DesafioAdminListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAdmin]
     
     def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return DesafioCreateSerializer
-        return DesafioSerializer
+        # Para o admin, tanto a listagem (GET) quanto a criação (POST)
+        # devem expor todos os campos do desafio, incluindo
+        # parametro, dtinicio e dtfim.
+        return DesafioCreateSerializer
 
 class DesafioAdminDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
