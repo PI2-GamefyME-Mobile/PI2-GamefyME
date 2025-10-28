@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
 import 'auth_service.dart';
@@ -67,14 +66,6 @@ class GoogleAuthService {
       } else {
         debugPrint('[GOOGLE] Chamando authenticate...');
         user = await _googleSignIn.authenticate();
-      }
-
-      if (user == null) {
-        debugPrint('[GOOGLE] Usuário cancelou o login.');
-        return {
-          'success': false,
-          'message': 'Login cancelado pelo usuário',
-        };
       }
 
       final GoogleSignInAuthentication auth = await user.authentication;
