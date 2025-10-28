@@ -216,25 +216,33 @@ class _AdminDesafiosScreenState extends State<AdminDesafiosScreen> {
                                       ),
                                     if (desafio['tipo'] == 'unico')
                                       Builder(builder: (context) {
-                                        final dtInicioStr = desafio['dtinicio'] as String?;
-                                        final dtFimStr = desafio['dtfim'] as String?;
+                                        final dtInicioStr =
+                                            desafio['dtinicio'] as String?;
+                                        final dtFimStr =
+                                            desafio['dtfim'] as String?;
                                         String periodo = '';
                                         try {
-                                          if (dtInicioStr != null && dtInicioStr.isNotEmpty) {
-                                            final di = DateTime.parse(dtInicioStr);
+                                          if (dtInicioStr != null &&
+                                              dtInicioStr.isNotEmpty) {
+                                            final di =
+                                                DateTime.parse(dtInicioStr);
                                             periodo +=
                                                 'Início: ${di.day.toString().padLeft(2, '0')}/${di.month.toString().padLeft(2, '0')}/${di.year}';
                                           }
-                                          if (dtFimStr != null && dtFimStr.isNotEmpty) {
+                                          if (dtFimStr != null &&
+                                              dtFimStr.isNotEmpty) {
                                             final df = DateTime.parse(dtFimStr);
-                                            if (periodo.isNotEmpty) periodo += '  ·  ';
+                                            if (periodo.isNotEmpty)
+                                              periodo += '  ·  ';
                                             periodo +=
                                                 'Fim: ${df.day.toString().padLeft(2, '0')}/${df.month.toString().padLeft(2, '0')}/${df.year}';
                                           }
                                         } catch (_) {}
-                                        if (periodo.isEmpty) return const SizedBox.shrink();
+                                        if (periodo.isEmpty)
+                                          return const SizedBox.shrink();
                                         return Padding(
-                                          padding: const EdgeInsets.only(top: 2),
+                                          padding:
+                                              const EdgeInsets.only(top: 2),
                                           child: Text(
                                             periodo,
                                             style: const TextStyle(
@@ -571,10 +579,12 @@ class _FormularioDesafioScreenState extends State<FormularioDesafioScreen> {
                   children: [
                     if (_dataInicio != null && _tipoSelecionado != 'unico')
                       IconButton(
-                        icon: const Icon(Icons.clear, color: AppColors.cinzaSub),
+                        icon:
+                            const Icon(Icons.clear, color: AppColors.cinzaSub),
                         onPressed: () => setState(() => _dataInicio = null),
                       ),
-                    const Icon(Icons.calendar_today, color: AppColors.verdeLima),
+                    const Icon(Icons.calendar_today,
+                        color: AppColors.verdeLima),
                   ],
                 ),
                 onTap: () async {
@@ -603,17 +613,19 @@ class _FormularioDesafioScreenState extends State<FormularioDesafioScreen> {
                   children: [
                     if (_dataFim != null && _tipoSelecionado != 'unico')
                       IconButton(
-                        icon: const Icon(Icons.clear, color: AppColors.cinzaSub),
+                        icon:
+                            const Icon(Icons.clear, color: AppColors.cinzaSub),
                         onPressed: () => setState(() => _dataFim = null),
                       ),
-                    const Icon(Icons.calendar_today, color: AppColors.verdeLima),
+                    const Icon(Icons.calendar_today,
+                        color: AppColors.verdeLima),
                   ],
                 ),
                 onTap: () async {
                   final data = await showDatePicker(
                     context: context,
-                    initialDate: _dataFim ??
-                        DateTime.now().add(const Duration(days: 7)),
+                    initialDate:
+                        _dataFim ?? DateTime.now().add(const Duration(days: 7)),
                     firstDate: DateTime(2020),
                     lastDate: DateTime(2030),
                   );

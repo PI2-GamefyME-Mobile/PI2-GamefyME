@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:math' as math;
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:provider/provider.dart';
 import 'config/app_colors.dart';
 import 'config/theme_provider.dart';
@@ -46,6 +49,7 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
   bool _isFinished = false;
   bool _isPomodoro = false;
   bool _inFocusPhase = true; // true=foco 25, false=pausa 5
+  bool _pomodoroAsked = false; // evita perguntar mais de uma vez
 
   StreamSubscription? _timerSubscription;
   StreamSubscription? _completionSubscription;
@@ -120,16 +124,109 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
     _pulseController.repeat(reverse: true);
 
     // Tocar som de conclusão
+    _playCompletionSound();
+  }
+
+  Future<void> _playCompletionSound() async {
+    // No web, tocar MP3 pode falhar dependendo do codec. Vamos verificar se o asset existe
+    // e, se não tocar, geramos um beep WAV em memória como fallback universal.
+    const assetBundlePath = 'assets/sounds/timer_complete.mp3';
+    const assetSourcePath = 'assets/sounds/timer_complete.mp3';
+
+    // 1) Tentar tocar o asset se existir
     try {
-      // Usando um tom de sistema como fallback se não houver arquivo de áudio
-      _audioPlayer
-          .play(AssetSource('sounds/timer_complete.mp3'))
-          .catchError((e) {
-        debugPrint('Erro ao tocar som: $e');
-      });
+      final exists = await _assetExists(assetBundlePath);
+      if (exists) {
+        await _audioPlayer.play(AssetSource(assetSourcePath));
+        return;
+      }
     } catch (e) {
-      debugPrint('Erro ao configurar som: $e');
+      debugPrint('Falha ao tocar asset de áudio: $e');
     }
+
+    // 2) Fallback: beep curto gerado em memória (compatível com web)
+    try {
+      final bytes = _generateBeepWav(
+        frequency: 880.0,
+        seconds: 0.25,
+        volume: 0.25,
+      );
+      await _audioPlayer.play(BytesSource(bytes));
+    } catch (e) {
+      debugPrint('Falha ao tocar beep em memória: $e');
+    }
+  }
+
+  Future<bool> _assetExists(String path) async {
+    try {
+      await rootBundle.load(path);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // Gera um WAV PCM 16-bit mono com senoide
+  Uint8List _generateBeepWav({
+    double frequency = 880.0,
+    double seconds = 0.2,
+    int sampleRate = 44100,
+    double volume = 0.3,
+  }) {
+    final sampleCount = (seconds * sampleRate).floor();
+    const bytesPerSample = 2; // 16-bit
+    final dataSize = sampleCount * bytesPerSample;
+    final totalSize = 44 + dataSize; // cabeçalho WAV 44 bytes
+
+    final buffer = BytesBuilder();
+
+    void writeString(String s) {
+      buffer.add(s.codeUnits);
+    }
+
+    void writeUint32(int value) {
+      final b = ByteData(4);
+      b.setUint32(0, value, Endian.little);
+      buffer.add(b.buffer.asUint8List());
+    }
+
+    void writeUint16(int value) {
+      final b = ByteData(2);
+      b.setUint16(0, value, Endian.little);
+      buffer.add(b.buffer.asUint8List());
+    }
+
+    // RIFF header
+    writeString('RIFF');
+    writeUint32(totalSize - 8);
+    writeString('WAVE');
+
+    // fmt chunk
+    writeString('fmt ');
+    writeUint32(16); // Subchunk1Size para PCM
+    writeUint16(1); // AudioFormat PCM = 1
+    writeUint16(1); // NumChannels = 1 (mono)
+    writeUint32(sampleRate);
+    writeUint32(sampleRate * bytesPerSample * 1); // ByteRate
+    writeUint16(bytesPerSample * 1); // BlockAlign
+    writeUint16(16); // BitsPerSample
+
+    // data chunk
+    writeString('data');
+    writeUint32(dataSize);
+
+    // Dados PCM
+    final amplitude = (32767 * volume).clamp(0, 32767).toInt();
+    for (int n = 0; n < sampleCount; n++) {
+      final t = n / sampleRate;
+      final sample =
+          (amplitude * math.sin(2 * math.pi * frequency * t)).toInt();
+      final b = ByteData(2);
+      b.setInt16(0, sample, Endian.little);
+      buffer.add(b.buffer.asUint8List());
+    }
+
+    return buffer.toBytes();
   }
 
   Future<void> _checkTimerState() async {
@@ -165,21 +262,104 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
         _maxDuration = Duration(minutes: _atividade!.tpEstimado);
         _totalOriginal = _maxDuration;
         _totalRemaining = _maxDuration;
-        _isPomodoro = _atividade!.tpEstimado > 60;
-        if (_isPomodoro) {
-          // Começa na fase de foco de 25 min (ou o restante, se menor)
-          final focus = Duration(minutes: 25);
-          _duration = _totalRemaining < focus ? _totalRemaining : focus;
-          _inFocusPhase = true;
-        } else {
-          _duration = _maxDuration;
-        }
+        // Exibe sempre o tempo total da atividade; Pomodoro desativado por padrão
+        _isPomodoro = false;
+        _inFocusPhase = true;
+        _duration = _maxDuration;
         _screenState = ScreenState.loaded;
       });
+
+      // Após carregar e renderizar, perguntar ao usuário sobre Pomodoro se > 60 min
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _maybeAskPomodoro();
+        });
+      }
     } catch (e) {
       debugPrint('Erro ao carregar dados da atividade: $e');
       if (!mounted) return;
       setState(() => _screenState = ScreenState.error);
+    }
+  }
+
+  Future<void> _maybeAskPomodoro() async {
+    if (_pomodoroAsked || !mounted) return;
+    if (_atividade == null) return;
+    if (_atividade!.tpEstimado <= 60) return;
+
+    _pomodoroAsked = true;
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+
+    final choice = await showDialog<String>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: themeProvider.fundoCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.timer, color: AppColors.verdeLima),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Usar modo Pomodoro?',
+                style: TextStyle(
+                  color: themeProvider.textoTexto,
+                  fontFamily: 'Jersey 10',
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Esta atividade tem mais de 60 minutos. Você prefere usar Pomodoro (25 min de foco e 5 min de pausa) até completar o tempo ou usar o tempo completo de uma vez?',
+          style: TextStyle(color: themeProvider.textoTexto, fontSize: 16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop('full'),
+            child: const Text(
+              'TEMPO COMPLETO',
+              style: TextStyle(
+                  color: AppColors.roxoClaro,
+                  fontFamily: 'Jersey 10',
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop('pomodoro'),
+            child: const Text(
+              'POMODORO 25/5',
+              style: TextStyle(
+                  color: AppColors.verdeLima,
+                  fontFamily: 'Jersey 10',
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (choice == 'pomodoro') {
+      setState(() {
+        _isPomodoro = true;
+        _inFocusPhase = true;
+        final focus = const Duration(minutes: 25);
+        _duration = _totalRemaining < focus ? _totalRemaining : focus;
+      });
+    } else {
+      // Tempo completo (padrão)
+      setState(() {
+        _isPomodoro = false;
+        _inFocusPhase = true;
+        _duration = _maxDuration;
+      });
     }
   }
 
@@ -351,20 +531,115 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
     }
   }
 
+  Future<bool> _onWillPop() async {
+    // Se o timer estiver rodando, mostrar diálogo de confirmação
+    if (_isTimerRunning) {
+      final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+      final bool? shouldPop = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          backgroundColor: themeProvider.fundoCard,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.warning_rounded,
+                color: AppColors.amareloClaro,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Timer em Andamento',
+                  style: TextStyle(
+                    color: themeProvider.textoTexto,
+                    fontFamily: 'Jersey 10',
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'O timer está em execução. Se você sair agora, o timer será reiniciado e você perderá o progresso atual.\n\nDeseja realmente sair?',
+            style: TextStyle(
+              color: themeProvider.textoTexto,
+              fontSize: 16,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(
+                'CONTINUAR',
+                style: TextStyle(
+                  color: AppColors.verdeLima,
+                  fontFamily: 'Jersey 10',
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(
+                'SAIR',
+                style: TextStyle(
+                  color: AppColors.roxoClaro,
+                  fontFamily: 'Jersey 10',
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldPop == true) {
+        // Parar e resetar o timer antes de sair
+        _stopTimer();
+        await _timerService.resetTimer();
+        await _notificationService.cancelTimerNotification();
+        return true;
+      }
+      return false;
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    return Scaffold(
-      backgroundColor: themeProvider.fundoApp,
-      appBar: CustomAppBar(
-        usuario: _usuario,
-        notificacoes: _notificacoes,
-        desafios: _desafios,
-        conquistas: _conquistas,
-        onDataReload: _carregarDados,
-        showBackButton: true,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (bool didPop, dynamic result) async {
+        if (didPop) return;
+
+        final bool shouldPop = await _onWillPop();
+        if (shouldPop && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: themeProvider.fundoApp,
+        appBar: CustomAppBar(
+          usuario: _usuario,
+          notificacoes: _notificacoes,
+          desafios: _desafios,
+          conquistas: _conquistas,
+          onDataReload: _carregarDados,
+          showBackButton: true,
+          onBackRequest: () async {
+            return await _onWillPop();
+          },
+        ),
+        body: _buildBody(),
       ),
-      body: _buildBody(),
     );
   }
 
@@ -442,7 +717,9 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
 
   Widget _buildTimerSection(BuildContext context) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final minutes = twoDigits(_duration.inMinutes.remainder(60));
+    // Para atividades com mais de 1h, mostrar minutos totais sem remainder
+    final totalMinutes = _duration.inMinutes;
+    final minutes = totalMinutes.toString().padLeft(2, '0');
     final seconds = twoDigits(_duration.inSeconds.remainder(60));
     // Progresso geral baseado no restante total
     final totalRemaining =
@@ -929,7 +1206,12 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
             ),
           ),
           child: ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () async {
+              final shouldPop = await _onWillPop();
+              if (shouldPop && mounted) {
+                Navigator.of(context).pop();
+              }
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: themeProvider.fundoCard.withValues(alpha: 0.5),
               foregroundColor: themeProvider.textoCinza,
@@ -968,12 +1250,15 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
               color: themeProvider.textoCinza.withValues(alpha: 0.6),
             ),
             const SizedBox(width: 6),
-            Text(
-              'A atividade será concluída quando o timer terminar',
-              style: TextStyle(
-                fontSize: 12,
-                color: themeProvider.textoCinza.withValues(alpha: 0.7),
-                fontStyle: FontStyle.italic,
+            Expanded(
+              child: Text(
+                'O timer será reiniciado se você sair da atividade',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: themeProvider.textoCinza.withValues(alpha: 0.7),
+                  fontStyle: FontStyle.italic,
+                ),
               ),
             ),
           ],

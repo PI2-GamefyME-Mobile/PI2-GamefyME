@@ -69,12 +69,11 @@ class GoogleAuthService {
         };
       }
 
-
       // 1. Obter o objeto de autenticação
       final GoogleSignInAuthentication auth = await user.authentication;
-      
+
       // 2. Extrair o idToken (JWT)
-      final String? idToken = auth.idToken; 
+      final String? idToken = auth.idToken;
 
       if (idToken == null) {
         debugPrint('[GOOGLE] Erro: Não foi possível obter o idToken.');
@@ -83,9 +82,9 @@ class GoogleAuthService {
           'message': 'Não foi possível obter o ID Token do Google.'
         };
       }
-      
+
       // 3. Usar o idToken (e não mais o user.id) nas chamadas para seu backend
-      
+
       // ---- FIM DA CORREÇÃO ----
 
       debugPrint('[GOOGLE] Google Sign In - Email: ${user.email}');

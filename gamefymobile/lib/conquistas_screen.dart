@@ -96,14 +96,16 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
                         width: 100,
                         height: 100,
                         errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.emoji_events, color: Colors.white, size: 100),
+                            const Icon(Icons.emoji_events,
+                                color: Colors.white, size: 100),
                       )
                     : Image.asset(
                         'assets/conquistas/${conquista.imagem}',
                         width: 100,
                         height: 100,
                         errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.emoji_events, color: Colors.white, size: 100),
+                            const Icon(Icons.emoji_events,
+                                color: Colors.white, size: 100),
                       ),
                 const SizedBox(height: 16),
                 Text(conquista.descricao,
@@ -266,7 +268,8 @@ class _ConquistasScreenState extends State<ConquistasScreen> {
               child: ListTile(
                 leading: Stack(
                   children: [
-                    conquista.imagemUrl != null && conquista.imagemUrl!.isNotEmpty
+                    conquista.imagemUrl != null &&
+                            conquista.imagemUrl!.isNotEmpty
                         ? Image.network(
                             conquista.imagemUrl!,
                             width: 50,

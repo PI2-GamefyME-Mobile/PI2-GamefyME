@@ -174,18 +174,20 @@ class _AdminConquistasScreenState extends State<AdminConquistasScreen> {
                           itemBuilder: (context, index) {
                             final conquista = _conquistasAdmin[index];
                             final imagemUrl = conquista['imagem_url'];
-                            
+
                             return Card(
                               color: AppColors.fundoCard,
                               margin: const EdgeInsets.only(bottom: 12),
                               child: ListTile(
-                                leading: imagemUrl != null && imagemUrl.isNotEmpty
+                                leading: imagemUrl != null &&
+                                        imagemUrl.isNotEmpty
                                     ? Image.network(
                                         imagemUrl,
                                         width: 50,
                                         height: 50,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) =>
+                                        errorBuilder: (context, error,
+                                                stackTrace) =>
                                             const Icon(Icons.emoji_events,
                                                 color: AppColors.amareloClaro,
                                                 size: 50),
@@ -317,10 +319,12 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
       _imagemUrl = widget.conquista!['imagem_url'];
       _regra = widget.conquista!['regra'];
       _periodo = widget.conquista!['periodo'];
-      _parametroController.text = (widget.conquista!['parametro']?.toString() ?? '1');
+      _parametroController.text =
+          (widget.conquista!['parametro']?.toString() ?? '1');
       _dificuldadeAlvo = widget.conquista!['dificuldade_alvo'];
       _tipoDesafioAlvo = widget.conquista!['tipo_desafio_alvo'];
-      _pomodoroMinutosController.text = (widget.conquista!['pomodoro_minutos']?.toString() ?? '60');
+      _pomodoroMinutosController.text =
+          (widget.conquista!['pomodoro_minutos']?.toString() ?? '60');
     }
   }
 
@@ -369,8 +373,7 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
       setState(() => _isLoading = true);
 
       try {
-        final resultado =
-            await _apiService.uploadImagemConquista(imagem.path);
+        final resultado = await _apiService.uploadImagemConquista(imagem.path);
 
         if (!mounted) return;
         setState(() {
@@ -428,7 +431,8 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
           'tipo_desafio_alvo': _tipoDesafioAlvo,
         if (_regra == 'pomodoro_concluidas_total' &&
             _pomodoroMinutosController.text.isNotEmpty)
-          'pomodoro_minutos': int.tryParse(_pomodoroMinutosController.text) ?? 60,
+          'pomodoro_minutos':
+              int.tryParse(_pomodoroMinutosController.text) ?? 60,
       };
 
       if (widget.conquista != null) {
@@ -520,7 +524,8 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
                         ),
                         DropdownMenuItem(
                           value: 'recorrentes_concluidas_total',
-                          child: Text('Atividades recorrentes concluídas (total)'),
+                          child:
+                              Text('Atividades recorrentes concluídas (total)'),
                         ),
                         DropdownMenuItem(
                           value: 'dificuldade_concluidas_total',
@@ -561,10 +566,12 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
                               labelText: 'Parâmetro/meta',
                               labelStyle: TextStyle(color: AppColors.cinzaSub),
                               enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: AppColors.cinzaSub),
+                                borderSide:
+                                    BorderSide(color: AppColors.cinzaSub),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: AppColors.verdeLima),
+                                borderSide:
+                                    BorderSide(color: AppColors.verdeLima),
                               ),
                             ),
                           ),
@@ -579,16 +586,21 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
                               labelText: 'Período (opcional)',
                               labelStyle: TextStyle(color: AppColors.cinzaSub),
                               enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: AppColors.cinzaSub),
+                                borderSide:
+                                    BorderSide(color: AppColors.cinzaSub),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: AppColors.verdeLima),
+                                borderSide:
+                                    BorderSide(color: AppColors.verdeLima),
                               ),
                             ),
                             items: const [
-                              DropdownMenuItem(value: 'diario', child: Text('Diário')),
-                              DropdownMenuItem(value: 'semanal', child: Text('Semanal')),
-                              DropdownMenuItem(value: 'mensal', child: Text('Mensal')),
+                              DropdownMenuItem(
+                                  value: 'diario', child: Text('Diário')),
+                              DropdownMenuItem(
+                                  value: 'semanal', child: Text('Semanal')),
+                              DropdownMenuItem(
+                                  value: 'mensal', child: Text('Mensal')),
                             ],
                             onChanged: (v) => setState(() => _periodo = v),
                           ),
@@ -612,11 +624,17 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
                           ),
                         ),
                         items: const [
-                          DropdownMenuItem(value: 'muito_facil', child: Text('Muito Fácil')),
-                          DropdownMenuItem(value: 'facil', child: Text('Fácil')),
-                          DropdownMenuItem(value: 'medio', child: Text('Médio')),
-                          DropdownMenuItem(value: 'dificil', child: Text('Difícil')),
-                          DropdownMenuItem(value: 'muito_dificil', child: Text('Muito Difícil')),
+                          DropdownMenuItem(
+                              value: 'muito_facil', child: Text('Muito Fácil')),
+                          DropdownMenuItem(
+                              value: 'facil', child: Text('Fácil')),
+                          DropdownMenuItem(
+                              value: 'medio', child: Text('Médio')),
+                          DropdownMenuItem(
+                              value: 'dificil', child: Text('Difícil')),
+                          DropdownMenuItem(
+                              value: 'muito_dificil',
+                              child: Text('Muito Difícil')),
                         ],
                         onChanged: (v) => setState(() => _dificuldadeAlvo = v),
                       ),
@@ -636,10 +654,14 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
                           ),
                         ),
                         items: const [
-                          DropdownMenuItem(value: 'diario', child: Text('Diário')),
-                          DropdownMenuItem(value: 'semanal', child: Text('Semanal')),
-                          DropdownMenuItem(value: 'mensal', child: Text('Mensal')),
-                          DropdownMenuItem(value: 'unico', child: Text('Único')),
+                          DropdownMenuItem(
+                              value: 'diario', child: Text('Diário')),
+                          DropdownMenuItem(
+                              value: 'semanal', child: Text('Semanal')),
+                          DropdownMenuItem(
+                              value: 'mensal', child: Text('Mensal')),
+                          DropdownMenuItem(
+                              value: 'unico', child: Text('Único')),
                         ],
                         onChanged: (v) => setState(() => _tipoDesafioAlvo = v),
                       ),

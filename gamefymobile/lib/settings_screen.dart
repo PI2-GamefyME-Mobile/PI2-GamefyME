@@ -45,6 +45,53 @@ class _SettingsScreenState extends State<SettingsScreen> {
     super.dispose();
   }
 
+  Future<void> _showAvatarModal() async {
+    if (!mounted) return;
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final newAvatar = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: themeProvider.fundoCard,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: GridView.count(
+            crossAxisCount: 4,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            children: List.generate(4, (index) {
+              final avatarName = 'avatar${index + 1}.png';
+              return GestureDetector(
+                onTap: () => Navigator.of(context).pop(avatarName),
+                child: Image.asset('assets/avatares/$avatarName'),
+              );
+            }),
+          ),
+        );
+      },
+    );
+
+    if (newAvatar != null && newAvatar != _usuario?.imagemPerfil) {
+      final success = await _apiService.updateProfilePicture(newAvatar);
+      if (!mounted) return;
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Foto de perfil atualizada!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        await _carregarDados();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Não foi possível atualizar a foto de perfil.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _carregarDados() async {
     setState(() {
       _isLoading = true;
@@ -442,7 +489,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          UserLevelAvatar(user: user, radius: 46),
+          GestureDetector(
+            onTap: _showAvatarModal,
+            child: Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                UserLevelAvatar(user: user, radius: 46),
+                Container(
+                  margin: const EdgeInsets.only(right: 6, bottom: 6),
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: AppColors.roxoProfundo,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.camera_alt,
+                    color: Colors.white,
+                    size: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
           const SizedBox(height: 12),
           Text(
             user.nome,
@@ -453,6 +521,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Toque para alterar a foto',
+            style: TextStyle(
+              color: themeProvider.textoCinza,
+              fontSize: 12,
+            ),
           ),
         ],
       ),

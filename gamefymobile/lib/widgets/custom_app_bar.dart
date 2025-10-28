@@ -20,6 +20,8 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   final List<Conquista> conquistas;
   final VoidCallback onDataReload;
   final bool showBackButton;
+  // Callback opcional para interceptar ação do botão voltar
+  final Future<bool> Function()? onBackRequest;
 
   const CustomAppBar({
     super.key,
@@ -29,6 +31,7 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
     required this.conquistas,
     required this.onDataReload,
     this.showBackButton = false,
+    this.onBackRequest,
   });
 
   @override
@@ -167,7 +170,19 @@ class _CustomAppBarState extends State<CustomAppBar> {
           ? IconButton(
               icon: Icon(Icons.arrow_back_ios,
                   color: Provider.of<ThemeProvider>(context).textoTexto),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () async {
+                // Se houver um interceptador, respeitar o retorno dele
+                if (widget.onBackRequest != null) {
+                  final shouldPop = await widget.onBackRequest!();
+                  if (shouldPop && context.mounted) {
+                    // Usar maybePop para respeitar PopScope/WillPopScope quando existir
+                    Navigator.of(context).maybePop();
+                  }
+                } else {
+                  // Comportamento padrão
+                  Navigator.of(context).maybePop();
+                }
+              },
             )
           : null,
       automaticallyImplyLeading: false,
@@ -412,22 +427,29 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                         vertical: 4.0),
                                     child: Row(
                                       children: [
-                                        c.imagemUrl != null && c.imagemUrl!.isNotEmpty
+                                        c.imagemUrl != null &&
+                                                c.imagemUrl!.isNotEmpty
                                             ? Image.network(
                                                 c.imagemUrl!,
                                                 width: 30,
                                                 height: 30,
                                                 fit: BoxFit.contain,
-                                                errorBuilder: (context, error, stackTrace) =>
-                                                    const Icon(Icons.emoji_events, size: 30),
+                                                errorBuilder: (context, error,
+                                                        stackTrace) =>
+                                                    const Icon(
+                                                        Icons.emoji_events,
+                                                        size: 30),
                                               )
                                             : Image.asset(
                                                 "assets/conquistas/${c.imagem}",
                                                 width: 30,
                                                 height: 30,
                                                 fit: BoxFit.contain,
-                                                errorBuilder: (context, error, stackTrace) =>
-                                                    const Icon(Icons.emoji_events, size: 30),
+                                                errorBuilder: (context, error,
+                                                        stackTrace) =>
+                                                    const Icon(
+                                                        Icons.emoji_events,
+                                                        size: 30),
                                               ),
                                         const SizedBox(width: 12),
                                         Expanded(
