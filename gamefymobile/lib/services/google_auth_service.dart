@@ -47,20 +47,28 @@ class GoogleAuthService {
       debugPrint('[GOOGLE] Iniciando Google Sign In...');
       await _ensureInitialized();
 
-      GoogleSignInAccount? user; // Alterado para aceitar nulo
+      GoogleSignInAccount? user;
       if (kIsWeb) {
-        // ... (Sua lógica web)
-        return {
-          'success': false,
-          'message':
-              'No Web, use o botão Google nativo (GIS). Implementação pendente na UI.',
-        };
+        try {
+          await _googleSignIn.disconnect();
+        } catch (_) {}
+        debugPrint(
+            '[GOOGLE][WEB] Tentando attemptLightweightAuthentication()...');
+        final maybeUser =
+            await _googleSignIn.attemptLightweightAuthentication();
+        if (maybeUser == null) {
+          return {
+            'success': false,
+            'message':
+                'No Web, use o botão Google nativo (GIS). Implementação pendente na UI.',
+          };
+        }
+        user = maybeUser;
       } else {
         debugPrint('[GOOGLE] Chamando authenticate...');
-        user = await _googleSignIn.authenticate(); //
+        user = await _googleSignIn.authenticate();
       }
 
-      // Verifica se o usuário cancelou o login
       if (user == null) {
         debugPrint('[GOOGLE] Usuário cancelou o login.');
         return {
@@ -69,10 +77,8 @@ class GoogleAuthService {
         };
       }
 
-      // 1. Obter o objeto de autenticação
       final GoogleSignInAuthentication auth = await user.authentication;
 
-      // 2. Extrair o idToken (JWT)
       final String? idToken = auth.idToken;
 
       if (idToken == null) {
@@ -83,17 +89,13 @@ class GoogleAuthService {
         };
       }
 
-      // 3. Usar o idToken (e não mais o user.id) nas chamadas para seu backend
-
-      // ---- FIM DA CORREÇÃO ----
-
       debugPrint('[GOOGLE] Google Sign In - Email: ${user.email}');
       debugPrint('[GOOGLE] Google Sign In - Nome: ${user.displayName}');
       debugPrint('[GOOGLE] Google Sign In - ID: ${user.id}');
 
       debugPrint('[GOOGLE] Tentando login no backend com o ID Token...');
       final loginResult = await _authService.loginWithGoogle(
-        idToken: idToken, // <-- CORRIGIDO
+        idToken: idToken,
         email: user.email,
         name: user.displayName ?? user.email,
         googleId: user.id,
@@ -109,7 +111,7 @@ class GoogleAuthService {
       } else {
         debugPrint('[GOOGLE] Login falhou, tentando cadastro...');
         final registerResult = await _authService.registerWithGoogle(
-          idToken: idToken, // <-- CORRIGIDO
+          idToken: idToken,
           email: user.email,
           name: user.displayName ?? user.email,
           googleId: user.id,
@@ -124,15 +126,29 @@ class GoogleAuthService {
             'isNewUser': true,
           };
         } else {
-          // ... (resto do seu tratamento de erro)
+          debugPrint('[GOOGLE] Cadastro falhou: ${registerResult['message']}');
+          return {
+            'success': false,
+            'message':
+                registerResult['message'] ?? 'Erro ao autenticar com Google',
+          };
         }
       }
     } on GoogleSignInException catch (e) {
-      // ... (resto do seu tratamento de erro)
+      debugPrint('[GOOGLE] Erro GoogleSignIn: ${e.code} - ${e.description}');
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        return {
+          'success': false,
+          'message': 'Login cancelado pelo usuário',
+        };
+      }
+      return {
+        'success': false,
+        'message': e.description ?? 'Erro ao fazer login com Google',
+      };
     } catch (error) {
-      // ... (resto do seu tratamento de erro)
+      debugPrint('[GOOGLE] Erro no login com Google: $error');
     }
-    // Adicionado retorno de falha genérico para garantir que todos os caminhos retornem
     return {
       'success': false,
       'message': 'Ocorreu um erro inesperado durante o login com Google.',

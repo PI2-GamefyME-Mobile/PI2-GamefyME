@@ -47,3 +47,66 @@ python api/manage.py enviar_lembretes
 ```
 
 Como agendar (Windows): utilize o Agendador de Tarefas para executar o comando diariamente no ambiente configurado. Em Linux, use cron; em produção pode-se empregar Celery Beat.
+
+---
+
+## Manual para instalação e execução do aplicativo
+
+Passos essenciais para rodar o backend (Django + PostgreSQL) e o app (Flutter), em Windows e Linux.
+
+### Windows (PowerShell)
+
+- Backend
+    ```powershell
+    git clone https://github.com/PI2-GamefyME-Mobile/PI2-GamefyME.git
+    cd PI2-GamefyME
+    python -m venv env
+    .\env\Scripts\Activate.ps1
+    pip install -r requirements.txt
+    python api/manage.py migrate
+    python api/manage.py runserver 0.0.0.0:8000
+    ```
+    - API: http://127.0.0.1:8000/api | Swagger: http://127.0.0.1:8000/swagger/
+    - DB padrão (ajuste em `api/api/settings.py` se necessário): nome `postgres`, usuário `postgres`, senha `ifpr`.
+
+- Mobile (Flutter)
+    ```powershell
+    cd gamefymobile
+    flutter pub get
+    flutter run -d windows --dart-define API_BASE_URL=http://127.0.0.1:8000/api
+    # Chrome (opcional)
+    flutter run -d chrome  --dart-define API_BASE_URL=http://127.0.0.1:8000/api
+    # Android Emulator: usar 10.0.2.2 para acessar o host
+    flutter run --dart-define API_BASE_URL=http://10.0.2.2:8000/api
+    ```
+
+### Linux (Bash)
+
+- Backend
+    ```bash
+    git clone https://github.com/PI2-GamefyME-Mobile/PI2-GamefyME.git
+    cd PI2-GamefyME
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
+    python3 api/manage.py migrate
+    python3 api/manage.py runserver 0.0.0.0:8000
+    ```
+    - API: http://127.0.0.1:8000/api | Swagger: http://127.0.0.1:8000/swagger/
+
+- Mobile (Flutter)
+    ```bash
+    cd gamefymobile
+    flutter pub get
+    # Desktop Linux
+    flutter run -d linux  --dart-define API_BASE_URL=http://127.0.0.1:8000/api
+    # Chrome (opcional)
+    flutter run -d chrome --dart-define API_BASE_URL=http://127.0.0.1:8000/api
+    # Android Emulator
+    flutter run --dart-define API_BASE_URL=http://10.0.2.2:8000/api
+    ```
+
+Notas rápidas:
+- Ajuste `API_BASE_URL` conforme seu cenário (dispositivo físico: IP da máquina, ex.: http://192.168.X.Y:8000/api).
+- Para configuração persistente, você pode alterar `gamefymobile/lib/config/api_config.dart`.
+- Detalhes adicionais do app: veja `gamefymobile/README.md`.
