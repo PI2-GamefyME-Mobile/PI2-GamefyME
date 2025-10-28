@@ -14,10 +14,6 @@ class TipoRegraConquista(models.TextChoices):
     POMODORO_CONCLUIDAS_TOTAL = 'pomodoro_concluidas_total', 'Atividades (>= min) concluídas (total)'
 
 
-class PeriodoConquista(models.TextChoices):
-    DIARIO = 'diario', 'Diário'
-    SEMANAL = 'semanal', 'Semanal'
-    MENSAL = 'mensal', 'Mensal'
 
 class Conquista(models.Model):
     idconquista = models.AutoField(primary_key=True)
@@ -28,7 +24,6 @@ class Conquista(models.Model):
     # Regras dinâmicas
     regra = models.CharField(max_length=50, choices=TipoRegraConquista.choices, null=True, blank=True)
     parametro = models.SmallIntegerField(default=1)
-    periodo = models.CharField(max_length=10, choices=PeriodoConquista.choices, null=True, blank=True)
     # Campos auxiliares (usados dependendo da regra)
     dificuldade_alvo = models.CharField(max_length=20, null=True, blank=True)
     tipo_desafio_alvo = models.CharField(max_length=10, null=True, blank=True)

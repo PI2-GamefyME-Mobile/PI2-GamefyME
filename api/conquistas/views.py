@@ -3,7 +3,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Conquista, UsuarioConquista
-from .serializers import ConquistaSerializer, UsuarioConquistaSerializer, ConquistaCreateSerializer
+from .serializers import ConquistaSerializer, UsuarioConquistaSerializer, ConquistaCreateSerializer, TrofeuUsuarioSerializer
+from usuarios.models import Usuario
 import os
 from django.conf import settings
 
@@ -36,6 +37,38 @@ class UsuarioConquistaListView(generics.ListAPIView):
 
     def get_queryset(self):
         return UsuarioConquista.objects.filter(idusuario=self.request.user).order_by('-dtconcessao')
+
+
+class TrofeusUsuarioListView(generics.ListAPIView):
+    """
+    Lista apenas as conquistas já desbloqueadas pelo usuário atual
+    em um formato próprio para exibição de troféus (com imagem).
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = TrofeuUsuarioSerializer
+
+    def get_queryset(self):
+        # Retorna objetos Conquista já obtidos pelo usuário
+        ids = UsuarioConquista.objects.filter(idusuario=self.request.user).values_list('idconquista', flat=True)
+        return Conquista.objects.filter(idconquista__in=ids)
+
+
+class TrofeusUsuarioPublicListView(generics.ListAPIView):
+    """
+    Lista as conquistas desbloqueadas de um usuário específico (por id),
+    para exibição de troféus no app (ex.: leaderboard). Requer autenticação.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = TrofeuUsuarioSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs.get('idusuario')
+        try:
+            usuario_alvo = Usuario.objects.get(pk=user_id)
+        except Usuario.DoesNotExist:
+            return Conquista.objects.none()
+        ids = UsuarioConquista.objects.filter(idusuario=usuario_alvo).values_list('idconquista', flat=True)
+        return Conquista.objects.filter(idconquista__in=ids)
 
 # Views de Administração
 class ConquistaAdminListCreateView(generics.ListCreateAPIView):

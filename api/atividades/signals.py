@@ -126,6 +126,10 @@ def _verificar_e_premiar_desafios(usuario):
 
 # --- VERIFICAÇÃO DE CONQUISTAS ---
 def _verificar_e_premiar_conquistas(usuario):
+    """
+    Conquistas são marcos permanentes. Avaliamos sempre no histórico completo
+    do usuário, sem janelas de período.
+    """
     conquistas_nao_obtidas = Conquista.objects.exclude(usuarioconquista__idusuario=usuario)
 
     for conquista in conquistas_nao_obtidas:
@@ -133,46 +137,30 @@ def _verificar_e_premiar_conquistas(usuario):
 
         regra = getattr(conquista, 'regra', None)
         parametro = getattr(conquista, 'parametro', 1) or 1
-        periodo = getattr(conquista, 'periodo', None)
 
-        # Determina janela de datas (opcional)
-        inicio, fim = (None, None)
-        if periodo:
-            inicio, fim = get_date_range(periodo)
-
-        # Avaliação genérica com base na regra
+        # Avaliação genérica com base na regra (sem períodos)
         if regra == TipoRegraConquista.ATIVIDADES_CONCLUIDAS_TOTAL:
             qs = AtividadeConcluidas.objects.filter(idusuario=usuario)
-            if inicio is not None:
-                qs = qs.filter(dtconclusao__date__range=[inicio, fim])
             atingiu_criterio = qs.count() >= parametro
 
         elif regra == TipoRegraConquista.RECORRENTES_CONCLUIDAS_TOTAL:
             qs = AtividadeConcluidas.objects.filter(idusuario=usuario, idatividade__recorrencia='recorrente')
-            if inicio is not None:
-                qs = qs.filter(dtconclusao__date__range=[inicio, fim])
             atingiu_criterio = qs.count() >= parametro
 
         elif regra == TipoRegraConquista.DIFICULDADE_CONCLUIDAS_TOTAL:
             dificuldade = getattr(conquista, 'dificuldade_alvo', None)
             if dificuldade:
                 qs = AtividadeConcluidas.objects.filter(idusuario=usuario, idatividade__dificuldade=dificuldade)
-                if inicio is not None:
-                    qs = qs.filter(dtconclusao__date__range=[inicio, fim])
                 atingiu_criterio = qs.count() >= parametro
 
         elif regra == TipoRegraConquista.DESAFIOS_CONCLUIDOS_TOTAL:
             qs = UsuarioDesafio.objects.filter(idusuario=usuario)
-            if inicio is not None:
-                qs = qs.filter(dtpremiacao__date__range=[inicio, fim])
             atingiu_criterio = qs.count() >= parametro
 
         elif regra == TipoRegraConquista.DESAFIOS_CONCLUIDOS_POR_TIPO:
             tipo_alvo = getattr(conquista, 'tipo_desafio_alvo', None)
             if tipo_alvo:
                 qs = UsuarioDesafio.objects.filter(idusuario=usuario, iddesafio__tipo=tipo_alvo)
-                if inicio is not None:
-                    qs = qs.filter(dtpremiacao__date__range=[inicio, fim])
                 atingiu_criterio = qs.count() >= parametro
 
         elif regra == TipoRegraConquista.STREAK_CONCLUSAO:
@@ -184,11 +172,9 @@ def _verificar_e_premiar_conquistas(usuario):
         elif regra == TipoRegraConquista.POMODORO_CONCLUIDAS_TOTAL:
             minutos = getattr(conquista, 'pomodoro_minutos', 60) or 60
             qs = AtividadeConcluidas.objects.filter(idusuario=usuario, idatividade__tpestimado__gte=minutos)
-            if inicio is not None:
-                qs = qs.filter(dtconclusao__date__range=[inicio, fim])
             atingiu_criterio = qs.count() >= parametro
 
-        # Se nenhuma regra definida, fallback opcional: não premia automaticamente
+        # Se atingiu o critério, concede a conquista
         if atingiu_criterio:
             UsuarioConquista.objects.create(idusuario=usuario, idconquista=conquista)
             criar_notificacao(
@@ -200,6 +186,7 @@ def _verificar_e_premiar_conquistas(usuario):
 
 # --- FUNÇÕES DE LÓGICA (DESAFIOS) ---
 def get_date_range(periodo):
+    """Mantida para compatibilidade com desafios e outras partes. Conquistas não usam mais período."""
     hoje = timezone.now().date()
     if periodo == 'diario':
         return hoje, hoje
@@ -209,14 +196,12 @@ def get_date_range(periodo):
         return inicio_semana, fim_semana
     elif periodo == 'mensal':
         primeiro_dia_mes = hoje.replace(day=1)
-        # calcula ultimo dia do mês
         if primeiro_dia_mes.month == 12:
             proximo_mes = primeiro_dia_mes.replace(year=primeiro_dia_mes.year + 1, month=1)
         else:
             proximo_mes = primeiro_dia_mes.replace(month=primeiro_dia_mes.month + 1)
         ultimo_dia_mes = proximo_mes - timedelta(days=1)
         return primeiro_dia_mes, ultimo_dia_mes
-    # Retorna None para sinalizar uso incorreto
     return None, None
 
 # (o resto das funções verificar_* mantém a mesma lógica, mas é recomendável checar inicio/fim != (None, None) antes de usá-las)

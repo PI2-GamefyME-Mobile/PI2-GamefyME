@@ -229,14 +229,6 @@ class _AdminConquistasScreenState extends State<AdminConquistasScreen> {
                                           fontSize: 12,
                                         ),
                                       ),
-                                      if (conquista['periodo'] != null)
-                                        Text(
-                                          'Período: ${conquista['periodo']}',
-                                          style: const TextStyle(
-                                            color: AppColors.cinzaSub,
-                                            fontSize: 12,
-                                          ),
-                                        ),
                                     ],
                                   ],
                                 ),
@@ -297,7 +289,7 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
 
   // Campos dinâmicos de regra de conquista
   String? _regra; // chave da regra
-  String? _periodo; // diario, semanal, mensal, null
+  // campo 'período' removido do backend e da UI
   String? _dificuldadeAlvo; // para regra dificuldade
   String? _tipoDesafioAlvo; // para desafios por tipo
 
@@ -318,7 +310,7 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
       _imagemSelecionada = widget.conquista!['nmimagem'];
       _imagemUrl = widget.conquista!['imagem_url'];
       _regra = widget.conquista!['regra'];
-      _periodo = widget.conquista!['periodo'];
+        // período foi removido e não é mais carregado
       _parametroController.text =
           (widget.conquista!['parametro']?.toString() ?? '1');
       _dificuldadeAlvo = widget.conquista!['dificuldade_alvo'];
@@ -422,7 +414,7 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
         'expconquista': int.parse(_xpController.text),
         'nmimagem': _imagemController.text,
         if (_regra != null && _regra!.isNotEmpty) 'regra': _regra,
-        if (_periodo != null && _periodo!.isNotEmpty) 'periodo': _periodo,
+  // campo 'periodo' removido no backend; não enviar
         if (_parametroController.text.isNotEmpty)
           'parametro': int.tryParse(_parametroController.text) ?? 1,
         if (_dificuldadeAlvo != null && _dificuldadeAlvo!.isNotEmpty)
@@ -576,35 +568,7 @@ class _FormularioConquistaScreenState extends State<FormularioConquistaScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            value: _periodo,
-                            dropdownColor: AppColors.fundoCard,
-                            style: const TextStyle(color: AppColors.branco),
-                            decoration: const InputDecoration(
-                              labelText: 'Período (opcional)',
-                              labelStyle: TextStyle(color: AppColors.cinzaSub),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide:
-                                    BorderSide(color: AppColors.cinzaSub),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide:
-                                    BorderSide(color: AppColors.verdeLima),
-                              ),
-                            ),
-                            items: const [
-                              DropdownMenuItem(
-                                  value: 'diario', child: Text('Diário')),
-                              DropdownMenuItem(
-                                  value: 'semanal', child: Text('Semanal')),
-                              DropdownMenuItem(
-                                  value: 'mensal', child: Text('Mensal')),
-                            ],
-                            onChanged: (v) => setState(() => _periodo = v),
-                          ),
-                        ),
+                        // Período removido
                       ],
                     ),
                     const SizedBox(height: 12),

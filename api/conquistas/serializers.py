@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Conquista, UsuarioConquista, TipoRegraConquista, PeriodoConquista
+from .models import Conquista, UsuarioConquista, TipoRegraConquista
 
 class ConquistaSerializer(serializers.ModelSerializer):
     completada = serializers.SerializerMethodField()
@@ -44,7 +44,7 @@ class ConquistaCreateSerializer(serializers.ModelSerializer):
         model = Conquista
         fields = [
             'idconquista', 'nmconquista', 'dsconquista', 'nmimagem', 'imagem_url', 'expconquista',
-            'regra', 'parametro', 'periodo', 'dificuldade_alvo', 'tipo_desafio_alvo', 'pomodoro_minutos'
+            'regra', 'parametro', 'dificuldade_alvo', 'tipo_desafio_alvo', 'pomodoro_minutos'
         ]
         read_only_fields = ['idconquista']
 
@@ -75,3 +75,19 @@ class ConquistaCreateSerializer(serializers.ModelSerializer):
                 if not data.get('pomodoro_minutos'):
                     data['pomodoro_minutos'] = 60
         return data
+
+
+class TrofeuUsuarioSerializer(serializers.ModelSerializer):
+    """
+    Serializer enxuto para exibir "troféus" (conquistas desbloqueadas pelo usuário)
+    com dados de imagem prontos para UI.
+    """
+    imagem_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Conquista
+        fields = ['idconquista', 'nmconquista', 'imagem_url']
+
+    def get_imagem_url(self, obj):
+        request = self.context.get('request')
+        return obj.get_imagem_url(request)

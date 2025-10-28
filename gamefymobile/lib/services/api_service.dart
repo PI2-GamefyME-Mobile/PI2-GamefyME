@@ -504,4 +504,15 @@ class ApiService {
       throw Exception(error['error'] ?? 'Erro ao fazer upload da imagem');
     }
   }
+
+  // ===== CONQUISTAS - TROFÉUS DE OUTRO USUÁRIO =====
+  Future<List<dynamic>> fetchTrofeusUsuario(int idusuario) async {
+    final url = Uri.parse('$_baseRoot/conquistas/usuario/$idusuario/trofeus/');
+    final res = await _authorizedRequest((headers) => http.get(url, headers: headers));
+    if (res.statusCode == 200) {
+      return json.decode(utf8.decode(res.bodyBytes));
+    } else {
+      throw Exception('Falha ao carregar troféus do usuário');
+    }
+  }
 }

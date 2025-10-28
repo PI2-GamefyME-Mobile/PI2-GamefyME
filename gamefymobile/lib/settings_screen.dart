@@ -666,12 +666,109 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           style: TextStyle(color: themeProvider.textoCinza)),
                     ],
                   ),
+                  onTap: () => _abrirModalUsuario(context, user),
                 ),
               );
             },
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _abrirModalUsuario(BuildContext context, Usuario usuario) async {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final api = _apiService;
+    List<dynamic> trofeus = [];
+    String? erro;
+    try {
+      trofeus = await api.fetchTrofeusUsuario(usuario.id);
+    } catch (e) {
+      erro = 'Erro ao buscar conquistas: $e';
+    }
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: themeProvider.fundoCard,
+          title: Row(
+            children: [
+              UserLevelAvatar(user: usuario, radius: 18),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      usuario.nome,
+                      style: TextStyle(
+                        color: themeProvider.textoTexto,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      'Nível ${usuario.nivel} · ${usuario.exp} XP',
+                      style: TextStyle(color: themeProvider.textoCinza, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            child: erro != null
+                ? Text(erro, style: TextStyle(color: themeProvider.textoCinza))
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Troféus desbloqueados',
+                          style: TextStyle(
+                              color: themeProvider.textoTexto,
+                              fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      trofeus.isEmpty
+                          ? Text('Nenhum troféu ainda',
+                              style: TextStyle(color: themeProvider.textoCinza))
+                          : SizedBox(
+                              height: 100,
+                              child: GridView.builder(
+                                shrinkWrap: true,
+                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 4,
+                                  mainAxisSpacing: 8,
+                                  crossAxisSpacing: 8,
+                                ),
+                                itemCount: trofeus.length,
+                                itemBuilder: (ctx, i) {
+                                  final t = trofeus[i] as Map<String, dynamic>;
+                                  final url = (t['imagem_url'] ?? '') as String;
+                                  return Tooltip(
+                                    message: (t['nmconquista'] ?? '') as String,
+                                    child: url.isNotEmpty
+                                        ? Image.network(url, fit: BoxFit.cover)
+                                        : const Icon(Icons.emoji_events, color: AppColors.amareloClaro, size: 28),
+                                  );
+                                },
+                              ),
+                            ),
+                    ],
+                  ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Fechar', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
     );
   }
 

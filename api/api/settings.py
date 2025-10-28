@@ -118,9 +118,9 @@ DATABASES = {
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'postgres',
-#         'USER': 'postgres',
-#         'PASSWORD': 'ifpr',
+#         'NAME': 'gamefyapi',
+#         'USER': 'minozzo',
+#         'PASSWORD': '1234',
 #         'HOST': 'localhost',
 #         'PORT': 5432,
 #     }
