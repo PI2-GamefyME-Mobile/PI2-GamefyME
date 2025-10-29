@@ -108,18 +108,21 @@ def _verificar_e_premiar_desafios(usuario):
 
         funcao_verificacao = logicas.get(desafio.tipo_logica)
         if funcao_verificacao and funcao_verificacao(usuario, desafio):
-            # Cria premiação
-            UsuarioDesafio.objects.create(
-                idusuario=usuario, iddesafio=desafio, flsituacao=True, dtpremiacao=agora
+            # Evita exceções em casos concorrentes usando get_or_create
+            premiado, created = UsuarioDesafio.objects.get_or_create(
+                idusuario=usuario,
+                iddesafio=desafio,
+                defaults={'flsituacao': True, 'dtpremiacao': agora},
             )
 
-            # Notifica e aplica XP com level-up centralizado
-            criar_notificacao(
-                usuario,
-                f'Desafio Cumprido: "{getattr(desafio, "nmdesafio", "")}"! Você ganhou {getattr(desafio, "expdesafio", 0)} XP!',
-                'sucesso'
-            )
-            adicionar_xp(usuario, getattr(desafio, 'expdesafio', 0))
+            if created:
+                # Notifica e aplica XP apenas na primeira premiação do ciclo
+                criar_notificacao(
+                    usuario,
+                    f'Desafio Cumprido: "{getattr(desafio, "nmdesafio", "")}"! Você ganhou {getattr(desafio, "expdesafio", 0)} XP!',
+                    'sucesso'
+                )
+                adicionar_xp(usuario, getattr(desafio, 'expdesafio', 0))
 
 # --- VERIFICAÇÃO DE CONQUISTAS ---
 def _verificar_e_premiar_conquistas(usuario):
@@ -173,13 +176,17 @@ def _verificar_e_premiar_conquistas(usuario):
 
         # Se atingiu o critério, concede a conquista
         if atingiu_criterio:
-            UsuarioConquista.objects.create(idusuario=usuario, idconquista=conquista)
-            criar_notificacao(
-                usuario,
-                f'Conquista Desbloqueada: "{getattr(conquista, "nmconquista", "")}"! Você ganhou {getattr(conquista, "expconquista", 0)} XP!',
-                'sucesso'
+            # Evita duplicar em situações de corrida
+            uc, created = UsuarioConquista.objects.get_or_create(
+                idusuario=usuario, idconquista=conquista
             )
-            adicionar_xp(usuario, getattr(conquista, 'expconquista', 0))
+            if created:
+                criar_notificacao(
+                    usuario,
+                    f'Conquista Desbloqueada: "{getattr(conquista, "nmconquista", "")}"! Você ganhou {getattr(conquista, "expconquista", 0)} XP!',
+                    'sucesso'
+                )
+                adicionar_xp(usuario, getattr(conquista, 'expconquista', 0))
 
 # --- FUNÇÕES DE LÓGICA (DESAFIOS) ---
 def get_date_range(periodo):
@@ -319,14 +326,20 @@ def verificar_percentual_concluido(usuario, desafio):
 
 # --- FUNÇÕES AUXILIARES (mantidas) ---
 def _ja_premiado_no_ciclo(usuario, desafio, hoje):
+    """Verifica se o desafio já foi premiado no ciclo vigente (diário/semanal/mensal).
+
+    Usa janela de datetimes aware para evitar problemas de UTC/local time e DST.
+    Para desafios únicos, basta existir qualquer premiação anterior.
+    """
     premiacao_existente = UsuarioDesafio.objects.filter(idusuario=usuario, iddesafio=desafio)
-    if desafio.tipo == 'diario':
-        return premiacao_existente.filter(dtpremiacao__date=hoje).exists()
-    elif desafio.tipo == 'semanal':
-        inicio_semana = hoje - timedelta(days=hoje.weekday())
-        return premiacao_existente.filter(dtpremiacao__date__gte=inicio_semana).exists()
-    elif desafio.tipo == 'mensal':
-        return premiacao_existente.filter(dtpremiacao__year=hoje.year, dtpremiacao__month=hoje.month).exists()
+
+    if desafio.tipo in ('diario', 'semanal', 'mensal'):
+        inicio_dt, fim_dt = get_datetime_range(desafio.tipo)
+        if inicio_dt is None:
+            return premiacao_existente.exists()
+        return premiacao_existente.filter(dtpremiacao__range=[inicio_dt, fim_dt]).exists()
+
+    # Único: se já existe, não premia novamente
     return premiacao_existente.exists()
 
 def calcular_streak_conclusao(usuario):
