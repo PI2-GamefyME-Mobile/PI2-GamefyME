@@ -16,11 +16,23 @@ class ApiConfig {
       return 'http://localhost:8000/api';
     }
 
+    // IP do Felipe
+    // try {
+    //   if (Platform.isAndroid) {
+    //     debugPrint(
+    //         '🌐 [CONFIG] Plataforma: Android - URL: http://192.168.114.159:8000/api');
+    //     return 'http://192.168.114.159:8000/api';
+    //   }
+    // } catch (_) {
+    //   // Fallback seguro caso Platform não esteja disponível
+    // }
+
+    // IP do Lucas
     try {
       if (Platform.isAndroid) {
         debugPrint(
-            '🌐 [CONFIG] Plataforma: Android - URL: http://192.168.114.159:8000/api');
-        return 'http://192.168.114.159:8000/api';
+            '🌐 [CONFIG] Plataforma: Android - URL: http://192.168.xxx:8000/api');
+        return 'http://192.168.xxx:8000/api';
       }
     } catch (_) {
       // Fallback seguro caso Platform não esteja disponível
