@@ -2,9 +2,9 @@ from django.db import transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime, time
 from .models import Atividade, AtividadeConcluidas
-from desafios.models import Desafio, UsuarioDesafio, TipoDesafio
+from desafios.models import Desafio, UsuarioDesafio
 from django.db.models import Q
 from conquistas.models import Conquista, UsuarioConquista, TipoRegraConquista
 from notificacoes.services import criar_notificacao
@@ -88,10 +88,7 @@ def _verificar_e_premiar_desafios(usuario):
     # Todos os desafios podem ter janela dtinicio/dtfim opcional.
     # Se dtinicio/dtfim estiverem definidos, só validar dentro da janela.
     # Se não estiverem definidos, validar sempre (exceto únicos que precisam obrigatoriamente).
-    desafios_ativos = Desafio.objects.filter(
-        Q(dtinicio__isnull=True, dtfim__isnull=True) |  # Sem janela: sempre ativo
-        Q(dtinicio__lte=agora, dtfim__gte=agora)  # Com janela: dentro do período
-    )
+    desafios_ativos = Desafio.objects.filter(Q(dtinicio__isnull=True, dtfim__isnull=True) | Q(dtinicio__lte=agora, dtfim__gte=agora))
 
     logicas = {
         'recorrentes_concluidas': verificar_recorrentes_concluidas,
@@ -204,52 +201,102 @@ def get_date_range(periodo):
         return primeiro_dia_mes, ultimo_dia_mes
     return None, None
 
+def get_datetime_range(periodo):
+    """Retorna um intervalo de datetimes AWARE (inicio_dt, fim_dt) baseado no timezone atual.
+
+    Em vez de converter a partir de datas (que podem ser ingênuas), calculamos
+    os limites diretamente a partir do "agora" já com fuso horário (localtime),
+    garantindo consistência em bancos diferentes (SQLite/PostgreSQL) e evitando
+    discrepâncias por DST.
+    """
+    agora = timezone.localtime()
+
+    def start_of_day(dt: datetime) -> datetime:
+        return dt.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    def end_of_day(dt: datetime) -> datetime:
+        return dt.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+    if periodo == 'diario':
+        inicio_dt = start_of_day(agora)
+        fim_dt = end_of_day(agora)
+        return inicio_dt, fim_dt
+
+    elif periodo == 'semanal':
+        # Monday as start of week
+        delta = timedelta(days=agora.weekday())
+        inicio_semana = start_of_day(agora - delta)
+        fim_semana = end_of_day(inicio_semana + timedelta(days=6))
+        return inicio_semana, fim_semana
+
+    elif periodo == 'mensal':
+        primeiro_dia = agora.replace(day=1)
+        # Próximo mês
+        if primeiro_dia.month == 12:
+            proximo_mes = primeiro_dia.replace(year=primeiro_dia.year + 1, month=1)
+        else:
+            proximo_mes = primeiro_dia.replace(month=primeiro_dia.month + 1)
+        ultimo_dia = proximo_mes - timedelta(days=1)
+        inicio_mes = start_of_day(primeiro_dia)
+        fim_mes = end_of_day(ultimo_dia)
+        return inicio_mes, fim_mes
+
+    return None, None
+
 # (o resto das funções verificar_* mantém a mesma lógica, mas é recomendável checar inicio/fim != (None, None) antes de usá-las)
 # ... (mantém verificar_atividades_concluidas, verificar_recorrentes_concluidas, etc., inalteradas)
 # lembre-se de manter as funções auxiliares abaixo exatamente como tinha, ou adapte pequenas guardas de None.
 
 def verificar_atividades_concluidas(usuario, desafio):
-    inicio, fim = get_date_range(desafio.tipo)
-    if inicio is None:
+    inicio_dt, fim_dt = get_datetime_range(desafio.tipo)
+    if inicio_dt is None:
         return False
-    return AtividadeConcluidas.objects.filter(idusuario=usuario, dtconclusao__date__range=[inicio, fim]).count() >= desafio.parametro
+    return AtividadeConcluidas.objects.filter(idusuario=usuario, dtconclusao__range=[inicio_dt, fim_dt]).count() >= desafio.parametro
 
 def verificar_recorrentes_concluidas(usuario, desafio):
-    inicio, fim = get_date_range(desafio.tipo)
-    if inicio is None:
+    inicio_dt, fim_dt = get_datetime_range(desafio.tipo)
+    if inicio_dt is None:
         return False
-    return AtividadeConcluidas.objects.filter(idusuario=usuario, idatividade__recorrencia='recorrente', dtconclusao__date__range=[inicio, fim]).count() >= desafio.parametro
+    return AtividadeConcluidas.objects.filter(idusuario=usuario, idatividade__recorrencia='recorrente', dtconclusao__range=[inicio_dt, fim_dt]).count() >= desafio.parametro
 
 def verificar_min_dificeis(usuario, desafio):
-    inicio, fim = get_date_range(desafio.tipo)
-    if inicio is None:
+    inicio_dt, fim_dt = get_datetime_range(desafio.tipo)
+    if inicio_dt is None:
         return False
-    return AtividadeConcluidas.objects.filter(idusuario=usuario, idatividade__dificuldade__in=['dificil', 'muito_dificil'], dtconclusao__date__range=[inicio, fim]).values('idatividade').distinct().count() >= desafio.parametro
+    return AtividadeConcluidas.objects.filter(
+        idusuario=usuario,
+        idatividade__dificuldade__in=['dificil', 'muito_dificil'],
+        dtconclusao__range=[inicio_dt, fim_dt]
+    ).values('idatividade').distinct().count() >= desafio.parametro
 
 def verificar_desafios_concluidos(usuario, desafio):
-    inicio, fim = get_date_range(desafio.tipo)
-    if inicio is None:
+    inicio_dt, fim_dt = get_datetime_range(desafio.tipo)
+    if inicio_dt is None:
         return False
     # +1 pois estamos verificando ANTES de registrar o desafio atual
-    return (UsuarioDesafio.objects.filter(idusuario=usuario, dtpremiacao__date__range=[inicio, fim]).count() + 1) >= desafio.parametro
+    return (UsuarioDesafio.objects.filter(idusuario=usuario, dtpremiacao__range=[inicio_dt, fim_dt]).count() + 1) >= desafio.parametro
 
 def verificar_atividades_criadas(usuario, desafio):
-    inicio, fim = get_date_range(desafio.tipo)
-    if inicio is None:
+    inicio_dt, fim_dt = get_datetime_range(desafio.tipo)
+    if inicio_dt is None:
         return False
-    return Atividade.objects.filter(idusuario=usuario, dtatividade__date__range=[inicio, fim]).count() >= desafio.parametro
+    return Atividade.objects.filter(idusuario=usuario, dtatividade__range=[inicio_dt, fim_dt]).count() >= desafio.parametro
 
 def verificar_min_atividades_media_facil(usuario, desafio):
-    inicio, fim = get_date_range(desafio.tipo)
-    if inicio is None:
+    inicio_dt, fim_dt = get_datetime_range(desafio.tipo)
+    if inicio_dt is None:
         return False
-    return AtividadeConcluidas.objects.filter(idusuario=usuario, idatividade__dificuldade__in=['medio', 'facil', 'muito_facil'], dtconclusao__date__range=[inicio, fim]).count() >= desafio.parametro
+    return AtividadeConcluidas.objects.filter(
+        idusuario=usuario,
+        idatividade__dificuldade__in=['medio', 'facil', 'muito_facil'],
+        dtconclusao__range=[inicio_dt, fim_dt]
+    ).count() >= desafio.parametro
 
 def verificar_todas_muito_faceis(usuario, desafio):
-    inicio, fim = get_date_range(desafio.tipo)
-    if inicio is None:
+    inicio_dt, fim_dt = get_datetime_range(desafio.tipo)
+    if inicio_dt is None:
         return False
-    atividades_do_dia = Atividade.objects.filter(idusuario=usuario, dificuldade='muito_facil', dtatividade__date__range=[inicio, fim])
+    atividades_do_dia = Atividade.objects.filter(idusuario=usuario, dificuldade='muito_facil', dtatividade__range=[inicio_dt, fim_dt])
     if not atividades_do_dia.exists():
         return False
     concluidas_do_dia = AtividadeConcluidas.objects.filter(
@@ -261,13 +308,13 @@ def verificar_streak_diario(usuario, desafio):
     return calcular_streak_conclusao(usuario) >= desafio.parametro
 
 def verificar_percentual_concluido(usuario, desafio):
-    inicio, fim = get_date_range(desafio.tipo)
-    if inicio is None:
+    inicio_dt, fim_dt = get_datetime_range(desafio.tipo)
+    if inicio_dt is None:
         return False
-    total_atividades = Atividade.objects.filter(idusuario=usuario, dtatividade__date__range=[inicio, fim]).count()
+    total_atividades = Atividade.objects.filter(idusuario=usuario, dtatividade__range=[inicio_dt, fim_dt]).count()
     if total_atividades == 0:
         return False
-    concluidas = AtividadeConcluidas.objects.filter(idusuario=usuario, dtconclusao__date__range=[inicio, fim]).count()
+    concluidas = AtividadeConcluidas.objects.filter(idusuario=usuario, dtconclusao__range=[inicio_dt, fim_dt]).count()
     return (concluidas / total_atividades) * 100 >= desafio.parametro
 
 # --- FUNÇÕES AUXILIARES (mantidas) ---

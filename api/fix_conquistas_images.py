@@ -13,8 +13,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'api.settings')
 django.setup()
 
-from conquistas.models import Conquista
-import shutil
+from conquistas.models import Conquista  # noqa: E402
+import shutil  # noqa: E402
 
 def fix_image_paths():
     """Corrige os caminhos das imagens e move arquivos se necessário."""
@@ -71,10 +71,10 @@ def fix_image_paths():
         print(f"    Para: {new_path}")
         updated_count += 1
     
-    print(f"\n=== Resumo ===")
+    print("\n=== Resumo ===")
     print(f"Conquistas atualizadas: {updated_count}")
     print(f"Arquivos copiados: {copied_count}")
-    print(f"\nScript concluído!")
+    print("\nScript concluído!")
 
 if __name__ == '__main__':
     fix_image_paths()

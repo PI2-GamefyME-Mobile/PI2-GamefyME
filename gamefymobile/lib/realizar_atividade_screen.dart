@@ -40,16 +40,18 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
   List<DesafioPendente> _desafios = [];
   List<Conquista> _conquistas = [];
 
-  Timer? _timer;
+  // Controle de tempo e estado
   Duration _duration = Duration.zero;
   Duration _maxDuration = Duration.zero;
   Duration _totalRemaining = Duration.zero;
   Duration _totalOriginal = Duration.zero;
-  bool get _isTimerRunning => _timer?.isActive ?? false;
+  Duration _currentPhaseDuration = Duration.zero; // duração da fase atual (foco/pausa)
+  bool _timerRunning = false; // espelha estado do TimerService para o UI
   bool _isFinished = false;
   bool _isPomodoro = false;
   bool _inFocusPhase = true; // true=foco 25, false=pausa 5
   bool _pomodoroAsked = false; // evita perguntar mais de uma vez
+  bool _autoCompleteInProgress = false; // guarda para evitar duplicidade
 
   StreamSubscription? _timerSubscription;
   StreamSubscription? _completionSubscription;
@@ -78,7 +80,6 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _timer?.cancel();
     _timerSubscription?.cancel();
     _completionSubscription?.cancel();
     _pulseController.dispose();
@@ -98,6 +99,7 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
       if (mounted) {
         setState(() {
           _duration = remaining;
+          _timerRunning = remaining.inSeconds > 0;
           if (remaining.inSeconds <= 0 && !_isFinished) {
             _isFinished = true;
             _onTimerComplete();
@@ -108,13 +110,20 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
 
     _completionSubscription =
         _timerService.completionStream.listen((data) async {
-      await _notificationService.showActivityCompletedNotification(
-        activityName: data['activityName'],
-        xpGained: data['activityXP'],
-      );
+      // TimerService sinaliza que a duração agendada terminou
+      // Cancelar notificação de contagem e decidir próximo passo
       await _notificationService.cancelTimerNotification();
-      if (mounted) {
+      if (!mounted) return;
+
+      if (_isPomodoro) {
+        _onPhaseComplete();
+      } else {
         await _concluirAtividadeAutomaticamente();
+      }
+      if (mounted) {
+        setState(() {
+          _timerRunning = false;
+        });
       }
     });
   }
@@ -364,7 +373,10 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
   }
 
   void _startTimer() {
-    if (_isTimerRunning || _isFinished) return;
+    if (_timerRunning || _isFinished) return;
+
+    // Registra a duração desta fase para cálculos do Pomodoro
+    _currentPhaseDuration = _duration;
 
     _timerService.startTimer(
       duration: _duration,
@@ -379,37 +391,19 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
           : _atividade!.nome,
       minutes: _duration.inMinutes,
     );
-
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (_duration.inSeconds > 0) {
-        setState(() {
-          _duration = _duration - const Duration(seconds: 1);
-          if (_isPomodoro && _inFocusPhase) {
-            // Apenas o tempo de foco conta para o restante total
-            _totalRemaining -= const Duration(seconds: 1);
-          }
-        });
-      } else {
-        _stopTimer(finished: true);
-        if (_isPomodoro) {
-          _onPhaseComplete();
-        } else {
-          _concluirAtividadeAutomaticamente();
-        }
-      }
+    setState(() {
+      _timerRunning = true;
+      _isFinished = false;
     });
   }
 
   void _stopTimer({bool finished = false}) {
-    if (finished) {
-      setState(() => _isFinished = true);
-      _timerService.stopTimer();
-    } else {
-      _timerService.stopTimer();
-    }
-    _timer?.cancel();
+    _timerService.stopTimer();
     _notificationService.cancelTimerNotification();
-    setState(() {});
+    setState(() {
+      _timerRunning = false;
+      if (finished) _isFinished = true;
+    });
   }
 
   void _resetTimer() {
@@ -425,14 +419,17 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
         _duration = _maxDuration;
       }
       _isFinished = false;
+      _timerRunning = false;
     });
   }
 
   void _toggleTimer() {
-    _isTimerRunning ? _stopTimer() : _startTimer();
+    _timerRunning ? _stopTimer() : _startTimer();
   }
 
   Future<void> _concluirAtividadeAutomaticamente() async {
+    if (_autoCompleteInProgress) return;
+    _autoCompleteInProgress = true;
     await Future.delayed(const Duration(milliseconds: 500));
     if (!mounted) return;
 
@@ -462,6 +459,7 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
               style: TextStyle(fontFamily: 'Jersey 10', fontSize: 16)),
           backgroundColor: Colors.red));
     }
+    _autoCompleteInProgress = false;
   }
 
   void _onPhaseComplete() async {
@@ -470,28 +468,34 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
 
     // Se acabou a fase de foco, inicia pausa se ainda há tempo total para cumprir
     if (_inFocusPhase) {
-      _inFocusPhase = false;
-      final breakDur = const Duration(minutes: 5);
-      // Se já cumpriu o tempo total de foco, conclui atividade
+      // Deduzir todo o tempo de foco da meta restante
+      _totalRemaining -= _currentPhaseDuration;
+      if (_totalRemaining.isNegative) _totalRemaining = Duration.zero;
+
+      // Troca para pausa ou conclui
       if (_totalRemaining <= Duration.zero) {
         await _concluirAtividadeAutomaticamente();
         return;
       }
+      _inFocusPhase = false;
+      final breakDur = const Duration(minutes: 5);
       setState(() {
         _duration = breakDur;
+        _isFinished = false;
       });
       _startTimer();
     } else {
       // Fim da pausa, volta ao foco
       _inFocusPhase = true;
-      final focus = const Duration(minutes: 25);
       if (_totalRemaining <= Duration.zero) {
         await _concluirAtividadeAutomaticamente();
         return;
       }
+      final focus = const Duration(minutes: 25);
       final nextFocus = _totalRemaining < focus ? _totalRemaining : focus;
       setState(() {
         _duration = nextFocus;
+        _isFinished = false;
       });
       _startTimer();
     }
@@ -533,7 +537,7 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
 
   Future<bool> _onWillPop() async {
     // Se o timer estiver rodando, mostrar diálogo de confirmação
-    if (_isTimerRunning) {
+    if (_timerRunning) {
       final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
       final bool? shouldPop = await showDialog<bool>(
         context: context,
@@ -776,9 +780,9 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
                       color: (_isFinished
                               ? AppColors.roxoClaro
                               : AppColors.verdeLima)
-                          .withValues(alpha: _isTimerRunning ? 0.3 : 0.1),
-                      blurRadius: _isTimerRunning ? 30 : 15,
-                      spreadRadius: _isTimerRunning ? 5 : 0,
+                          .withValues(alpha: _timerRunning ? 0.3 : 0.1),
+                      blurRadius: _timerRunning ? 30 : 15,
+                      spreadRadius: _timerRunning ? 5 : 0,
                     ),
                   ],
                 ),
@@ -790,11 +794,11 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
                     backgroundColor:
                         AppColors.roxoProfundo.withValues(alpha: 0.2),
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      _isFinished
-                          ? AppColors.roxoClaro
-                          : _isTimerRunning
-                              ? AppColors.verdeLima
-                              : AppColors.verdeLima.withValues(alpha: 0.5),
+            _isFinished
+              ? AppColors.roxoClaro
+              : _timerRunning
+                ? AppColors.verdeLima
+                : AppColors.verdeLima.withValues(alpha: 0.5),
                     ),
                   ),
                   Center(
@@ -844,12 +848,12 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
             const SizedBox(width: 24),
             // Botão Play/Pause
             _buildTimerControlButton(
-              icon: _isTimerRunning
+              icon: _timerRunning
                   ? Icons.pause_rounded
                   : Icons.play_arrow_rounded,
-              label: _isTimerRunning ? 'Pausar' : 'Iniciar',
+              label: _timerRunning ? 'Pausar' : 'Iniciar',
               onPressed: _toggleTimer,
-              color: _isTimerRunning
+              color: _timerRunning
                   ? AppColors.amareloClaro
                   : AppColors.verdeLima,
               isSecondary: false,
@@ -975,12 +979,14 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
                     height: 1.2,
                     shadows: [
                       Shadow(
-                        color: AppColors.roxoProfundo.withValues(alpha: 0.2),
+                        color:
+                            AppColors.roxoProfundo.withValues(alpha: 0.2),
                         blurRadius: 8,
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(height: 16),
               ],
             ),
           ),

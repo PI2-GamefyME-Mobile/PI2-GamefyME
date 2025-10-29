@@ -1,6 +1,4 @@
-from rest_framework import generics, permissions, status
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework import generics, permissions
 from .models import Desafio, UsuarioDesafio
 from .serializers import DesafioSerializer, UsuarioDesafioSerializer, DesafioCreateSerializer
 
@@ -9,7 +7,9 @@ class IsAdmin(permissions.BasePermission):
     Permissão customizada para verificar se o usuário é administrador.
     """
     def has_permission(self, request, view):
-        return request.user and request.user.is_authenticated and request.user.tipousuario == 'administrador'
+        # O campo `tipousuario` usa choices definidos em usuarios.models.TipoUsuario
+        # com valores: 'admin' e 'comum'.
+        return request.user and request.user.is_authenticated and request.user.tipousuario == 'admin'
 
 class DesafioListView(generics.ListAPIView):
     """

@@ -1,7 +1,6 @@
 from rest_framework import serializers
-from django.utils import timezone
 from .models import Desafio, UsuarioDesafio, TipoDesafio
-from atividades.signals import get_date_range
+from atividades.signals import get_date_range, get_datetime_range
 from atividades.models import AtividadeConcluidas, Atividade
 
 class DesafioSerializer(serializers.ModelSerializer):
@@ -39,13 +38,12 @@ class DesafioSerializer(serializers.ModelSerializer):
             return True
 
         # Para diário/semanal/mensal, considera o intervalo atual
-        inicio, fim = get_date_range(obj.tipo)
-        if inicio is None:
+        inicio_dt, fim_dt = get_datetime_range(obj.tipo)
+        if inicio_dt is None:
             # Se por algum motivo não há intervalo (tipo inesperado),
             # considerar não completado para evitar falsos positivos
             return False
-
-        return qs.filter(dtpremiacao__date__range=[inicio, fim]).exists()
+        return qs.filter(dtpremiacao__range=[inicio_dt, fim_dt]).exists()
 
     def get_meta(self, obj):
         """ Retorna o parâmetro do desafio, que é a meta a ser atingida. """
@@ -56,16 +54,16 @@ class DesafioSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         user = request.user
         
-        inicio, fim = get_date_range(obj.tipo)
-        if inicio is None:
+        inicio_dt, fim_dt = get_datetime_range(obj.tipo)
+        if inicio_dt is None:
             return 0
 
         logicas_de_progresso = {
-            'atividades_concluidas': lambda u, d: AtividadeConcluidas.objects.filter(idusuario=u, dtconclusao__date__range=[inicio, fim]).count(),
-            'recorrentes_concluidas': lambda u, d: AtividadeConcluidas.objects.filter(idusuario=u, idatividade__recorrencia='recorrente', dtconclusao__date__range=[inicio, fim]).count(),
-            'min_dificeis': lambda u, d: AtividadeConcluidas.objects.filter(idusuario=u, idatividade__dificuldade__in=['dificil', 'muito_dificil'], dtconclusao__date__range=[inicio, fim]).values('idatividade').distinct().count(),
-            'desafios_concluidos': lambda u, d: UsuarioDesafio.objects.filter(idusuario=u, dtpremiacao__date__range=[inicio, fim]).count(),
-            'atividades_criadas': lambda u, d: Atividade.objects.filter(idusuario=u, dtatividade__date__range=[inicio, fim]).count(),
+            'atividades_concluidas': lambda u, d: AtividadeConcluidas.objects.filter(idusuario=u, dtconclusao__range=[inicio_dt, fim_dt]).count(),
+            'recorrentes_concluidas': lambda u, d: AtividadeConcluidas.objects.filter(idusuario=u, idatividade__recorrencia='recorrente', dtconclusao__range=[inicio_dt, fim_dt]).count(),
+            'min_dificeis': lambda u, d: AtividadeConcluidas.objects.filter(idusuario=u, idatividade__dificuldade__in=['dificil', 'muito_dificil'], dtconclusao__range=[inicio_dt, fim_dt]).values('idatividade').distinct().count(),
+            'desafios_concluidos': lambda u, d: UsuarioDesafio.objects.filter(idusuario=u, dtpremiacao__range=[inicio_dt, fim_dt]).count(),
+            'atividades_criadas': lambda u, d: Atividade.objects.filter(idusuario=u, dtatividade__range=[inicio_dt, fim_dt]).count(),
         }
 
         funcao_progresso = logicas_de_progresso.get(obj.tipo_logica)

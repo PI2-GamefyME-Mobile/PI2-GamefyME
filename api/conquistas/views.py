@@ -13,7 +13,9 @@ class IsAdmin(permissions.BasePermission):
     Permissão customizada para verificar se o usuário é administrador.
     """
     def has_permission(self, request, view):
-        return request.user and request.user.is_authenticated and request.user.tipousuario == 'administrador'
+        # O campo `tipousuario` usa choices definidos em usuarios.models.TipoUsuario
+        # com valores: 'admin' e 'comum'.
+        return request.user and request.user.is_authenticated and request.user.tipousuario == 'admin'
 
 class ConquistaListView(generics.ListAPIView):
     """

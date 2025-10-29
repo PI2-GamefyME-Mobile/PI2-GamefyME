@@ -304,8 +304,8 @@ class EstatisticasUsuarioView(APIView):
         from atividades.models import Atividade, AtividadeConcluidas
         from conquistas.models import UsuarioConquista
         from desafios.models import UsuarioDesafio
-        from django.db.models import Count, Q
-        from datetime import datetime, timedelta
+        from django.db.models import Count
+        from datetime import timedelta
         from django.utils import timezone
 
         usuario = request.user
