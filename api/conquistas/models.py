@@ -1,6 +1,7 @@
 from django.db import models
 from usuarios.models import Usuario
 from django.conf import settings
+import os
 
 
 class TipoRegraConquista(models.TextChoices):
@@ -44,14 +45,18 @@ class Conquista(models.Model):
         if self.nmimagem.startswith('http'):
             return self.nmimagem
         
+        # Normalizar caminho local (tratar registros antigos sem prefixo 'conquistas/')
+        local_path = self.nmimagem.lstrip('/')
+        if not local_path.startswith('conquistas/'):
+            # Garantir apenas o nome do arquivo ao prefixar
+            local_path = f"conquistas/{os.path.basename(local_path)}"
+
         # Construir URL baseada no MEDIA_URL
-        imagem_path = self.nmimagem
-        if not imagem_path.startswith('/'):
-            imagem_path = f'{settings.MEDIA_URL}{imagem_path}'
-        
+        imagem_path = f"{settings.MEDIA_URL}{local_path}"
+
         if request:
             return request.build_absolute_uri(imagem_path)
-        
+
         return imagem_path
 
 class UsuarioConquista(models.Model):
