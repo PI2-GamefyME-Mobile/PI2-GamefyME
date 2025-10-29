@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:gamefymobile/settings_screen.dart';
 import 'package:provider/provider.dart';
-import 'dart:math';
 
 import '../config/app_colors.dart';
 import '../config/theme_provider.dart';
@@ -306,13 +305,17 @@ class _CustomAppBarState extends State<CustomAppBar> {
   }
 
   Widget _buildChallengesAchievementsButton(BuildContext context) {
+    bool _isDiario(String tipo) {
+      final t = tipo.trim().toLowerCase();
+      return t == 'diário' || t == 'diario';
+    }
+
     final diarios = widget.desafios
-        .where((d) => d.tipo.trim().toLowerCase() == 'diário')
+        .where((d) => _isDiario(d.tipo))
         .toList()
       ..sort((a, b) => a.id.compareTo(b.id));
 
-    // A lista de conquistas contém apenas as desbloqueadas pelo usuário
-    final conquistasDesbloqueadas = widget.conquistas
+    final conquistasDesbloqueadas = [...widget.conquistas]
       ..sort((a, b) => a.nome.compareTo(b.nome));
 
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -329,7 +332,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // --- SEÇÃO DE DESAFIOS (Inalterada) ---
                             Text("Desafios diários",
                                 style: TextStyle(
                                     color: themeProvider.textoTexto,
@@ -341,9 +343,13 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                   style: TextStyle(
                                       color: themeProvider.textoCinza))
                             else
-                              Column(
-                                  children: diarios.map((d) {
-                                double progresso = d.progresso / max(1, d.meta);
+                Column(
+                  children: diarios.map((d) {
+                double progresso = 0.0;
+                if (d.meta > 0) {
+                  progresso = d.progresso / d.meta;
+                }
+                progresso = progresso.clamp(0.0, 1.0);
                                 return Container(
                                     margin: const EdgeInsets.only(bottom: 8),
                                     padding: const EdgeInsets.all(8),
@@ -407,7 +413,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
                             const Divider(color: AppColors.roxoProfundo),
                             const SizedBox(height: 8),
 
-                            // --- NOVA SEÇÃO DE CONQUISTAS ---
                             Text("Conquistas Desbloqueadas",
                                 style: TextStyle(
                                     color: themeProvider.textoTexto,
@@ -419,7 +424,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
                                   style: TextStyle(
                                       color: themeProvider.textoCinza))
                             else
-                              // Exibição em formato de lista
                               Column(
                                 children: conquistasDesbloqueadas.map((c) {
                                   return Padding(
@@ -493,8 +497,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
 
   PopupMenuItem<String> _buildPopupMenuItem(
       {required String text, required String value}) {
-    // Importante: usar listen: false aqui porque este método pode ser chamado fora do ciclo de build
-    // (por exemplo, quando o PopupMenu é aberto via gesto), o que quebra o assert do provider.
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     return PopupMenuItem<String>(
         value: value,
@@ -511,7 +513,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
   }
 
   void _showAllNotificationsModal(BuildContext context) {
-    // Importante: usar listen: false fora do ciclo de build para evitar o assert do provider
     final theme = Provider.of<ThemeProvider>(context, listen: false);
     showModalBottomSheet(
       context: context,

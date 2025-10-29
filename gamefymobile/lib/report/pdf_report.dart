@@ -236,6 +236,7 @@ Future<Uint8List> buildActivitiesPdf({
   required DateTimeRange periodo,
   required Color primaryColor,
   required Color onPrimaryColor,
+  PdfPageFormat? pageFormat,
   String fontRegularAsset = 'assets/fonts/Jersey10-Regular.ttf',
 }) async {
   final doc = pw.Document();
@@ -269,6 +270,7 @@ Future<Uint8List> buildActivitiesPdf({
   doc.addPage(
     pw.MultiPage(
       pageTheme: pw.PageTheme(
+        pageFormat: pageFormat ?? PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(24),
         theme: pw.ThemeData.withFont(base: ttfRegular, bold: ttfBold),
       ),
@@ -473,14 +475,55 @@ Future<void> shareActivitiesPdf({
   required DateTimeRange periodo,
   required Color primaryColor,
   required Color onPrimaryColor,
+  PdfPageFormat? pageFormat,
 }) async {
   final bytes = await buildActivitiesPdf(
     atividades: atividades,
     periodo: periodo,
     primaryColor: primaryColor,
     onPrimaryColor: onPrimaryColor,
+    pageFormat: pageFormat,
   );
   final filename =
       'relatorio-atividades_${DateFormat('yyyyMMdd').format(periodo.start)}-${DateFormat('yyyyMMdd').format(periodo.end)}.pdf';
   await Printing.sharePdf(bytes: bytes, filename: filename);
+}
+
+Future<void> openActivitiesPdfPreview({
+  required BuildContext context,
+  required List<AtividadeResumo> atividades,
+  required DateTimeRange periodo,
+  required Color primaryColor,
+  required Color onPrimaryColor,
+}) async {
+  final screenWidth = MediaQuery.of(context).size.width;
+  final selectedFormat = screenWidth < 380 ? PdfPageFormat.a5 : PdfPageFormat.a4;
+
+  final filename =
+      'relatorio-atividades_${DateFormat('yyyyMMdd').format(periodo.start)}-${DateFormat('yyyyMMdd').format(periodo.end)}.pdf';
+
+  await Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => Scaffold(
+        appBar: AppBar(
+          title: const Text('Visualizar PDF'),
+        ),
+        body: PdfPreview(
+          allowSharing: true,
+          allowPrinting: false,
+          canChangePageFormat: false,
+          canChangeOrientation: false,
+          canDebug: false,
+          pdfFileName: filename,
+          build: (format) => buildActivitiesPdf(
+            atividades: atividades,
+            periodo: periodo,
+            primaryColor: primaryColor,
+            onPrimaryColor: onPrimaryColor,
+            pageFormat: selectedFormat,
+          ),
+        ),
+      ),
+    ),
+  );
 }

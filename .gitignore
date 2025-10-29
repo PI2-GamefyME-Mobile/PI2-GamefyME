@@ -1,0 +1,8 @@
+# Relatórios de jscpd (não versionar)
+report/
+report-clean/
+report-temp/
+
+# Documentação gerada do app mobile (opcional manter fora do repo raiz)
+# Se preferir versionar a doc no subprojeto, remova esta linha
+gamefymobile/doc/

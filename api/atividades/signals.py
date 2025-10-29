@@ -34,7 +34,7 @@ def adicionar_xp(usuario, xp):
     nivel_atual = usuario.nivelusuario
 
     if nivel_atual > nivel_anterior:
-        criar_notificacao(usuario, f'🎉 Incrível! Você alcançou o nível {nivel_atual}!', 'sucesso')
+        criar_notificacao(usuario, f'Incrível! Você alcançou o nível {nivel_atual}!', 'sucesso')
 
     return nivel_anterior, nivel_atual
 

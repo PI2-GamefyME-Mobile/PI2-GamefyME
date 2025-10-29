@@ -106,20 +106,25 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '📊 Resumo Geral',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: themeProvider.textoTexto,
-          ),
+        Row(
+          children: [
+            const SizedBox(width: 8),
+            Text(
+              'Resumo Geral',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: themeProvider.textoTexto,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 12),
         Row(
           children: [
             Expanded(
               child: _buildStatCard(
-                '🎯',
+                Icons.check_circle,
                 resumo.totalAtividades.toString(),
                 'Atividades',
                 AppColors.roxoHeader,
@@ -129,7 +134,7 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildStatCard(
-                '🏆',
+                Icons.emoji_events,
                 resumo.totalConquistas.toString(),
                 'Conquistas',
                 AppColors.amareloOuro,
@@ -143,7 +148,7 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
           children: [
             Expanded(
               child: _buildStatCard(
-                '⚔️',
+                Icons.flag,
                 resumo.totalDesafios.toString(),
                 'Desafios',
                 AppColors.verdeSuccess,
@@ -153,7 +158,7 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildStatCard(
-                '🔥',
+                Icons.local_fire_department,
                 resumo.diasStreak.toString(),
                 'Dias Streak',
                 Colors.orange,
@@ -167,7 +172,7 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
           children: [
             Expanded(
               child: _buildStatCard(
-                '📈',
+                Icons.show_chart,
                 resumo.mediaPorDia.toStringAsFixed(1),
                 'Média/Dia',
                 Colors.blue,
@@ -177,7 +182,7 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildStatCard(
-                '📅',
+                Icons.calendar_today,
                 resumo.melhorDiaSemana ?? 'N/A',
                 'Melhor Dia',
                 Colors.purple,
@@ -190,18 +195,18 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
     );
   }
 
-  Widget _buildStatCard(String emoji, String valor, String label, Color cor,
+  Widget _buildStatCard(IconData icon, String valor, String label, Color cor,
       ThemeProvider themeProvider) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: themeProvider.fundoCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: cor.withOpacity(0.3), width: 2),
+        border: Border.all(color: cor.withValues(alpha: 0.3), width: 2),
       ),
       child: Column(
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 32)),
+          Icon(icon, size: 32, color: cor),
           const SizedBox(height: 8),
           Text(
             valor,
@@ -216,7 +221,7 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: themeProvider.textoTexto.withOpacity(0.7),
+              color: themeProvider.textoTexto.withValues(alpha: 0.7),
             ),
             textAlign: TextAlign.center,
           ),
@@ -235,7 +240,7 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.roxoHeader.withOpacity(0.2),
+            color: AppColors.roxoHeader.withValues(alpha: 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -248,7 +253,7 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '⚡ Progresso de Nível',
+                'Progresso de Nível',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -280,14 +285,14 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
                 '${progresso.xpAtual} XP',
                 style: TextStyle(
                   fontSize: 14,
-                  color: themeProvider.textoTexto.withOpacity(0.7),
+                  color: themeProvider.textoTexto.withValues(alpha: 0.7),
                 ),
               ),
               Text(
                 '${progresso.xpNecessario} XP',
                 style: TextStyle(
                   fontSize: 14,
-                  color: themeProvider.textoTexto.withOpacity(0.7),
+                  color: themeProvider.textoTexto.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -331,13 +336,18 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '🔥 Heat Map - Últimos 90 dias',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: themeProvider.textoTexto,
-            ),
+          Row(
+            children: [
+              const SizedBox(width: 8),
+              Text(
+                'Heat Map - Últimos 90 dias',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: themeProvider.textoTexto,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           _buildHeatMapGrid(heatMapData, themeProvider),
@@ -407,7 +417,7 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
           'Menos',
           style: TextStyle(
             fontSize: 12,
-            color: themeProvider.textoTexto.withOpacity(0.6),
+            color: themeProvider.textoTexto.withValues(alpha: 0.6),
           ),
         ),
         const SizedBox(width: 8),
@@ -422,7 +432,7 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
                   : _getHeatMapColor(index, themeProvider),
               borderRadius: BorderRadius.circular(2),
               border: Border.all(
-                color: themeProvider.textoTexto.withOpacity(0.2),
+                color: themeProvider.textoTexto.withValues(alpha: 0.2),
               ),
             ),
           );
@@ -432,7 +442,7 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
           'Mais',
           style: TextStyle(
             fontSize: 12,
-            color: themeProvider.textoTexto.withOpacity(0.6),
+            color: themeProvider.textoTexto.withValues(alpha: 0.6),
           ),
         ),
       ],
@@ -454,13 +464,18 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '📊 Atividades - Últimos 30 dias',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: themeProvider.textoTexto,
-            ),
+          Row(
+            children: [
+              const SizedBox(width: 8),
+              Text(
+                'Atividades - Últimos 30 dias',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: themeProvider.textoTexto,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -482,7 +497,7 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
                           dia.count.toString(),
                           style: TextStyle(
                             fontSize: 10,
-                            color: themeProvider.textoTexto.withOpacity(0.6),
+                            color: themeProvider.textoTexto.withValues(alpha: 0.6),
                           ),
                         ),
                       const SizedBox(height: 4),
@@ -504,7 +519,7 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
                             dia.data,
                             style: TextStyle(
                               fontSize: 8,
-                              color: themeProvider.textoTexto.withOpacity(0.5),
+                              color: themeProvider.textoTexto.withValues(alpha: 0.5),
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -541,13 +556,18 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '🎯 Atividades por Dificuldade',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: themeProvider.textoTexto,
-            ),
+          Row(
+            children: [
+              const SizedBox(width: 8),
+              Text(
+                'Atividades por Dificuldade',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: themeProvider.textoTexto,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           ...dificuldades.entries.map((entry) {
@@ -612,13 +632,18 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '📅 Atividades por Semana (últimas 12)',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: themeProvider.textoTexto,
-            ),
+          Row(
+            children: [
+              const SizedBox(width: 8),
+              Text(
+                'Atividades por Semana (últimas 12)',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: themeProvider.textoTexto,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           ...dados.map((semana) {
@@ -632,7 +657,7 @@ class _EstatisticasScreenState extends State<EstatisticasScreen> {
                       semana.semana,
                       style: TextStyle(
                         fontSize: 12,
-                        color: themeProvider.textoTexto.withOpacity(0.7),
+                        color: themeProvider.textoTexto.withValues(alpha: 0.7),
                       ),
                     ),
                   ),

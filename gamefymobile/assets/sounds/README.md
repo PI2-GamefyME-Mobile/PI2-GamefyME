@@ -44,5 +44,5 @@ Após adicionar o arquivo, teste:
 1. Inicie uma atividade
 2. Inicie o timer (use tempo curto para teste)
 3. Aguarde o timer terminar
-4. ✅ Deve tocar o som de conclusão
+4. Deve tocar o som de conclusão
 

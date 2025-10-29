@@ -75,6 +75,9 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
 
     _carregarDados();
     _setupTimerListeners();
+    // Garante que o TimerService retome ticks se houver um timer em andamento
+    // e que os listeners desta tela recebam atualizações imediatamente.
+    _timerService.resumeTimerIfNeeded();
   }
 
   @override
@@ -271,14 +274,14 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
         _maxDuration = Duration(minutes: _atividade!.tpEstimado);
         _totalOriginal = _maxDuration;
         _totalRemaining = _maxDuration;
-        // Exibe sempre o tempo total da atividade; Pomodoro desativado por padrão
         _isPomodoro = false;
         _inFocusPhase = true;
         _duration = _maxDuration;
         _screenState = ScreenState.loaded;
       });
 
-      // Após carregar e renderizar, perguntar ao usuário sobre Pomodoro se > 60 min
+      await _enforceTimerOwnership();
+
       if (mounted) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _maybeAskPomodoro();
@@ -288,6 +291,39 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
       debugPrint('Erro ao carregar dados da atividade: $e');
       if (!mounted) return;
       setState(() => _screenState = ScreenState.error);
+    }
+  }
+
+  Future<void> _enforceTimerOwnership() async {
+    final data = await _timerService.getTimerData();
+    if (!mounted) return;
+    if (data == null) {
+      setState(() {
+        _timerRunning = false;
+        _isFinished = false;
+      });
+      return;
+    }
+
+    final runningId = data['activityId'] as int?;
+    if (runningId == null) return;
+
+    if (runningId != widget.atividadeId) {
+      await _timerService.resetTimer();
+      await _notificationService.cancelTimerNotification();
+      if (!mounted) return;
+      setState(() {
+        _timerRunning = false;
+        _isFinished = false;
+      });
+    } else {
+      final remaining = data['remaining'] as Duration?;
+      if (!mounted) return;
+      setState(() {
+        _duration = remaining ?? _duration;
+        _timerRunning = (remaining?.inSeconds ?? 0) > 0;
+        _isFinished = (remaining?.inSeconds ?? 0) <= 0;
+      });
     }
   }
 
@@ -363,7 +399,6 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
         _duration = _totalRemaining < focus ? _totalRemaining : focus;
       });
     } else {
-      // Tempo completo (padrão)
       setState(() {
         _isPomodoro = false;
         _inFocusPhase = true;
@@ -375,7 +410,6 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
   void _startTimer() {
     if (_timerRunning || _isFinished) return;
 
-    // Registra a duração desta fase para cálculos do Pomodoro
     _currentPhaseDuration = _duration;
 
     _timerService.startTimer(
@@ -443,7 +477,7 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
-              '🎉 "${_atividade!.nome}" concluída! (+${_atividade!.xp} XP)',
+              '"${_atividade!.nome}" concluída! (+${_atividade!.xp} XP)',
               style: const TextStyle(fontFamily: 'Jersey 10', fontSize: 16)),
           backgroundColor: Colors.green,
           duration: const Duration(seconds: 2)));
@@ -502,6 +536,13 @@ class _RealizarAtividadeScreenState extends State<RealizarAtividadeScreen>
   }
 
   Future<void> _concluirAtividade() async {
+    // Se houver um timer rodando (Pomodoro ou completo), pare e limpe antes de concluir
+    if (_timerRunning) {
+      _stopTimer();
+      await _timerService.resetTimer();
+      await _notificationService.cancelTimerNotification();
+    }
+
     final success = await _apiService.realizarAtividade(_atividade!.id);
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

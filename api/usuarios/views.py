@@ -26,6 +26,31 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 
 logger = logging.getLogger(__name__)
 
+# --- Helpers internos para reduzir duplicações em endpoints administrativos ---
+def _ensure_admin(request):
+    """Retorna Response 403 se usuário não for admin; caso contrário, None."""
+    if request.user.tipousuario != TipoUsuario.ADMIN:
+        return Response(
+            {'erro': 'Apenas administradores podem executar esta ação.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    return None
+
+
+def _get_usuario_or_404(user_id):
+    """Obtém Usuario por idusuario ou retorna None se não encontrado."""
+    try:
+        return Usuario.objects.get(idusuario=user_id)
+    except Usuario.DoesNotExist:
+        return None
+
+
+def _prevent_self_action(request, usuario, message):
+    """Bloqueia ação administrativa sobre si mesmo com mensagem específica."""
+    if usuario.idusuario == request.user.idusuario:
+        return Response({'erro': message}, status=status.HTTP_400_BAD_REQUEST)
+    return None
+
 # URL da API - /api/usuarios/cadastro/
 class CadastroAPIView(APIView):
     permission_classes = [AllowAny]
@@ -101,6 +126,19 @@ class LoginAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Pré-checagem: se a conta correspondente ao e-mail estiver inativa, retornar 403 imediatamente
+        # Isso evita que o authenticate() retorne None por causa de is_active=False (Django) e perca o motivo real.
+        try:
+            usuario_email = Usuario.objects.get(emailusuario=email)
+            if (not getattr(usuario_email, 'flsituacao', True)) or (not getattr(usuario_email, 'is_active', True)):
+                return Response(
+                    {"erro": "Sua conta está inativa. Para reativá-la, solicite uma nova senha na tela 'Esqueceu a senha?'."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        except Usuario.DoesNotExist:
+            # Prossegue para autenticação para manter mesma resposta em caso de usuário inexistente
+            pass
+
         usuario = authenticate(request, emailusuario=email, password=password)
 
         if usuario is None:
@@ -109,9 +147,8 @@ class LoginAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Bloqueia login caso conta esteja inativa (exclusão lógica)
-        if not getattr(usuario, 'flsituacao', True):
-            # Mantemos a resposta simples, mas com mensagem clara para o app orientar o usuário
+        # Segurança adicional: caso algum backend retorne usuário inativo, ainda bloqueia
+        if (not getattr(usuario, 'flsituacao', True)) or (not getattr(usuario, 'is_active', True)):
             return Response(
                 {"erro": "Sua conta está inativa. Para reativá-la, solicite uma nova senha na tela 'Esqueceu a senha?'."},
                 status=status.HTTP_403_FORBIDDEN
@@ -554,7 +591,7 @@ def google_login(request):
             )
         
         # Bloqueia login caso conta esteja inativa
-        if not getattr(user, 'flsituacao', True):
+        if (not getattr(user, 'flsituacao', True)) or (not getattr(user, 'is_active', True)):
             return Response(
                 {"erro": "Sua conta está inativa. Para reativá-la, solicite uma nova senha na tela 'Esqueceu a senha?'."},
                 status=status.HTTP_403_FORBIDDEN
@@ -729,36 +766,33 @@ class PromoverUsuarioAdminView(APIView):
     
     def post(self, request, user_id):
         # Verifica se o solicitante é admin
-        if request.user.tipousuario != TipoUsuario.ADMIN:
-            return Response(
-                {'erro': 'Apenas administradores podem promover usuários.'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
+        err = _ensure_admin(request)
+        if err:
+            # Mensagem específica para esta rota
+            err.data = {'erro': 'Apenas administradores podem promover usuários.'}
+            return err
+
         try:
-            usuario = Usuario.objects.get(idusuario=user_id)
-            
+            usuario = _get_usuario_or_404(user_id)
+            if not usuario:
+                return Response({'erro': 'Usuário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
             # Não permite que um admin promova a si mesmo (redundante mas explícito)
-            if usuario.idusuario == request.user.idusuario:
-                return Response(
-                    {'erro': 'Você já é administrador.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
+            err = _prevent_self_action(request, usuario, 'Você já é administrador.')
+            if err:
+                return err
+
             # Verifica se já é admin
             if usuario.tipousuario == TipoUsuario.ADMIN:
-                return Response(
-                    {'message': f'{usuario.nmusuario} já é administrador.'},
-                    status=status.HTTP_200_OK
-                )
-            
+                return Response({'message': f'{usuario.nmusuario} já é administrador.'}, status=status.HTTP_200_OK)
+
             # Promove o usuário
             usuario.tipousuario = TipoUsuario.ADMIN
             usuario.is_staff = True
             usuario.save()
-            
+
             logger.info(f"Usuário {usuario.emailusuario} promovido a admin por {request.user.emailusuario}")
-            
+
             return Response({
                 'message': f'{usuario.nmusuario} foi promovido a administrador com sucesso!',
                 'usuario': {
@@ -768,18 +802,10 @@ class PromoverUsuarioAdminView(APIView):
                     'tipousuario': usuario.tipousuario
                 }
             }, status=status.HTTP_200_OK)
-            
-        except Usuario.DoesNotExist:
-            return Response(
-                {'erro': 'Usuário não encontrado.'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+
         except Exception as e:
             logger.error(f"Erro ao promover usuário: {str(e)}")
-            return Response(
-                {'erro': f'Erro ao promover usuário: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({'erro': f'Erro ao promover usuário: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class RebaixarUsuarioAdminView(APIView):
@@ -790,36 +816,32 @@ class RebaixarUsuarioAdminView(APIView):
     permission_classes = [IsAdmin]
     
     def post(self, request, user_id):
-        if request.user.tipousuario != TipoUsuario.ADMIN:
-            return Response(
-                {'erro': 'Apenas administradores podem rebaixar usuários.'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
+        err = _ensure_admin(request)
+        if err:
+            err.data = {'erro': 'Apenas administradores podem rebaixar usuários.'}
+            return err
+
         try:
-            usuario = Usuario.objects.get(idusuario=user_id)
-            
+            usuario = _get_usuario_or_404(user_id)
+            if not usuario:
+                return Response({'erro': 'Usuário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
             # RN 09: Não permite que um admin rebaixe a si mesmo
-            if usuario.idusuario == request.user.idusuario:
-                return Response(
-                    {'erro': 'Você não pode remover seus próprios privilégios de administrador.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
+            err = _prevent_self_action(request, usuario, 'Você não pode remover seus próprios privilégios de administrador.')
+            if err:
+                return err
+
             # Verifica se é admin
             if usuario.tipousuario != TipoUsuario.ADMIN:
-                return Response(
-                    {'message': f'{usuario.nmusuario} já é usuário comum.'},
-                    status=status.HTTP_200_OK
-                )
-            
+                return Response({'message': f'{usuario.nmusuario} já é usuário comum.'}, status=status.HTTP_200_OK)
+
             # Rebaixa o usuário
             usuario.tipousuario = TipoUsuario.COMUM
             usuario.is_staff = False
             usuario.save()
-            
+
             logger.info(f"Privilégios de admin removidos de {usuario.emailusuario} por {request.user.emailusuario}")
-            
+
             return Response({
                 'message': f'{usuario.nmusuario} foi rebaixado a usuário comum.',
                 'usuario': {
@@ -829,18 +851,10 @@ class RebaixarUsuarioAdminView(APIView):
                     'tipousuario': usuario.tipousuario
                 }
             }, status=status.HTTP_200_OK)
-            
-        except Usuario.DoesNotExist:
-            return Response(
-                {'erro': 'Usuário não encontrado.'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+
         except Exception as e:
             logger.error(f"Erro ao rebaixar usuário: {str(e)}")
-            return Response(
-                {'erro': f'Erro ao rebaixar usuário: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({'erro': f'Erro ao rebaixar usuário: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class DesativarUsuarioAdminView(APIView):
@@ -851,29 +865,32 @@ class DesativarUsuarioAdminView(APIView):
     permission_classes = [IsAdmin]
     
     def post(self, request, user_id):
-        if request.user.tipousuario != TipoUsuario.ADMIN:
-            return Response(
-                {'erro': 'Apenas administradores podem desativar usuários.'},
-                status=status.HTTP_403_FORBIDDEN
-            )
-        
+        err = _ensure_admin(request)
+        if err:
+            err.data = {'erro': 'Apenas administradores podem desativar usuários.'}
+            return err
+
         try:
-            usuario = Usuario.objects.get(idusuario=user_id)
-            
+            usuario = _get_usuario_or_404(user_id)
+            if not usuario:
+                return Response({'erro': 'Usuário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
             # RN 09: Não permite que um admin desative a si mesmo
-            if usuario.idusuario == request.user.idusuario:
-                return Response(
-                    {'erro': 'Você não pode desativar sua própria conta. Use a opção de inativação na sua conta.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
+            err = _prevent_self_action(
+                request,
+                usuario,
+                'Você não pode desativar sua própria conta. Use a opção de inativação na sua conta.'
+            )
+            if err:
+                return err
+
             # Desativa o usuário
             usuario.flsituacao = False
             usuario.is_active = False
             usuario.save()
-            
+
             logger.info(f"Usuário {usuario.emailusuario} desativado por admin {request.user.emailusuario}")
-            
+
             return Response({
                 'message': f'Conta de {usuario.nmusuario} foi desativada com sucesso.',
                 'usuario': {
@@ -883,15 +900,7 @@ class DesativarUsuarioAdminView(APIView):
                     'flsituacao': usuario.flsituacao
                 }
             }, status=status.HTTP_200_OK)
-            
-        except Usuario.DoesNotExist:
-            return Response(
-                {'erro': 'Usuário não encontrado.'},
-                status=status.HTTP_404_NOT_FOUND
-            )
+
         except Exception as e:
             logger.error(f"Erro ao desativar usuário: {str(e)}")
-            return Response(
-                {'erro': f'Erro ao desativar usuário: {str(e)}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            return Response({'erro': f'Erro ao desativar usuário: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

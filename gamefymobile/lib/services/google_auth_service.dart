@@ -16,16 +16,19 @@ class GoogleAuthService {
   Future<void> _ensureInitialized() async {
     if (_initialized) return;
 
-    await _googleSignIn.initialize(
-      clientId: Platform.isAndroid
-          ? '848375608749-qnlq0liglen8dausgo29o6obl0m2v8qd.apps.googleusercontent.com'
-          : null,
-    );
+    // Chave do Lucas para logar no Android
     // await _googleSignIn.initialize(
-    //   clientId: kIsWeb
-    //       ? '848375608749-rcc8rfvbfhqg8i21b6ouiisf20t9a2hq.apps.googleusercontent.com'
+    //   clientId: Platform.isAndroid
+    //       ? '848375608749-qnlq0liglen8dausgo29o6obl0m2v8qd.apps.googleusercontent.com'
     //       : null,
     // );
+
+    // Chave do Felipe para logar no Web
+    await _googleSignIn.initialize(
+      clientId: kIsWeb
+          ? '848375608749-rcc8rfvbfhqg8i21b6ouiisf20t9a2hq.apps.googleusercontent.com'
+          : null,
+    );
 
     _initialized = true;
   }

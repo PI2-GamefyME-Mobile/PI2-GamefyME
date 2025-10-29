@@ -882,7 +882,8 @@ class _HistoricoScreenState extends State<HistoricoScreen> {
                           );
                         }).toList();
 
-                        await shareActivitiesPdf(
+                        await openActivitiesPdfPreview(
+                          context: context,
                           atividades: atividadesResumo,
                           periodo: periodo,
                           primaryColor: AppColors.verdeLima,

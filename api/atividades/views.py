@@ -13,11 +13,13 @@ class AtividadeViewSet(viewsets.ModelViewSet):
     serializer_class = AtividadeSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        user = self.request.user
-        qs = Atividade.objects.filter(idusuario=user).exclude(situacao='cancelada')
-
-        # Filtros por data (yyyy-mm-dd) opcionais
+    def _filter_by_dates(self, qs):
+        """
+        Aplica filtros opcionais de data com base nos query params:
+        - start_date, end_date (yyyy-mm-dd)
+        - by: 'criacao' (default) ou 'conclusao'
+        Ignora silenciosamente datas inválidas.
+        """
         start_date = self.request.query_params.get('start_date')
         end_date = self.request.query_params.get('end_date')
         by = self.request.query_params.get('by', 'criacao')  # 'criacao' ou 'conclusao'
@@ -38,6 +40,11 @@ class AtividadeViewSet(viewsets.ModelViewSet):
             pass
 
         return qs
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = Atividade.objects.filter(idusuario=user).exclude(situacao='cancelada')
+        return self._filter_by_dates(qs)
 
     def perform_create(self, serializer):
         validated_data = serializer.validated_data
@@ -99,25 +106,7 @@ class AtividadeViewSet(viewsets.ModelViewSet):
         """
         user = request.user
         qs = Atividade.objects.filter(idusuario=user)
-
-        # Filtros por data (yyyy-mm-dd) opcionais
-        start_date = self.request.query_params.get('start_date')
-        end_date = self.request.query_params.get('end_date')
-        by = self.request.query_params.get('by', 'criacao')  # 'criacao' ou 'conclusao'
-
-        try:
-            if start_date:
-                if by == 'conclusao':
-                    qs = qs.filter(dtatividaderealizada__date__gte=start_date)
-                else:
-                    qs = qs.filter(dtatividade__date__gte=start_date)
-            if end_date:
-                if by == 'conclusao':
-                    qs = qs.filter(dtatividaderealizada__date__lte=end_date)
-                else:
-                    qs = qs.filter(dtatividade__date__lte=end_date)
-        except Exception:
-            pass
+        qs = self._filter_by_dates(qs)
 
         # Ordena por data de realização (se existir) ou por data da atividade
         qs = qs.order_by('-dtatividaderealizada', '-dtatividade')

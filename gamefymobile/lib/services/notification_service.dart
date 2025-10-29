@@ -109,7 +109,7 @@ class NotificationService {
     try {
       await _notifications.show(
         0,
-        '🎉 Atividade Concluída!',
+  'Atividade concluída!',
         '$activityName finalizada! Você ganhou $xpGained XP',
         notificationDetails,
         payload: 'activity_completed',

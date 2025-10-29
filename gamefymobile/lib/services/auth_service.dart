@@ -13,6 +13,12 @@ class AuthService {
     await _storage.write(key: 'refresh_token', value: refreshToken);
   }
 
+  Future<void> _storeTokensFromBody(Map<String, dynamic> body) async {
+    final String accessToken = body['tokens']['access'];
+    final String refreshToken = body['tokens']['refresh'];
+    await _saveTokens(accessToken, refreshToken);
+  }
+
   Future<String?> getToken() async {
     return await _storage.read(key: 'access_token');
   }
@@ -59,9 +65,7 @@ class AuthService {
       );
       final responseBody = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        final String accessToken = responseBody['tokens']['access'];
-        final String refreshToken = responseBody['tokens']['refresh'];
-        await _saveTokens(accessToken, refreshToken);
+        await _storeTokensFromBody(responseBody);
         return {'success': true, 'message': 'Login bem-sucedido!', 'status': response.statusCode};
       } else {
         final String message = responseBody['detail'] ?? responseBody['erro'] ?? 'Credenciais inválidas.';
@@ -103,9 +107,7 @@ class AuthService {
       );
       final responseBody = jsonDecode(response.body);
       if (response.statusCode == 201) {
-        final String accessToken = responseBody['tokens']['access'];
-        final String refreshToken = responseBody['tokens']['refresh'];
-        await _saveTokens(accessToken, refreshToken);
+        await _storeTokensFromBody(responseBody);
         return {'success': true, 'message': responseBody['message']};
       } else {
         return {
@@ -138,31 +140,16 @@ class AuthService {
 
     try {
       debugPrint('🌐 [AUTH] Enviando para: $url');
-      debugPrint('📦 [AUTH] Body: $body');
+  debugPrint('[AUTH] Body: $body');
 
-      final response = await http
-          .post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: body,
-      )
-          .timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          debugPrint(
-              '⏱️ [AUTH] TIMEOUT: Servidor não respondeu em 10 segundos');
-          throw Exception('Timeout ao conectar ao servidor');
-        },
-      );
+      final response = await _postJsonWithTimeout(url, body, context: 'login');
 
       debugPrint('📡 [AUTH] Status: ${response.statusCode}');
       debugPrint('📨 [AUTH] Response: ${response.body}');
 
       final responseBody = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        final String accessToken = responseBody['tokens']['access'];
-        final String refreshToken = responseBody['tokens']['refresh'];
-        await _saveTokens(accessToken, refreshToken);
+        await _storeTokensFromBody(responseBody);
         debugPrint('[AUTH] Login com Google realizado!');
         return {'success': true, 'message': 'Login com Google realizado!'};
       } else {
@@ -202,30 +189,16 @@ class AuthService {
 
     try {
       debugPrint('🌐 [AUTH] Tentando cadastro. Enviando para: $url');
-      debugPrint('📦 [AUTH] Body: $body');
+  debugPrint('[AUTH] Body: $body');
 
-      final response = await http
-          .post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: body,
-      )
-          .timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          debugPrint('[AUTH] TIMEOUT: Servidor não respondeu em 10 segundos');
-          throw Exception('Timeout ao conectar ao servidor');
-        },
-      );
+      final response = await _postJsonWithTimeout(url, body, context: 'register');
 
       debugPrint('[AUTH] Status: ${response.statusCode}');
       debugPrint('[AUTH] Response: ${response.body}');
 
       final responseBody = jsonDecode(response.body);
       if (response.statusCode == 201) {
-        final String accessToken = responseBody['tokens']['access'];
-        final String refreshToken = responseBody['tokens']['refresh'];
-        await _saveTokens(accessToken, refreshToken);
+        await _storeTokensFromBody(responseBody);
         debugPrint('[AUTH] Cadastro com Google realizado!');
         return {
           'success': true,
@@ -247,6 +220,29 @@ class AuthService {
         'message': 'Erro de conexão. Verifique se a API está rodando.'
       };
     }
+  }
+
+  Future<http.Response> _postJsonWithTimeout(Uri url, String body, {String context = 'AUTH'}) async {
+    debugPrint('🌐 [$context] Enviando para: $url');
+    debugPrint('[$context] Body: $body');
+
+    final response = await http
+        .post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: body,
+        )
+        .timeout(
+          const Duration(seconds: 10),
+          onTimeout: () {
+            debugPrint('⏱️ [$context] TIMEOUT: Servidor não respondeu em 10 segundos');
+            throw Exception('Timeout ao conectar ao servidor');
+          },
+        );
+
+    debugPrint('📡 [$context] Status: ${response.statusCode}');
+    debugPrint('📨 [$context] Response: ${response.body}');
+    return response;
   }
 
   Future<Map<String, dynamic>> requestPasswordReset(String email) async {

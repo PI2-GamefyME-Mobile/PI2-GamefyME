@@ -12,7 +12,11 @@
     "**/.git/**",
     "**/.idea/**",
     "**/.vscode/**",
-    "**/node_modules/**"
+    "**/node_modules/**",
+    "gamefymobile/doc/**",
+    "**/report/**",
+    "**/report-clean/**",
+    "**/report-temp/**"
   ],
   "reporters": [
     "console",

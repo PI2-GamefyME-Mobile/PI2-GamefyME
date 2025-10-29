@@ -8,6 +8,7 @@ import 'package:gamefymobile/widgets/user_level_avatar.dart';
 import 'package:gamefymobile/estatisticas_screen.dart';
 import 'package:gamefymobile/services/auth_service.dart';
 import 'package:provider/provider.dart';
+import 'package:gamefymobile/main.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -165,25 +166,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _confirmarInativacao() async {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final confirmar = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Inativar Conta'),
-        content: const Text(
+        backgroundColor: themeProvider.fundoCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text(
+          'Inativar Conta',
+          style: TextStyle(color: themeProvider.textoTexto, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
           'Tem certeza que deseja inativar sua conta?\n\n'
           'Sua conta será desativada e você não poderá fazer login até reativá-la. '
           'Você poderá reativar sua conta a qualquer momento através do seu e-mail cadastrado.',
+          style: TextStyle(color: themeProvider.textoCinza),
         ),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
+            style: TextButton.styleFrom(
+              foregroundColor: themeProvider.textoTexto,
+            ),
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child:
-                const Text('Inativar', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Inativar'),
           ),
         ],
       ),
@@ -204,14 +218,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             backgroundColor: Colors.orange,
           ),
         );
-        // Aguarda um momento para exibir a mensagem, depois faz logout
-        await Future.delayed(const Duration(seconds: 2));
-        if (!mounted) return;
-        // Limpa os tokens locais antes de redirecionar
+        // Realiza logout e redireciona imediatamente para a tela inicial (WelcomePage)
         await AuthService().logout();
-        // Navega para a tela de login
-        Navigator.of(context)
-            .pushNamedAndRemoveUntil('/login', (route) => false);
+        if (!mounted) return;
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const WelcomePage()),
+          (Route<dynamic> route) => false,
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -227,8 +240,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
-        border: Border.all(color: Colors.red.withOpacity(0.3)),
+        color: Colors.red.withValues(alpha: 0.1),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -788,7 +801,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "📊 Progressão Visual",
+                "Progressão Visual",
                 style: TextStyle(
                   color: themeProvider.textoTexto,
                   fontSize: 18,

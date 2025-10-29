@@ -1,5 +1,3 @@
-// lib/desafios_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:gamefymobile/models/models.dart';
 import 'package:gamefymobile/services/api_service.dart';
@@ -192,10 +190,31 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
     );
   }
 
+  String _normalizeTipo(String tipo) {
+    var t = tipo.toLowerCase().trim();
+    t = t.replaceAll(RegExp(r'[áàâã]'), 'a');
+    t = t.replaceAll(RegExp(r'[éê]'), 'e');
+    t = t.replaceAll(RegExp(r'[í]'), 'i');
+    t = t.replaceAll(RegExp(r'[óôõ]'), 'o');
+    t = t.replaceAll(RegExp(r'[ú]'), 'u');
+    return t;
+  }
+
+  int _tipoPriority(String tipo) {
+    final t = _normalizeTipo(tipo);
+    if (t == 'diario' || t.startsWith('diar')) return 0;
+    if (t == 'semanal' || t.startsWith('seman')) return 1;
+    if (t == 'mensal' || t.startsWith('mens')) return 2;
+    return 99;
+  }
+
   Widget _buildListaDesafios() {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final orderedKeys = _desafiosAgrupados.keys.toList()
+      ..sort((a, b) => _tipoPriority(a).compareTo(_tipoPriority(b)));
     return ListView(
-      children: _desafiosAgrupados.entries.map((entry) {
+      children: orderedKeys.map((key) {
+        final desafiosDoGrupo = _desafiosAgrupados[key] ?? [];
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -203,14 +222,17 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
               padding:
                   const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
               child: Text(
-                entry.key.toUpperCase(),
+                FilterHelpers.getTipoDesafioDisplayName(key).toUpperCase(),
                 style: const TextStyle(
                     color: AppColors.roxoClaro,
                     fontSize: 18,
                     fontWeight: FontWeight.bold),
               ),
             ),
-            ...entry.value.map((desafio) {
+            ...desafiosDoGrupo.map((desafio) {
+              final double progresso = desafio.meta > 0
+                  ? (desafio.progresso / desafio.meta).clamp(0.0, 1.0)
+                  : 0.0;
               return Container(
                 margin: const EdgeInsets.only(bottom: 8),
                 decoration: BoxDecoration(
@@ -277,7 +299,38 @@ class _DesafiosScreenState extends State<DesafiosScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      // Badge de tipo de desafio
+                      // Barra de progresso do desafio
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          LinearProgressIndicator(
+                            value: progresso,
+                            backgroundColor: AppColors.roxoProfundo,
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              AppColors.amareloClaro,
+                            ),
+                            minHeight: 6,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '${desafio.progresso}/${desafio.meta}',
+                                style: TextStyle(
+                                  color: desafio.completado
+                                      ? themeProvider.textoCinza
+                                      : themeProvider.textoTexto,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),

@@ -9,6 +9,22 @@ class ApiService {
   final AuthService _authService = AuthService();
   static String get _baseRoot => ApiConfig.apiBaseUrl;
 
+  Map<String, String> _buildDateQuery({
+    DateTime? startDate,
+    DateTime? endDate,
+    bool byConclusao = false,
+  }) {
+    final query = <String, String>{};
+    if (startDate != null) {
+      query['start_date'] = startDate.toIso8601String().substring(0, 10);
+    }
+    if (endDate != null) {
+      query['end_date'] = endDate.toIso8601String().substring(0, 10);
+    }
+    if (byConclusao) query['by'] = 'conclusao';
+    return query;
+  }
+
   Future<Map<String, String>> _getHeaders() async {
     final token = await _authService.getToken();
     final headers = {
@@ -34,12 +50,11 @@ class ApiService {
     DateTime? endDate,
     bool byConclusao = false,
   }) async {
-    final query = <String, String>{};
-    if (startDate != null)
-      query['start_date'] = startDate.toIso8601String().substring(0, 10);
-    if (endDate != null)
-      query['end_date'] = endDate.toIso8601String().substring(0, 10);
-    if (byConclusao) query['by'] = 'conclusao';
+    final query = _buildDateQuery(
+      startDate: startDate,
+      endDate: endDate,
+      byConclusao: byConclusao,
+    );
     final url = Uri.parse('$_baseRoot/atividades/')
         .replace(queryParameters: query.isEmpty ? null : query);
     final res =
@@ -57,12 +72,11 @@ class ApiService {
     DateTime? endDate,
     bool byConclusao = false,
   }) async {
-    final query = <String, String>{};
-    if (startDate != null)
-      query['start_date'] = startDate.toIso8601String().substring(0, 10);
-    if (endDate != null)
-      query['end_date'] = endDate.toIso8601String().substring(0, 10);
-    if (byConclusao) query['by'] = 'conclusao';
+    final query = _buildDateQuery(
+      startDate: startDate,
+      endDate: endDate,
+      byConclusao: byConclusao,
+    );
     final url = Uri.parse('$_baseRoot/atividades/historico/')
         .replace(queryParameters: query.isEmpty ? null : query);
     final res =

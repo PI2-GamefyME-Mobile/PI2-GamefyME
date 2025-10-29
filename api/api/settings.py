@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'usuarios',
-    'atividades.apps.AtividadesConfig',
+    # 'atividades.apps.AtividadesConfig',
     'atividades',
     'conquistas',
     'desafios',
@@ -105,6 +105,7 @@ WSGI_APPLICATION = 'api.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# Banco de dados do Felipe
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -116,6 +117,7 @@ DATABASES = {
     }
 }
 
+# Banco de dados do Lucas
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
