@@ -62,13 +62,14 @@ class AuthService {
         final String accessToken = responseBody['tokens']['access'];
         final String refreshToken = responseBody['tokens']['refresh'];
         await _saveTokens(accessToken, refreshToken);
-        return {'success': true, 'message': 'Login bem-sucedido!'};
+        return {'success': true, 'message': 'Login bem-sucedido!', 'status': response.statusCode};
       } else {
+        final String message = responseBody['detail'] ?? responseBody['erro'] ?? 'Credenciais inválidas.';
         return {
           'success': false,
-          'message': responseBody['detail'] ??
-              responseBody['erro'] ??
-              'Credenciais inválidas.'
+          'message': message,
+          'status': response.statusCode,
+          'inactive': response.statusCode == 403,
         };
       }
     } catch (e) {

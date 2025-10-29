@@ -111,8 +111,9 @@ class LoginAPIView(APIView):
 
         # Bloqueia login caso conta esteja inativa (exclusão lógica)
         if not getattr(usuario, 'flsituacao', True):
+            # Mantemos a resposta simples, mas com mensagem clara para o app orientar o usuário
             return Response(
-                {"erro": "Conta inativa. Solicite reativação pelo seu e-mail cadastrado."},
+                {"erro": "Sua conta está inativa. Para reativá-la, solicite uma nova senha na tela 'Esqueceu a senha?'."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -275,10 +276,15 @@ class PasswordResetConfirmView(APIView):
 
             try:
                 user = Usuario.objects.get(emailusuario=email)
+                # Redefine a senha
                 user.password = make_password(new_password)
-                user.save()
+                # Reativa a conta automaticamente, conforme a regra solicitada
+                if getattr(user, 'flsituacao', True) is False or getattr(user, 'is_active', True) is False:
+                    user.flsituacao = True
+                    user.is_active = True
+                user.save(update_fields=["password", "flsituacao", "is_active"])  # salva tudo de uma vez
                 cache.delete(f'reset_code_{email}')
-                return Response({"message": "Senha redefinida com sucesso."}, status=status.HTTP_200_OK)
+                return Response({"message": "Senha redefinida e conta reativada com sucesso."}, status=status.HTTP_200_OK)
             except Usuario.DoesNotExist:
                 return Response({"error": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -545,6 +551,13 @@ def google_login(request):
             return Response(
                 {'error': 'Usuário não encontrado. Por favor, registre-se primeiro.'},
                 status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Bloqueia login caso conta esteja inativa
+        if not getattr(user, 'flsituacao', True):
+            return Response(
+                {"erro": "Sua conta está inativa. Para reativá-la, solicite uma nova senha na tela 'Esqueceu a senha?'."},
+                status=status.HTTP_403_FORBIDDEN
             )
         
         # Gerar tokens JWT

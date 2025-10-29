@@ -6,6 +6,7 @@ import 'package:gamefymobile/config/app_colors.dart';
 import 'package:gamefymobile/config/theme_provider.dart';
 import 'package:gamefymobile/widgets/user_level_avatar.dart';
 import 'package:gamefymobile/estatisticas_screen.dart';
+import 'package:gamefymobile/services/auth_service.dart';
 import 'package:provider/provider.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -206,6 +207,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // Aguarda um momento para exibir a mensagem, depois faz logout
         await Future.delayed(const Duration(seconds: 2));
         if (!mounted) return;
+        // Limpa os tokens locais antes de redirecionar
+        await AuthService().logout();
         // Navega para a tela de login
         Navigator.of(context)
             .pushNamedAndRemoveUntil('/login', (route) => false);

@@ -3,7 +3,8 @@ import 'services/auth_service.dart';
 import 'verify_code_screen.dart'; // Import da nova tela
 
 class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({super.key});
+  final String? initialEmail;
+  const ForgotPasswordScreen({super.key, this.initialEmail});
 
   @override
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
@@ -13,6 +14,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
   final _authService = AuthService();
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialEmail != null && widget.initialEmail!.isNotEmpty) {
+      _emailController.text = widget.initialEmail!;
+    }
+  }
 
   void _sendPasswordResetEmail() async {
     if (_emailController.text.trim().isEmpty) {

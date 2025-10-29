@@ -265,8 +265,34 @@ class _LoginPageState extends State<LoginPage> {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => const HomeScreen()));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'] ?? 'Erro ao autenticar')));
+      // Se a conta estiver inativa, orienta a ir para 'Esqueceu a senha?'
+      if (result['inactive'] == true) {
+        final msg = result['message'] ??
+            "Sua conta está inativa. Para reativá-la, solicite uma nova senha.";
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(msg),
+            action: SnackBarAction(
+              label: 'Recuperar senha',
+              textColor: Colors.yellow,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ForgotPasswordScreen(
+                      initialEmail: _emailController.text.trim(),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message'] ?? 'Erro ao autenticar')),
+        );
+      }
     }
   }
 
