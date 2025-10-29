@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.history),
-            label: 'Atividades',
+            label: 'Historico',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),

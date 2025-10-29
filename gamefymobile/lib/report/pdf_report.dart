@@ -506,7 +506,7 @@ Future<void> openActivitiesPdfPreview({
     MaterialPageRoute(
       builder: (_) => Scaffold(
         appBar: AppBar(
-          title: const Text('Visualizar PDF'),
+          title: const Text('Relatório de Atividades'),
         ),
         body: PdfPreview(
           allowSharing: true,
