@@ -18,37 +18,34 @@ class DesafioSerializer(serializers.ModelSerializer):
         ]
 
     def get_completado(self, obj):
+        """Indica se o usuário já concluiu o desafio no ciclo vigente.
+
+        Mantém a mesma noção de janela usada em get_date_range para evitar
+        divergências (diário/semanal/mensal). Para desafios únicos, basta
+        existir qualquer registro de conclusão.
+        """
         request = self.context.get('request')
         if not (request and hasattr(request, 'user') and request.user.is_authenticated):
             return False
 
         user = request.user
-        
-        conclusoes = UsuarioDesafio.objects.filter(idusuario=user, iddesafio=obj)
-        if not conclusoes.exists():
+
+        qs = UsuarioDesafio.objects.filter(idusuario=user, iddesafio=obj)
+        if not qs.exists():
             return False
 
-        ultima_conclusao = conclusoes.latest('dtpremiacao')
-
+        # Desafios únicos: se já concluiu alguma vez, continua marcado
         if obj.tipo == TipoDesafio.UNICO:
             return True
 
-        if not ultima_conclusao.dtpremiacao:
+        # Para diário/semanal/mensal, considera o intervalo atual
+        inicio, fim = get_date_range(obj.tipo)
+        if inicio is None:
+            # Se por algum motivo não há intervalo (tipo inesperado),
+            # considerar não completado para evitar falsos positivos
             return False
 
-        now = timezone.now()
-        last_completed_date = ultima_conclusao.dtpremiacao.date()
-        today = now.date()
-
-        if obj.tipo == TipoDesafio.DIARIO:
-            return last_completed_date == today
-        elif obj.tipo == TipoDesafio.SEMANAL:
-            start_of_week = today - timezone.timedelta(days=(today.weekday() + 1) % 7)
-            return last_completed_date >= start_of_week
-        elif obj.tipo == TipoDesafio.MENSAL:
-            return last_completed_date.year == today.year and last_completed_date.month == today.month
-        
-        return False
+        return qs.filter(dtpremiacao__date__range=[inicio, fim]).exists()
 
     def get_meta(self, obj):
         """ Retorna o parâmetro do desafio, que é a meta a ser atingida. """
