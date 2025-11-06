@@ -86,8 +86,8 @@ Passos essenciais para rodar o backend (Django + PostgreSQL) e o app (Flutter), 
     ```bash
     git clone https://github.com/PI2-GamefyME-Mobile/PI2-GamefyME.git
     cd PI2-GamefyME
-    python3 -m venv .venv
-    source .venv/bin/activate
+    python3 -m venv env
+    source env/bin/activate
     pip install -r requirements.txt
     python3 api/manage.py migrate
     python3 api/manage.py runserver 0.0.0.0:8000
