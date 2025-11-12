@@ -36,7 +36,7 @@ O projeto consiste em um aplicativo móvel desenvolvido com **Flutter** e um bac
 
 ---
 
-## Lembretes Automáticos por E-mail (RF06)
+## Lembretes Automáticos por E-mail (RF 12)
 
 Foi adicionada uma tarefa de gerenciamento para enviar lembretes diários aos usuários que ainda não concluíram atividades no dia, além de registrar uma Notificação no histórico.
 
