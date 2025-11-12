@@ -53,6 +53,10 @@ Como agendar (Windows): utilize o Agendador de Tarefas para executar o comando d
 ## Manual para instalação e execução do aplicativo
 
 Passos essenciais para rodar o backend (Django + PostgreSQL) e o app (Flutter), em Windows e Linux.
+Pré-Requisitos:
+ - <a href="https://www.postgresql.org/download/">PostgreSQL</a> 
+ - <a href="https://www.djangoproject.com/download/">Django</a>
+ - <a href="https://docs.flutter.dev/install">Flutter</a>
 
 ### Windows (PowerShell)
 
