@@ -113,5 +113,4 @@ Pré-Requisitos:
 Notas rápidas:
 - Ajuste `API_BASE_URL` conforme seu cenário (dispositivo físico: IP da máquina, ex.: http://192.168.X.Y:8000/api).
 - Para configuração persistente, você pode alterar `gamefymobile/lib/config/api_config.dart`.
-- Detalhes adicionais do app: veja `gamefymobile/README.md`. 
   
