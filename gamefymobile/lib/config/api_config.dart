@@ -31,8 +31,8 @@ class ApiConfig {
     try {
       if (Platform.isAndroid) {
         debugPrint(
-            '🌐 [CONFIG] Plataforma: Android - URL: http://192.168.xxx:8000/api');
-        return 'http://192.168.xxx:8000/api';
+            '🌐 [CONFIG] Plataforma: Android - URL: http://172.16.41.114:8000/api');
+        return 'http://172.16.41.114:8000/api';
       }
     } catch (_) {
       // Fallback seguro caso Platform não esteja disponível
