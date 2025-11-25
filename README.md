@@ -36,20 +36,6 @@ O projeto consiste em um aplicativo móvel desenvolvido com **Flutter** e um bac
 
 ---
 
-## Lembretes Automáticos por E-mail (RF 12)
-
-Foi adicionada uma tarefa de gerenciamento para enviar lembretes diários aos usuários que ainda não concluíram atividades no dia, além de registrar uma Notificação no histórico.
-
-Como executar manualmente:
-
-```
-python api/manage.py enviar_lembretes
-```
-
-Como agendar (Windows): utilize o Agendador de Tarefas para executar o comando diariamente no ambiente configurado. Em Linux, use cron; em produção pode-se empregar Celery Beat.
-
----
-
 ## Manual para instalação e execução do aplicativo
 
 Passos essenciais para rodar o backend (Django + PostgreSQL) e o app (Flutter), em Windows e Linux.
@@ -58,11 +44,76 @@ Pré-Requisitos:
  - <a href="https://www.djangoproject.com/download/" target="_blank">Django</a>
  - <a href="https://docs.flutter.dev/install" target="_blank">Flutter</a>
 
- ## Antes tudo modifique o arquivo api/api/settings.py
- ```
- A partir da linha 105 tem os dados do banco de dados
- Basta substituir com os dados de seu banco de dados PostgreSQL
+## Configuração do Banco de Dados (antes de tudo)
+
+Antes de rodar a API, configure o PostgreSQL e atualize o arquivo de `settings` do Django.
+
+1) Crie usuário e banco no PostgreSQL (via psql ou pgAdmin):
+
+```powershell
+# Abra o psql (ajuste se necessário)
+psql -U postgres -h localhost
+
+# Dentro do psql, crie usuário e banco (substitua pela sua senha)
+CREATE USER gamefy_user WITH PASSWORD 'SUA_SENHA';
+CREATE DATABASE gamefydb OWNER gamefy_user;
 ```
+
+2) Ajuste o arquivo de configuração do Django em `api/api/settings.py` na seção `DATABASES`:
+
+```python
+# Em api/api/settings.py > DATABASES
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'gamefydb',         # nome do banco
+        'USER': 'gamefy_user',      # usuário do banco
+        'PASSWORD': 'SUA_SENHA_FORTE',
+        'HOST': 'localhost',
+        'PORT': 5432,
+    }
+}
+```
+
+Observações:
+- O repositório possui exemplos de configuração (Felipe/Lucas) dentro de `api/api/settings.py`. Substitua pelos seus valores locais.
+- Em produção, prefira variáveis de ambiente para `USER`, `PASSWORD`, etc.
+
+3) Aplique as migrações e valide a conexão:
+
+```powershell
+python api/manage.py migrate
+python api/manage.py runserver 0.0.0.0:8000
+# API: http://127.0.0.1:8000/api | Swagger: http://127.0.0.1:8000/swagger/
+```
+
+## Importar Desafios e Conquistas Iniciais (SQL)
+
+Após criar o banco e aplicar as migrações, você pode popular as tabelas com os registros iniciais do arquivo `banco.sql` (na raiz do projeto).
+
+1) Via `psql` (recomendado):
+
+```powershell
+# Ajuste <USER> e <DB_NAME> com os valores de `api/api/settings.py`
+# Ex.: NAME = gamefydb | USER = gamefy_user
+psql -U <USER> -h localhost -d <DB_NAME> -f "c:\Users\FelipeSantili\Documents\PI2-GamefyME\banco.sql"
+```
+
+Em Linux:
+
+```bash
+# Rode a partir da raiz do projeto ou use caminho absoluto
+psql -U <USER> -h localhost -d <DB_NAME> -f banco.sql
+```
+
+2) Via pgAdmin (alternativa):
+- Abra o servidor e selecione seu banco.
+- Ferramenta de Consulta (Query Tool) → File → Open → selecione `banco.sql` → Execute.
+
+Observações importantes:
+- Garanta que as tabelas existam (rode `python api/manage.py migrate` antes).
+- As conquistas referenciam imagens por caminho como `conquistas/arquivo.png`. Coloque esses arquivos em `api/media/conquistas/` ou ajuste os nomes conforme seu ambiente.
+- Se houver atualizações complementares, veja também `db_update_2025-10-28_conquistas.sql`.
 
 ### Windows (PowerShell)
 
@@ -115,6 +166,21 @@ Pré-Requisitos:
     # Android Emulator
     flutter run --dart-define API_BASE_URL=http://10.0.2.2:8000/api
     ```
+
+
+## Lembretes Automáticos por E-mail (RF 12)
+
+Foi adicionada uma tarefa de gerenciamento para enviar lembretes diários aos usuários que ainda não concluíram atividades no dia, além de registrar uma Notificação no histórico.
+
+Como executar manualmente:
+
+```
+python api/manage.py enviar_lembretes
+```
+
+Como agendar (Windows): utilize o Agendador de Tarefas para executar o comando diariamente no ambiente configurado. Em Linux, use cron; em produção pode-se empregar Celery Beat.
+
+---
 
 Notas rápidas:
 - Ajuste `API_BASE_URL` conforme seu cenário (dispositivo físico: IP da máquina, ex.: http://192.168.X.Y:8000/api).
