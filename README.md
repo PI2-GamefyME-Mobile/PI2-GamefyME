@@ -58,6 +58,12 @@ Pré-Requisitos:
  - <a href="https://www.djangoproject.com/download/" target="_blank">Django</a>
  - <a href="https://docs.flutter.dev/install" target="_blank">Flutter</a>
 
+ ## Antes tudo modifique o arquivo api/api/settings.py
+ ```
+ A partir da linha 105 tem os dados do banco de dados
+ Basta substituir com os dados de seu banco de dados PostgreSQL
+```
+
 ### Windows (PowerShell)
 
 - Backend
