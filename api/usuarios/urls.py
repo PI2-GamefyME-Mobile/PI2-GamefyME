@@ -6,7 +6,6 @@ from .views import (
     PasswordResetRequestView,
     PasswordResetConfirmView,
     LeaderboardView,
-    EstatisticasUsuarioView,
     InativarContaView,
     ReativacaoSolicitarView,
     ReativacaoConfirmarView,
@@ -32,7 +31,6 @@ urlpatterns = [
     path('reativar/solicitar/', ReativacaoSolicitarView.as_view(), name='reativar-solicitar'),
     path('reativar/confirmar/', ReativacaoConfirmarView.as_view(), name='reativar-confirmar'),
     path('leaderboard/', LeaderboardView.as_view(), name='leaderboard'),
-    path('estatisticas/', EstatisticasUsuarioView.as_view(), name='estatisticas-usuario'),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import '../config/app_colors.dart';
 
-// Exportar o modelo de estatísticas
-export 'estatisticas.dart';
-
 // Modelo para os dados do usuário principal
 class Usuario {
   final int id;

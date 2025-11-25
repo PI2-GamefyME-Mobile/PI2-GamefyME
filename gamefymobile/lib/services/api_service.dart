@@ -338,18 +338,6 @@ class ApiService {
     }
   }
 
-  Future<Estatisticas> fetchEstatisticas() async {
-    final url = Uri.parse('$_baseRoot/usuarios/estatisticas/');
-    final res =
-        await _authorizedRequest((headers) => http.get(url, headers: headers));
-    if (res.statusCode == 200) {
-      final data = json.decode(utf8.decode(res.bodyBytes));
-      return Estatisticas.fromJson(data);
-    } else {
-      throw Exception('Falha ao carregar estatísticas');
-    }
-  }
-
   Future<http.Response> _authorizedRequest(
     Future<http.Response> Function(Map<String, String>) requestFn,
   ) async {
